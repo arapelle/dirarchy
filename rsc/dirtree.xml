@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <dir path="project">
+        <dir path="include/arba/core">
+            <file path="feature/feature.hpp" contents="raw">
+#pragma once
+
+int version();
+            </file>
+        </dir>
+        <dir path="src/arba/core">
+            <file path="feature/feature.cpp" contents="raw">
+#include &lt;arba/core/feature.hpp&gt;
+
+int version() { return 1; }
+            </file>
+        </dir>
+        <file path="README.md">
+# Project arba-core
+        </file>
+    </dir>
+</dirarchy>

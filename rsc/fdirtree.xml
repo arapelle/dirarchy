@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <dir path="{namespace}-{base_name}">
+        <dir path="include/{namespace}/{base_name}">
+            <file path="feature.hpp" contents="format">
+#pragma once
+
+inline namespace {namespace}
+{
+namespace {base_name}
+{
+    int version();
+}
+}
+            </file>
+        </dir>
+        <dir path="src/{namespace}/{base_name}">
+            <file path="feature.cpp" contents="format">
+#include &lt;{namespace}/{base_name}/feature.hpp&gt;
+
+inline namespace {namespace}
+{
+namespace {base_name}
+{
+    int version() { return {version}; }
+}
+}
+            </file>
+        </dir>
+        <file path="README.md">
+    # Project {namespace}-{base_name}
+        </file>
+    </dir>
+</dirarchy>
