@@ -1,4 +1,3 @@
-import curses
 import tkinter
 import xml.etree.ElementTree as XMLTree
 from builtins import isinstance
@@ -165,6 +164,7 @@ class Dirarchy:
 
     def treat_root_node(self, node: XMLTree.Element):
         output_dpath = Path.cwd() / "output"
+        self.__treat_vars_node(node.find("vars"))
         dir_nodes = node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
@@ -181,6 +181,20 @@ class Dirarchy:
             self.__treat_file_node(fsys_node, output_dpath)
         else:
             assert False  # Unknown first node type
+
+    def __treat_vars_node(self, vars_node: XMLTree.Element):
+        if vars_node is None:
+            return
+        for var_node in vars_node.iterfind("var"):
+            self.__treat_var_node(var_node)
+
+    def __treat_var_node(self, var_node: XMLTree.Element):
+        var_name = var_node.attrib.get('name')
+        var_type = var_node.attrib.get('type', 'str')
+        var_default = var_node.attrib.get('default', '')
+        var_value = ask_valid_var(var_type, var_name, var_default)
+        self.__variables[var_name] = var_value
+        # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
     def treat_xml_file(self, dirarchy_fpath):
         print('#' * 80)

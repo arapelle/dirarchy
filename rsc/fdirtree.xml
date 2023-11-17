@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 <dirarchy>
-    <variables>
+    <vars>
+        <var name="namespace" default="ns" />
+        <var name="base_name" type="str" default="core" />
+        <var name="subdir" />
         <var name="version" type="int" default="1" />
-    </variables>
+    </vars>
     <dir path="{namespace}-{base_name}">
         <dir path="include/{namespace}/{base_name}">
             <file path="{subdir}/feature.hpp" contents="format">
