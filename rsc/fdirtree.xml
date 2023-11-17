@@ -8,7 +8,7 @@
     </vars>
     <dir path="{namespace}-{base_name}">
         <dir path="include/{namespace}/{base_name}">
-            <file path="{subdir}/feature.hpp" contents="format">
+            <file path="{subdir}/feature.hpp" contents="super_format">
 #pragma once
 
 inline namespace {namespace}
@@ -22,7 +22,7 @@ namespace {base_name}
             </file>
         </dir>
         <dir path="src/{namespace}/{base_name}">
-            <file path="{subdir}/feature.cpp" contents="format">
+            <file path="{subdir}/feature.cpp" contents="super_format">
 #include &lt;{namespace}/{base_name}/feature.hpp&gt;
 
 inline namespace {namespace}
@@ -33,7 +33,7 @@ namespace {base_name}
     {
         return "{!{base_name}} {{{base_name}}} {{namespace}}";
     }
-    int version() { return {version[int]='666'}; }
+    int version() { return {version}; }
 }
 }
             </file>

@@ -75,12 +75,9 @@ class SpecialDict(dict):
 
 
 class Dirarchy:
-    VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)(\[(int|uint|float|str)\])?(='(([^']|\\')*)')?\}"
-                           r"|(\{\{|\}\})")
+    VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)\}|(\{\{|\}\})")
     VAR_NAME_GROUP_ID = 1
-    VAR_TYPE_GROUP_ID = VAR_NAME_GROUP_ID + 2
-    VAR_DEFAULT_VALUE_GROUP_ID = VAR_TYPE_GROUP_ID + 2
-    SKIP_GROUP_ID = VAR_DEFAULT_VALUE_GROUP_ID + 2
+    SKIP_GROUP_ID = VAR_NAME_GROUP_ID + 1
 
     def __init__(self):
         self.__variables = SpecialDict()
@@ -111,15 +108,15 @@ class Dirarchy:
         text: str = self.__strip_text(file_node.text)
         content_attr = file_node.attrib.get('content')
         if content_attr is None:
-            content_attr = "format"
+            content_attr = "super_format"
         content_attr_list: list = content_attr.split('|')
         if not content_attr_list or "raw" in content_attr_list:
             return text
-        if "format" in content_attr_list:
-            text = self.__format_str(text)
+        if "super_format" in content_attr_list:
+            text = self.__super_format_str(text)
         return text
 
-    def __format_str(self, text: str):
+    def __super_format_str(self, text: str):
         neo_text: str = ""
         for line in io.StringIO(text):
             index = 0
@@ -130,22 +127,15 @@ class Dirarchy:
                     index = mre.end(self.SKIP_GROUP_ID)
                     continue
                 var_name = mre.group(self.VAR_NAME_GROUP_ID)
-                var_type = mre.group(self.VAR_TYPE_GROUP_ID)
-                var_type = "str" if var_type is None else var_type
-                var_default_value = mre.group(self.VAR_DEFAULT_VALUE_GROUP_ID)
                 neo_line += line[index:mre.start(0)]
                 index = mre.end(0)
-                var_value = var_default_value
                 if var_name not in self.__variables:
-                    var_value = ask_valid_var(var_type, var_name, var_value)
-                    self.__variables[var_name] = var_value
-                else:
-                    var_value = self.__variables[var_name]
-                neo_line += var_value
-                # print(f"Var: {var_name}: {var_type} = '{self.__variables[var_name]}'")
+                    raise f"Variable not set: '{var_name}'!"
+                neo_line += self.__variables[var_name]
+                # print(f"Var: {var_name} = '{self.__variables[var_name]}'")
             neo_line += line[index:]
             neo_text += neo_line
-        return neo_text  # text.format_map(self.__variables)
+        return neo_text
 
     def __strip_text(self, text):
         text = text.lstrip()
@@ -158,7 +148,7 @@ class Dirarchy:
 
     def __fsys_node_path(self, dir_node):
         dir_path_str = dir_node.attrib['path']
-        dir_path_str = self.__format_str(dir_path_str)
+        dir_path_str = self.__super_format_str(dir_path_str)
         dir_path = Path(dir_path_str)
         return dir_path
 
