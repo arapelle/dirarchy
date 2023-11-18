@@ -13,8 +13,9 @@ def cancel_generation(res=0):
     exit(res)
 
 
-def ask_str_value(label: str, default: str):
-    return simpledialog.askstring(label, label + ": ", initialvalue=default)
+def ask_str_value(label: str, default: str, prev_value=None):
+    prev_value = f"BAD ENTRY: \"{prev_value}\"\n" if prev_value is not None else ""
+    return simpledialog.askstring(label, f"{prev_value}{label}: ", initialvalue=default)
 
 
 def ask_bool_value(label: str):
@@ -24,14 +25,16 @@ def ask_bool_value(label: str):
 def ask_valid_value(label: str, default, check_fn=lambda value: len(value) > 0):
     value_is_bool = isinstance(default, type(True))
     value = None if value_is_bool else ""
+    prev_value = None
     while not check_fn(value):
         if value_is_bool:
             value = ask_bool_value(label)
         else:
-            value = ask_str_value(label, default)
+            value = ask_str_value(label, default, prev_value)
         if value is None:
             cancel_generation()
         print(f"Parameter '{label}': '{value}'")
+        prev_value = value
     return value
 
 
