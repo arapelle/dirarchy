@@ -8,6 +8,12 @@ import io
 from tkinter import simpledialog, messagebox
 
 
+DIRARCHY_VERSION_MAJOR = 0
+DIRARCHY_VERSION_MINOR = 1
+DIRARCHY_VERSION_PATCH = 0
+DIRARCHY_VERSION = f"{DIRARCHY_VERSION_MAJOR}.{DIRARCHY_VERSION_MINOR}.{DIRARCHY_VERSION_PATCH}"
+
+
 def cancel_generation(res=0):
     print("CANCEL!")
     exit(res)
