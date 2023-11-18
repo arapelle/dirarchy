@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <dir template="rsc/fdirtree.xml">
+        <file path="rsc/story.txt">
+Once upon a time...
+        </file>
+    </dir>
+</dirarchy>

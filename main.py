@@ -90,23 +90,41 @@ class Dirarchy:
         # self.__variables['version'] = '1'
 
     def __treat_dir_node(self, dir_node: XMLTree.Element, working_dir: Path):
-        dir_path = self.__fsys_node_path(dir_node)
-        print(f"<dir  {working_dir}/ {dir_path}>")
-        working_dir /= dir_path
-        working_dir.mkdir(parents=True, exist_ok=True)
+        template_fpath = dir_node.attrib.get('template', None)
+        if template_fpath is not None:
+            template_fpath = self.__format_str(template_fpath)
+            print(f"<dir  {template_fpath}>")
+            assert 'path' not in dir_node.attrib
+            working_dir = self.treat_xml_file(template_fpath, working_dir, "dir")
+        else:
+            dir_path = self.__fsys_node_path(dir_node)
+            print(f"<dir  {working_dir}/ {dir_path}>")
+            assert 'template' not in dir_node.attrib
+            working_dir /= dir_path
+            working_dir.mkdir(parents=True, exist_ok=True)
         for child in dir_node.findall('file'):
             self.__treat_file_node(child, working_dir)
         for child_node in dir_node.findall('dir'):
             self.__treat_dir_node(child_node, working_dir)
+        return working_dir
 
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
-        filepath = self.__fsys_node_path(file_node)
-        print(f"<file {working_dir}/ {filepath}>")
-        file_dir = Path(filepath).parent
-        working_dir /= file_dir
-        working_dir.mkdir(parents=True, exist_ok=True)
-        with open(f"{working_dir}/{filepath.name}", "w") as file:
-            file.write(f"{self.__file_text(file_node)}")
+        template_fpath = file_node.attrib.get('template', None)
+        if template_fpath is not None:
+            template_fpath = self.__format_str(template_fpath)
+            print(f"<dir  {template_fpath}>")
+            assert 'path' not in file_node.attrib
+            working_dir = self.treat_xml_file(template_fpath, working_dir, "file")
+        else:
+            filepath = self.__fsys_node_path(file_node)
+            print(f"<file {working_dir}/ {filepath}>")
+            assert 'template' not in file_node.attrib
+            file_dir = Path(filepath).parent
+            working_dir /= file_dir
+            working_dir.mkdir(parents=True, exist_ok=True)
+            with open(f"{working_dir}/{filepath.name}", "w") as file:
+                file.write(f"{self.__file_text(file_node)}")
+        return working_dir
 
     def __file_text(self, file_node: XMLTree.Element):
         text: str = self.__strip_text(file_node.text)
@@ -164,19 +182,23 @@ class Dirarchy:
         dir_path = Path(dir_path_str)
         return dir_path
 
-    def treat_root_node(self, dirarchy_node: XMLTree.Element):
-        output_dpath = Path.cwd() / "output"
+    def treat_root_node(self, dirarchy_node: XMLTree.Element, working_dir, expect):
         self.__treat_vars_node(dirarchy_node.find("vars"))
         dir_nodes = dirarchy_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
+            if expect == "dir":
+                raise "Directory template was expected!"
             file_nodes = dirarchy_node.findall("file")
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
+            if expect == "file":
+                raise "File template was expected!"
         assert fsys_node is not None
         if fsys_node.tag == "dir":
-            self.__treat_dir_node(fsys_node, output_dpath)
+            return self.__treat_dir_node(fsys_node, working_dir)
         elif fsys_node.tag == "file":
-            self.__treat_file_node(fsys_node, output_dpath)
+            self.__treat_file_node(fsys_node, working_dir)
+            return None
         else:
             assert False  # Unknown first node type
 
@@ -195,12 +217,16 @@ class Dirarchy:
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
-    def treat_xml_file(self, dirarchy_fpath):
+    def treat_xml_file(self, dirarchy_fpath, working_dir, expect):
+        assert expect is None or expect == "dir" or expect == "file"
         print('#' * 80)
         print(f"Input file: {dirarchy_fpath}")
         with open(dirarchy_fpath, 'r') as dirarchy_file:
             tree = XMLTree.parse(dirarchy_file)
-            self.treat_root_node(tree.getroot())
+            return self.treat_root_node(tree.getroot(), working_dir, expect)
+
+    def treat_root_xml_file(self, dirarchy_fpath):
+        self.treat_xml_file(dirarchy_fpath, Path.cwd() / "output", None)
 
 
 if __name__ == '__main__':
@@ -211,5 +237,6 @@ if __name__ == '__main__':
         shutil.rmtree(output_dpath)
     output_dpath.mkdir(parents=True)
     dirarchy = Dirarchy()
-    # dirarchy.treat_xml_file('rsc/dirtree.xml')
-    dirarchy.treat_xml_file('rsc/fdirtree.xml')
+    # dirarchy.treat_root_xml_file('rsc/dirtree.xml')
+    # dirarchy.treat_root_xml_file('rsc/fdirtree.xml')
+    dirarchy.treat_root_xml_file('rsc/rscdirtree.xml')
