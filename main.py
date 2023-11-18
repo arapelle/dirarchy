@@ -1,11 +1,9 @@
-import tkinter
 import xml.etree.ElementTree as XMLTree
 from builtins import isinstance
 from pathlib import Path
 import shutil
 import re
 import io
-from tkinter import simpledialog, messagebox
 
 
 DIRARCHY_VERSION_MAJOR = 0
@@ -14,68 +12,68 @@ DIRARCHY_VERSION_PATCH = 0
 DIRARCHY_VERSION = f"{DIRARCHY_VERSION_MAJOR}.{DIRARCHY_VERSION_MINOR}.{DIRARCHY_VERSION_PATCH}"
 
 
-def cancel_generation(res=0):
-    print("CANCEL!")
-    exit(res)
+class GuiAskDialog:
+    def __init__(self):
+        import tkinter
+        self.__gui = tkinter.Tk()
+        self.__gui.withdraw()
 
+    def cancel_generation(self, res=0):
+        print("CANCEL!")
+        exit(res)
 
-def ask_str_value(label: str, default: str, prev_value=None):
-    prev_value = f"BAD ENTRY: \"{prev_value}\"\n" if prev_value is not None else ""
-    return simpledialog.askstring(label, f"{prev_value}{label}: ", initialvalue=default)
+    def __ask_str_value(self, label: str, default: str, prev_value=None):
+        from tkinter import simpledialog
+        prev_value = f"BAD ENTRY: \"{prev_value}\"\n" if prev_value is not None else ""
+        return simpledialog.askstring(label, f"{prev_value}{label}: ", initialvalue=default)
 
+    def __ask_bool_value(self, label: str):
+        from tkinter import messagebox
+        return messagebox.askyesnocancel(label, label)
 
-def ask_bool_value(label: str):
-    return messagebox.askyesnocancel(label, label)
+    def _ask_valid_value(self, label: str, default, check_fn=lambda value: len(value) > 0):
+        value_is_bool = isinstance(default, type(True))
+        value = None if value_is_bool else ""
+        prev_value = None
+        while not check_fn(value):
+            if value_is_bool:
+                value = self.__ask_bool_value(label)
+            else:
+                value = self.__ask_str_value(label, default, prev_value)
+            if value is None:
+                self.cancel_generation()
+            print(f"Parameter '{label}': '{value}'")
+            prev_value = value
+        return value
 
+    def ask_valid_bool_value(self, label: str):
+        return self._ask_valid_value(label, True,
+                                lambda value: value is not None and isinstance(value, type(True)))
 
-def ask_valid_value(label: str, default, check_fn=lambda value: len(value) > 0):
-    value_is_bool = isinstance(default, type(True))
-    value = None if value_is_bool else ""
-    prev_value = None
-    while not check_fn(value):
-        if value_is_bool:
-            value = ask_bool_value(label)
-        else:
-            value = ask_str_value(label, default, prev_value)
-        if value is None:
-            cancel_generation()
-        print(f"Parameter '{label}': '{value}'")
-        prev_value = value
-    return value
+    def ask_valid_int_value(self, label: str, default="0"):
+        return self._ask_valid_value(label, default,
+                                lambda value: bool(re.match(r"\A-?\d+\Z", value.strip())))
 
+    def ask_valid_uint_value(self, label: str, default="0"):
+        return self._ask_valid_value(label, default,
+                                lambda value: bool(re.match(r"\A\d+\Z", value.strip())))
 
-def ask_valid_bool_value(label: str):
-    return ask_valid_value(label, True,
-                           lambda value: value is not None and isinstance(value, type(True)))
+    def ask_valid_float_value(self, label: str, default="0.0"):
+        return self._ask_valid_value(label, default,
+                                lambda value: bool(re.match(r"\A-?\d+(\.\d+)?\Z", value.strip())))
 
-
-def ask_valid_int_value(label: str, default="0"):
-    return ask_valid_value(label, default,
-                           lambda value: bool(re.match(r"\A-?\d+\Z", value.strip())))
-
-
-def ask_valid_uint_value(label: str, default="0"):
-    return ask_valid_value(label, default,
-                           lambda value: bool(re.match(r"\A\d+\Z", value.strip())))
-
-
-def ask_valid_float_value(label: str, default="0.0"):
-    return ask_valid_value(label, default,
-                           lambda value: bool(re.match(r"\A-?\d+(\.\d+)?\Z", value.strip())))
-
-
-def ask_valid_var(parameter_type: str, label: str, default=""):
-    match parameter_type:
-        case 'int':
-            return ask_valid_int_value(label, default)
-        case 'uint':
-            return ask_valid_int_value(label, default)
-        case 'float':
-            return ask_valid_int_value(label, default)
-        case 'str':
-            return ask_valid_value(label, default)
-        case _:
-            raise Exception(f"Bad parameter_type: '{parameter_type}'")
+    def ask_valid_var(self, var_type: str, label: str, default=""):
+        match var_type:
+            case 'int':
+                return self.ask_valid_int_value(label, default)
+            case 'uint':
+                return self.ask_valid_int_value(label, default)
+            case 'float':
+                return self.ask_valid_int_value(label, default)
+            case 'str':
+                return self._ask_valid_value(label, default)
+            case _:
+                raise Exception(f"Bad var_type: '{var_type}'")
 
 
 class SpecialDict(dict):
@@ -91,10 +89,7 @@ class Dirarchy:
 
     def __init__(self):
         self.__variables = SpecialDict()
-        # self.__variables['namespace'] = 'arba'
-        # self.__variables['base_name'] = 'core'
-        # self.__variables['subdir'] = 'feature'
-        # self.__variables['version'] = '1'
+        self.__dialog = GuiAskDialog()
 
     def __treat_dir_node(self, dir_node: XMLTree.Element, working_dir: Path):
         template_fpath = dir_node.attrib.get('template', None)
@@ -226,7 +221,7 @@ class Dirarchy:
             else:
                 var_type = var_node.attrib.get('type', 'str')
                 var_default = var_node.attrib.get('default', '')
-                var_value = ask_valid_var(var_type, var_name, var_default)
+                var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default)
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
@@ -243,8 +238,6 @@ class Dirarchy:
 
 
 if __name__ == '__main__':
-    gui = tkinter.Tk()
-    gui.withdraw()
     output_dpath = Path.cwd() / "output"
     if output_dpath.exists():
         shutil.rmtree(output_dpath)
