@@ -103,8 +103,9 @@ class Dirarchy:
         filepath = self.__fsys_node_path(file_node)
         print(f"<file {working_dir}/ {filepath}>")
         file_dir = Path(filepath).parent
-        (working_dir / file_dir).mkdir(parents=True, exist_ok=True)
-        with open(f"{working_dir}/{filepath}", "w") as file:
+        working_dir /= file_dir
+        working_dir.mkdir(parents=True, exist_ok=True)
+        with open(f"{working_dir}/{filepath.name}", "w") as file:
             file.write(f"{self.__file_text(file_node)}")
 
     def __file_text(self, file_node: XMLTree.Element):
