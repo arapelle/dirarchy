@@ -172,10 +172,6 @@ class Dirarchy:
             file_nodes = dirarchy_node.findall("file")
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
         assert fsys_node is not None
-        fsys_node_path = output_dpath / self.__fsys_node_path(fsys_node)
-        if fsys_node_path.exists():
-            print(f"rm {fsys_node_path}")
-            shutil.rmtree(fsys_node_path)
         if fsys_node.tag == "dir":
             self.__treat_dir_node(fsys_node, output_dpath)
         elif fsys_node.tag == "file":
@@ -209,6 +205,10 @@ class Dirarchy:
 if __name__ == '__main__':
     gui = tkinter.Tk()
     gui.withdraw()
+    output_dpath = Path.cwd() / "output"
+    if output_dpath.exists():
+        shutil.rmtree(output_dpath)
+    output_dpath.mkdir(parents=True)
     dirarchy = Dirarchy()
     # dirarchy.treat_xml_file('rsc/dirtree.xml')
     dirarchy.treat_xml_file('rsc/fdirtree.xml')
