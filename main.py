@@ -69,7 +69,7 @@ def ask_valid_var(parameter_type: str, label: str, default=""):
         case 'str':
             return ask_valid_value(label, default)
         case _:
-            raise f"Bad parameter_type: '{parameter_type}'"
+            raise Exception(f"Bad parameter_type: '{parameter_type}'")
 
 
 class SpecialDict(dict):
@@ -78,6 +78,7 @@ class SpecialDict(dict):
 
 
 class Dirarchy:
+    VAR_NAME_REGEX = re.compile(r'\A[a-zA-Z][a-zA-Z0-9_]*\Z')
     VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)\}|(\{\{|\}\})")
     VAR_NAME_GROUP_ID = 1
     SKIP_GROUP_ID = VAR_NAME_GROUP_ID + 1
@@ -160,7 +161,7 @@ class Dirarchy:
                 neo_line += line[index:mre.start(0)]
                 index = mre.end(0)
                 if var_name not in self.__variables:
-                    raise f"Variable not set: '{var_name}'!"
+                    raise Exception(f"Variable not set: '{var_name}'!")
                 neo_line += self.__variables[var_name]
                 # print(f"Var: {var_name} = '{self.__variables[var_name]}'")
             neo_line += line[index:]
@@ -188,11 +189,11 @@ class Dirarchy:
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
             if expect == "dir":
-                raise "Directory template was expected!"
+                raise Exception("Directory template was expected!")
             file_nodes = dirarchy_node.findall("file")
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
             if expect == "file":
-                raise "File template was expected!"
+                raise Exception("File template was expected!")
         assert fsys_node is not None
         if fsys_node.tag == "dir":
             return self.__treat_dir_node(fsys_node, working_dir)
@@ -210,6 +211,8 @@ class Dirarchy:
 
     def __treat_var_node(self, var_node: XMLTree.Element):
         var_name = var_node.attrib.get('name')
+        if not re.match(self.VAR_NAME_REGEX, var_name):
+            raise Exception(f"Variable name is not a valid name: '{var_name}'.")
         if var_name not in self.__variables:
             var_value = var_node.attrib.get('value', None)
             if var_value is not None:

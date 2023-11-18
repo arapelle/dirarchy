@@ -5,9 +5,6 @@ Generates directory architecture based on a template.
 ### TODO
 
 ```
-Add checks:
-- var.name [a-zA-Z][a-zA-Z0-9_]*
-
 <if expr="" />
 <var regex=''/>
 
