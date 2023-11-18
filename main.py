@@ -84,9 +84,9 @@ class Dirarchy:
 
     def __init__(self):
         self.__variables = SpecialDict()
-        self.__variables['namespace'] = 'arba'
-        self.__variables['base_name'] = 'core'
-        self.__variables['subdir'] = 'feature'
+        # self.__variables['namespace'] = 'arba'
+        # self.__variables['base_name'] = 'core'
+        # self.__variables['subdir'] = 'feature'
         # self.__variables['version'] = '1'
 
     def __treat_dir_node(self, dir_node: XMLTree.Element, working_dir: Path):
@@ -163,13 +163,13 @@ class Dirarchy:
         dir_path = Path(dir_path_str)
         return dir_path
 
-    def treat_root_node(self, node: XMLTree.Element):
+    def treat_root_node(self, dirarchy_node: XMLTree.Element):
         output_dpath = Path.cwd() / "output"
-        self.__treat_vars_node(node.find("vars"))
-        dir_nodes = node.findall("dir")
+        self.__treat_vars_node(dirarchy_node.find("vars"))
+        dir_nodes = dirarchy_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
-            file_nodes = node.findall("file")
+            file_nodes = dirarchy_node.findall("file")
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
         assert fsys_node is not None
         fsys_node_path = output_dpath / self.__fsys_node_path(fsys_node)
@@ -191,11 +191,12 @@ class Dirarchy:
 
     def __treat_var_node(self, var_node: XMLTree.Element):
         var_name = var_node.attrib.get('name')
-        var_type = var_node.attrib.get('type', 'str')
-        var_default = var_node.attrib.get('default', '')
-        var_value = ask_valid_var(var_type, var_name, var_default)
-        self.__variables[var_name] = var_value
-        # print(f"{var_name}:{var_type}({var_default})={var_value}")
+        if var_name not in self.__variables:
+            var_type = var_node.attrib.get('type', 'str')
+            var_default = var_node.attrib.get('default', '')
+            var_value = ask_valid_var(var_type, var_name, var_default)
+            self.__variables[var_name] = var_value
+            # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
     def treat_xml_file(self, dirarchy_fpath):
         print('#' * 80)
