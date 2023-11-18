@@ -211,9 +211,13 @@ class Dirarchy:
     def __treat_var_node(self, var_node: XMLTree.Element):
         var_name = var_node.attrib.get('name')
         if var_name not in self.__variables:
-            var_type = var_node.attrib.get('type', 'str')
-            var_default = var_node.attrib.get('default', '')
-            var_value = ask_valid_var(var_type, var_name, var_default)
+            var_value = var_node.attrib.get('value', None)
+            if var_value is not None:
+                var_value = self.__format_str(var_value)
+            else:
+                var_type = var_node.attrib.get('type', 'str')
+                var_default = var_node.attrib.get('default', '')
+                var_value = ask_valid_var(var_type, var_name, var_default)
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
