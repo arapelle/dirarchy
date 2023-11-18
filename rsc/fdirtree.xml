@@ -1,28 +1,36 @@
 <?xml version="1.0"?>
 <dirarchy>
+    <variables>
+        <var name="version" type="int" default="1" />
+    </variables>
     <dir path="{namespace}-{base_name}">
         <dir path="include/{namespace}/{base_name}">
-            <file path="feature.hpp" contents="format">
+            <file path="{subdir}/feature.hpp" contents="format">
 #pragma once
 
 inline namespace {namespace}
 {
 namespace {base_name}
 {
+    std::string name();
     int version();
 }
 }
             </file>
         </dir>
         <dir path="src/{namespace}/{base_name}">
-            <file path="feature.cpp" contents="format">
+            <file path="{subdir}/feature.cpp" contents="format">
 #include &lt;{namespace}/{base_name}/feature.hpp&gt;
 
 inline namespace {namespace}
 {
 namespace {base_name}
 {
-    int version() { return {version}; }
+    std::string name()
+    {
+        return "{!{base_name}} {{{base_name}}} {{namespace}}";
+    }
+    int version() { return {version[int]='666'}; }
 }
 }
             </file>
