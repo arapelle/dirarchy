@@ -8,17 +8,21 @@
     </vars>
     <dir path="{namespace}-{base_name}">
         <dir path="include/{namespace}/{base_name}">
-            <file path="{subdir}/feature.hpp" contents="super_format">
+            <file path="{subdir}/feature.hpp">
 #pragma once
 
 inline namespace {namespace}
-{
+{{
 namespace {base_name}
-{
+{{
     std::string name();
     int version();
-}
-}
+    inline std::string inline_name()
+    {{
+        return "{{!{base_name}}} {{{base_name}}} {{namespace}}";
+    }}
+}}
+}}
             </file>
         </dir>
         <dir path="src/{namespace}/{base_name}">

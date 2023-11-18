@@ -108,13 +108,21 @@ class Dirarchy:
         text: str = self.__strip_text(file_node.text)
         content_attr = file_node.attrib.get('content')
         if content_attr is None:
-            content_attr = "super_format"
+            content_attr = "format"
         content_attr_list: list = content_attr.split('|')
         if not content_attr_list or "raw" in content_attr_list:
             return text
-        if "super_format" in content_attr_list:
+        if "format" in content_attr_list:
+            text = self.__super_format_str(text)
+        elif "super_format" in content_attr_list:
             text = self.__super_format_str(text)
         return text
+
+    def __format_str(self, text: str):
+        neo_text: str = ""
+        for line in io.StringIO(text):
+            neo_text += line.format_map(self.__variables)
+        return neo_text
 
     def __super_format_str(self, text: str):
         neo_text: str = ""
@@ -148,7 +156,7 @@ class Dirarchy:
 
     def __fsys_node_path(self, dir_node):
         dir_path_str = dir_node.attrib['path']
-        dir_path_str = self.__super_format_str(dir_path_str)
+        dir_path_str = self.__format_str(dir_path_str)
         dir_path = Path(dir_path_str)
         return dir_path
 
