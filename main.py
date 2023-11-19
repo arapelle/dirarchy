@@ -233,8 +233,8 @@ class Dirarchy:
             tree = XMLTree.parse(dirarchy_file)
             return self.treat_root_node(tree.getroot(), working_dir, expect)
 
-    def treat_root_xml_file(self, dirarchy_fpath):
-        self.treat_xml_file(dirarchy_fpath, Path.cwd() / "output", None)
+    def treat_root_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
+        self.treat_xml_file(dirarchy_fpath, working_dir, None)
 
 
 if __name__ == '__main__':
@@ -243,6 +243,6 @@ if __name__ == '__main__':
         shutil.rmtree(output_dpath)
     output_dpath.mkdir(parents=True)
     dirarchy = Dirarchy()
-    # dirarchy.treat_root_xml_file('rsc/dirtree.xml')
-    # dirarchy.treat_root_xml_file('rsc/fdirtree.xml')
-    dirarchy.treat_root_xml_file('rsc/rscdirtree.xml')
+    # dirarchy.treat_root_xml_file('rsc/dirtree.xml', output_dpath)
+    # dirarchy.treat_root_xml_file('rsc/fdirtree.xml', output_dpath)
+    dirarchy.treat_root_xml_file('rsc/rscdirtree.xml', output_dpath)
