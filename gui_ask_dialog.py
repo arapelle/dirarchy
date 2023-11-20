@@ -7,26 +7,31 @@ class GuiAskDialog(AskDialog):
         self.__gui = tkinter.Tk()
         self.__gui.withdraw()
 
-    def __ask_str_value(self, label: str, default: str, prev_value=None):
+    @staticmethod
+    def __ask_str_value(label: str, default_value: str, prev_value=None):
         from tkinter import simpledialog
         prev_value = f"BAD ENTRY: \"{prev_value}\"\n" if prev_value is not None else ""
-        return simpledialog.askstring(label, f"{prev_value}{label}: ", initialvalue=default)
+        return simpledialog.askstring(label, f"{prev_value}{label}: ", initialvalue=default_value)
 
-    def __ask_bool_value(self, label: str):
+    @staticmethod
+    def __ask_bool_value(label: str):
         from tkinter import messagebox
         return messagebox.askyesnocancel(label, label)
 
-    def _ask_valid_value(self, label: str, default, check_fn=lambda value: len(value) > 0):
-        value_is_bool = isinstance(default, type(True))
-        value = None if value_is_bool else ""
+    def ask_valid_bool(self, label: str, default_value):
+        value = self.__ask_bool_value(label)
+        if value is None:
+            self.raise_cancel()
+        print(f"{label}: '{value}'")
+        return str(value)
+
+    def ask_valid_string(self, label: str, default, check_fn):
         prev_value = None
-        while not check_fn(value):
-            if value_is_bool:
-                value = self.__ask_bool_value(label)
-            else:
-                value = self.__ask_str_value(label, default, prev_value)
+        while True:
+            value = self.__ask_str_value(label, default, prev_value)
             if value is None:
-                self.cancel_generation()
-            print(f"Parameter '{label}': '{value}'")
+                self.raise_cancel()
+            print(f"{label}: '{value}'")
+            if check_fn is None or check_fn(value):
+                return value
             prev_value = value
-        return value

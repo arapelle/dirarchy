@@ -156,7 +156,7 @@ class Dirarchy:
                 var_value = self.__format_str(var_value)
             else:
                 var_type = var_node.attrib.get('type', 'str')
-                var_default = var_node.attrib.get('default', '')
+                var_default = var_node.attrib.get('default', None)
                 var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default)
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")

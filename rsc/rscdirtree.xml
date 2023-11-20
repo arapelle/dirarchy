@@ -2,6 +2,7 @@
 <dirarchy>
     <vars>
         <var name="subdir" value="sub" />
+        <var name="option" type="bool" />
     </vars>
     <dir template="rsc/fdirtree.xml">
         <file path="rsc/story.txt">

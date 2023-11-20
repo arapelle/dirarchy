@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <dirarchy>
     <vars>
-        <var name="namespace" default="ns" />
-        <var name="base_name" type="str" default="core" />
-        <var name="subdir" />
+        <var name="namespace" type="gstr" default="ns" />
+        <var name="base_name" type="gstr" default="core" />
+        <var name="subdir" type="gstr" />
         <var name="version" type="int" default="1" />
     </vars>
     <dir path="{namespace}-{base_name}">
