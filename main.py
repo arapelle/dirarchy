@@ -5,6 +5,7 @@ import re
 import io
 
 from gui_ask_dialog import GuiAskDialog
+from terminal_ask_dialog import TerminalAskDialog
 
 DIRARCHY_VERSION_MAJOR = 0
 DIRARCHY_VERSION_MINOR = 2
@@ -25,7 +26,8 @@ class Dirarchy:
 
     def __init__(self):
         self.__variables = SpecialDict()
-        self.__dialog = GuiAskDialog()
+        # self.__dialog = GuiAskDialog()
+        self.__dialog = TerminalAskDialog()
 
     def __treat_dir_node(self, dir_node: XMLTree.Element, working_dir: Path):
         template_fpath = dir_node.attrib.get('template', None)
