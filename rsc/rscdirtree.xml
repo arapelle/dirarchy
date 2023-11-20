@@ -5,8 +5,10 @@
         <var name="option" type="bool" />
     </vars>
     <dir template="rsc/fdirtree.xml">
-        <file path="rsc/story.txt">
+        <if expr="re.match(r'\A[a-z]+\Z','{namespace}')">
+            <file path="rsc/story.txt">
 Once upon a time...
-        </file>
+            </file>
+        </if>
     </dir>
 </dirarchy>

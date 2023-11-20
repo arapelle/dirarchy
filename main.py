@@ -26,8 +26,20 @@ class Dirarchy:
 
     def __init__(self):
         self.__variables = SpecialDict()
-        # self.__dialog = GuiAskDialog()
-        self.__dialog = TerminalAskDialog()
+        self.__dialog = GuiAskDialog()
+        # self.__dialog = TerminalAskDialog()
+
+    def __treat_action_node(self, node: XMLTree.Element, working_dir):
+        assert node is not None
+        match node.tag:
+            case "dir":
+                return self.__treat_dir_node(node, working_dir)
+            case "file":
+                return self.__treat_file_node(node, working_dir)
+            case "if":
+                return self.__treat_if_node(node, working_dir)
+            case _:
+                raise Exception(f"Unknown node type: {node.tag}.")
 
     def __treat_dir_node(self, dir_node: XMLTree.Element, working_dir: Path):
         template_fpath = dir_node.attrib.get('template', None)
@@ -42,10 +54,8 @@ class Dirarchy:
             assert 'template' not in dir_node.attrib
             working_dir /= dir_path
             working_dir.mkdir(parents=True, exist_ok=True)
-        for child in dir_node.findall('file'):
-            self.__treat_file_node(child, working_dir)
-        for child_node in dir_node.findall('dir'):
-            self.__treat_dir_node(child_node, working_dir)
+        for child_node in dir_node:
+            self.__treat_action_node(child_node, working_dir)
         return working_dir
 
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
@@ -79,6 +89,15 @@ class Dirarchy:
         elif "super_format" in content_attr_list:
             text = self.__super_format_str(text)
         return text
+
+    def __treat_if_node(self, if_node: XMLTree.Element, working_dir: Path):
+        expr_attr = if_node.attrib['expr']
+        expr_attr = self.__format_str(expr_attr)
+        b_expr = eval(expr_attr)
+        if b_expr:
+            for child_node in if_node:
+                self.__treat_action_node(child_node, working_dir)
+        return working_dir
 
     def __format_str(self, text: str):
         neo_text: str = ""
@@ -133,14 +152,7 @@ class Dirarchy:
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
             if expect == "file":
                 raise Exception("File template was expected!")
-        assert fsys_node is not None
-        if fsys_node.tag == "dir":
-            return self.__treat_dir_node(fsys_node, working_dir)
-        elif fsys_node.tag == "file":
-            self.__treat_file_node(fsys_node, working_dir)
-            return None
-        else:
-            assert False  # Unknown first node type
+        return self.__treat_action_node(fsys_node, working_dir)
 
     def __treat_vars_node(self, vars_node: XMLTree.Element):
         if vars_node is None:
