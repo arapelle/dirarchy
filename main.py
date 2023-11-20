@@ -1,5 +1,6 @@
 import argparse
 import xml.etree.ElementTree as XMLTree
+from enum import StrEnum, auto
 from pathlib import Path
 import shutil
 import re
@@ -20,6 +21,10 @@ class SpecialDict(dict):
 
 
 class Dirarchy:
+    class GuiInterface(StrEnum):
+        TKINTER = auto()
+        TERMINAL = auto()
+
     VAR_NAME_REGEX = re.compile(r'\A[a-zA-Z][a-zA-Z0-9_]*\Z')
     VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)\}|(\{\{|\}\})")
     VAR_NAME_GROUP_ID = 1
@@ -28,15 +33,31 @@ class Dirarchy:
     def __init__(self):
         self.__variables = SpecialDict()
         self.args = self._parse_args()
-        if self.args.no_window:
-            self.__dialog = TerminalAskDialog()
-        else:
-            self.__dialog = GuiAskDialog()
+        match self.args.io:
+            case Dirarchy.GuiInterface.TERMINAL:
+                self.__dialog = TerminalAskDialog()
+            case Dirarchy.GuiInterface.TKINTER:
+                self.__dialog = GuiAskDialog()
+            case _:
+                raise Exception(f"Unknown I/O: '{self.args.io}'")
 
     def _parse_args(self):
-        argparser = argparse.ArgumentParser()
-        argparser.add_argument('--no-window', action='store_true', help='Use terminal I/O.')
-        return argparser.parse_args()
+        prog_name = 'dirarchy'
+        prog_desc = 'A tool generating a directory architecture based on a template.'
+        argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
+        argparser.add_argument('--version', action='version', version=f'{prog_name} {DIRARCHY_VERSION}')
+        argparser.add_argument('-K', '--tkinter', action='store_const', dest='io',
+                               const=Dirarchy.GuiInterface.TKINTER, help='Use tkinter I/O.')
+        argparser.add_argument('-T', '--terminal', action='store_const', dest='io',
+                               const=Dirarchy.GuiInterface.TERMINAL, default='terminal', help='Use terminal I/O.')
+        argparser.add_argument('-d', '--working-dir', metavar='dir_path',
+                               default=Path.cwd(),
+                               help='The directory where to generate the directory architecture.')
+        argparser.add_argument('dirarchy_xml_file', help='The dirarchy XML file to process.')
+        args = argparser.parse_args()
+        if args.io is None:
+            args.io = Dirarchy.GuiInterface.TKINTER
+        return args
 
     def __treat_action_node(self, node: XMLTree.Element, working_dir):
         assert node is not None
