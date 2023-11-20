@@ -1,3 +1,4 @@
+import argparse
 import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 import shutil
@@ -26,8 +27,16 @@ class Dirarchy:
 
     def __init__(self):
         self.__variables = SpecialDict()
-        self.__dialog = GuiAskDialog()
-        # self.__dialog = TerminalAskDialog()
+        self.args = self._parse_args()
+        if self.args.no_window:
+            self.__dialog = TerminalAskDialog()
+        else:
+            self.__dialog = GuiAskDialog()
+
+    def _parse_args(self):
+        argparser = argparse.ArgumentParser()
+        argparser.add_argument('--no-window', action='store_true', help='Use terminal I/O.')
+        return argparser.parse_args()
 
     def __treat_action_node(self, node: XMLTree.Element, working_dir):
         assert node is not None
