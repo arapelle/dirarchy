@@ -8,11 +8,7 @@ import io
 
 from gui_ask_dialog import GuiAskDialog
 from terminal_ask_dialog import TerminalAskDialog
-
-DIRARCHY_VERSION_MAJOR = 0
-DIRARCHY_VERSION_MINOR = 2
-DIRARCHY_VERSION_PATCH = 0
-DIRARCHY_VERSION = f"{DIRARCHY_VERSION_MAJOR}.{DIRARCHY_VERSION_MINOR}.{DIRARCHY_VERSION_PATCH}"
+import version
 
 
 class SpecialDict(dict):
@@ -45,7 +41,7 @@ class Dirarchy:
         prog_name = 'dirarchy'
         prog_desc = 'A tool generating a directory architecture based on a template.'
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
-        argparser.add_argument('--version', action='version', version=f'{prog_name} {DIRARCHY_VERSION}')
+        argparser.add_argument('--version', action='version', version=f'{prog_name} {version.VERSION}')
         argparser.add_argument('-K', '--tkinter', action='store_const', dest='io',
                                const=Dirarchy.GuiInterface.TKINTER, help='Use tkinter I/O.')
         argparser.add_argument('-T', '--terminal', action='store_const', dest='io',
