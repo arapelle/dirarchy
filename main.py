@@ -36,6 +36,13 @@ class Dirarchy:
                 self.__dialog = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self._args.io}'")
+        if self._args.var:
+            self.__set_variables(self._args.var)
+
+    def __set_variables(self, var_list: list):
+        for key, value in var_list:
+            self.__variables[key] = value
+            print(f"Set variable {key}={value}")
 
     def _parse_args(self, argv):
         prog_name = 'dirarchy'
@@ -49,11 +56,21 @@ class Dirarchy:
         argparser.add_argument('-d', '--working-dir', metavar='dir_path',
                                default=Path.cwd(),
                                help='The directory where to generate the directory architecture.')
+        argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
+                               type=Dirarchy.var_from_key_value_str,
+                               help='Set the value of a variable.')
         argparser.add_argument('dirarchy_xml_file', help='The dirarchy XML file to process.')
-        args = argparser.parse_args(argv)
+        args = argparser.parse_args()
         if args.ui is None:
             args.ui = Dirarchy.UiType.TKINTER
         return args
+
+    @classmethod
+    def var_from_key_value_str(cls, key_value_str: str):
+        key, value = key_value_str.split('=')
+        if re.match(Dirarchy.VAR_NAME_REGEX, key):
+            return key, value
+        return None
 
     def __treat_action_node(self, node: XMLTree.Element, working_dir):
         assert node is not None
