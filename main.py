@@ -1,4 +1,5 @@
 import argparse
+import json
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
@@ -36,18 +37,27 @@ class Dirarchy:
                 self.__dialog = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self._args.io}'")
-        if self._args.var:
-            self.__set_variables(self._args.var)
+        self.__set_variables_from_args()
 
     def run(self):
         if self._args.dirarchy_xml_files:
             for input_file in self._args.dirarchy_xml_files:
                 self.treat_xml_file(input_file, self._args.working_dir)
 
-    def __set_variables(self, var_list: list):
-        for key, value in var_list:
-            self.__variables[key] = value
-            print(f"Set variable {key}={value}")
+    def __set_variables_from_args(self):
+        if self._args.var:
+            for key, value in self._args.var:
+                self.__variables[key] = value
+                print(f"Set variable {key}={value}")
+        if self._args.variables_files:
+            for variables_file in self._args.variables_files:
+                with open(variables_file) as vars_file:
+                    var_dict = json.load(vars_file)
+                    if not isinstance(var_dict, dict):
+                        raise Exception(f"The variables file '{variables_file}' does not contain a valid JSON dict.")
+                    for key, value in var_dict.items():
+                        self.__variables[key] = value
+                        print(f"Set variable {key}={value}")
 
     def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
@@ -63,7 +73,9 @@ class Dirarchy:
                                help='The directory where to generate the directory architecture.')
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
                                type=Dirarchy.var_from_key_value_str,
-                               help='Set the value of a variable.')
+                               help='Set variables.')
+        argparser.add_argument('--variables-files', metavar='var_json_files', nargs='+',
+                               help='Set variables from a JSON files.')
         argparser.add_argument('dirarchy_xml_files', nargs='+',
                                help='The dirarchy XML files to process.')
         args = argparser.parse_args(argv)
