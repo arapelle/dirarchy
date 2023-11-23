@@ -139,15 +139,15 @@ class Dirarchy:
 
     def __file_text(self, file_node: XMLTree.Element):
         text: str = self.__strip_text(file_node.text)
-        content_attr = file_node.attrib.get('content')
-        if content_attr is None:
-            content_attr = "format"
-        content_attr_list: list = content_attr.split('|')
-        if not content_attr_list or "raw" in content_attr_list:
+        format_attr = file_node.attrib.get('format')
+        if format_attr is None:
+            format_attr = "format"
+        format_attr_list: list = format_attr.split('|')
+        if not format_attr_list or "raw" in format_attr_list:
             return text
-        if "format" in content_attr_list:
+        if "format" in format_attr_list:
             text = self.__super_format_str(text)
-        elif "super_format" in content_attr_list:
+        elif "super_format" in format_attr_list:
             text = self.__super_format_str(text)
         return text
 
