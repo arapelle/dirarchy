@@ -39,12 +39,17 @@ class Dirarchy:
         if self._args.var:
             self.__set_variables(self._args.var)
 
+    def run(self):
+        if self._args.dirarchy_xml_files:
+            for input_file in self._args.dirarchy_xml_files:
+                self.treat_xml_file(input_file, self._args.working_dir)
+
     def __set_variables(self, var_list: list):
         for key, value in var_list:
             self.__variables[key] = value
             print(f"Set variable {key}={value}")
 
-    def _parse_args(self, argv):
+    def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
         prog_desc = 'A tool generating a directory architecture based on a template.'
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
@@ -59,8 +64,9 @@ class Dirarchy:
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
                                type=Dirarchy.var_from_key_value_str,
                                help='Set the value of a variable.')
-        argparser.add_argument('dirarchy_xml_file', help='The dirarchy XML file to process.')
-        args = argparser.parse_args()
+        argparser.add_argument('dirarchy_xml_files', nargs='+',
+                               help='The dirarchy XML files to process.')
+        args = argparser.parse_args(argv)
         if args.ui is None:
             args.ui = Dirarchy.UiType.TKINTER
         return args
@@ -233,9 +239,8 @@ class Dirarchy:
 if __name__ == '__main__':
     output_dpath = Path.cwd() / "output"
     if output_dpath.exists():
+        print(f'Remove {output_dpath}')
         shutil.rmtree(output_dpath)
     output_dpath.mkdir(parents=True)
     dirarchy = Dirarchy()
-    # dirarchy.treat_xml_file('rsc/dirtree.xml', output_dpath)
-    # dirarchy.treat_xml_file('rsc/fdirtree.xml', output_dpath)
-    dirarchy.treat_xml_file('rsc/rscdirtree.xml', output_dpath)
+    dirarchy.run()
