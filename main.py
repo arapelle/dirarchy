@@ -152,6 +152,7 @@ class Dirarchy:
         return text
 
     def __treat_if_node(self, if_node: XMLTree.Element, working_dir: Path):
+        from re import match, fullmatch
         expr_attr = if_node.attrib['expr']
         expr_attr = self.__format_str(expr_attr)
         b_expr = eval(expr_attr)
