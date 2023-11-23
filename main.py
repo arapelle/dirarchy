@@ -6,7 +6,7 @@ import shutil
 import re
 import io
 
-from gui_ask_dialog import GuiAskDialog
+from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
 import version
 
@@ -17,7 +17,7 @@ class SpecialDict(dict):
 
 
 class Dirarchy:
-    class GuiInterface(StrEnum):
+    class UiType(StrEnum):
         TKINTER = auto()
         TERMINAL = auto()
 
@@ -28,12 +28,12 @@ class Dirarchy:
 
     def __init__(self):
         self.__variables = SpecialDict()
-        self.args = self._parse_args()
-        match self.args.io:
-            case Dirarchy.GuiInterface.TERMINAL:
+        self._args = self._parse_args(argv)
+        match self._args.ui:
+            case Dirarchy.UiType.TERMINAL:
                 self.__dialog = TerminalAskDialog()
-            case Dirarchy.GuiInterface.TKINTER:
-                self.__dialog = GuiAskDialog()
+            case Dirarchy.UiType.TKINTER:
+                self.__dialog = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self.args.io}'")
 
@@ -42,17 +42,17 @@ class Dirarchy:
         prog_desc = 'A tool generating a directory architecture based on a template.'
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
         argparser.add_argument('--version', action='version', version=f'{prog_name} {version.VERSION}')
-        argparser.add_argument('-K', '--tkinter', action='store_const', dest='io',
-                               const=Dirarchy.GuiInterface.TKINTER, help='Use tkinter I/O.')
-        argparser.add_argument('-T', '--terminal', action='store_const', dest='io',
-                               const=Dirarchy.GuiInterface.TERMINAL, default='terminal', help='Use terminal I/O.')
+        argparser.add_argument('-K', f'--{Dirarchy.UiType.TKINTER}'.lower(), action='store_const',
+                               dest='ui', const=Dirarchy.UiType.TKINTER, help='Use tkinter I/O.')
+        argparser.add_argument('-T', f'--{Dirarchy.UiType.TERMINAL}'.lower(), action='store_const',
+                               dest='ui', const=Dirarchy.UiType.TERMINAL, default='terminal', help='Use terminal I/O.')
         argparser.add_argument('-d', '--working-dir', metavar='dir_path',
                                default=Path.cwd(),
                                help='The directory where to generate the directory architecture.')
         argparser.add_argument('dirarchy_xml_file', help='The dirarchy XML file to process.')
-        args = argparser.parse_args()
-        if args.io is None:
-            args.io = Dirarchy.GuiInterface.TKINTER
+        args = argparser.parse_args(argv)
+        if args.ui is None:
+            args.ui = Dirarchy.UiType.TKINTER
         return args
 
     def __treat_action_node(self, node: XMLTree.Element, working_dir):

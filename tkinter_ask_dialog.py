@@ -1,7 +1,7 @@
 from ask_dialog import AskDialog
 
 
-class GuiAskDialog(AskDialog):
+class TkinterAskDialog(AskDialog):
     def __init__(self):
         import tkinter
         self.__gui = tkinter.Tk()

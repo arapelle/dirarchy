@@ -2,7 +2,7 @@
 <dirarchy>
     <vars>
         <var name="subdir" value="sub" />
-        <var name="option" type="bool" />
+        <var name="option" type="bool" default="True"/>
     </vars>
     <dir template="rsc/fdirtree.xml">
         <if expr="re.match(r'\A[a-z]+\Z','{namespace}')">
