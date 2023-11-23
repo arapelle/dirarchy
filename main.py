@@ -26,7 +26,7 @@ class Dirarchy:
     VAR_NAME_GROUP_ID = 1
     SKIP_GROUP_ID = VAR_NAME_GROUP_ID + 1
 
-    def __init__(self):
+    def __init__(self, argv=None):
         self.__variables = SpecialDict()
         self._args = self._parse_args(argv)
         match self._args.ui:
@@ -35,9 +35,9 @@ class Dirarchy:
             case Dirarchy.UiType.TKINTER:
                 self.__dialog = TkinterAskDialog()
             case _:
-                raise Exception(f"Unknown I/O: '{self.args.io}'")
+                raise Exception(f"Unknown I/O: '{self._args.io}'")
 
-    def _parse_args(self):
+    def _parse_args(self, argv):
         prog_name = 'dirarchy'
         prog_desc = 'A tool generating a directory architecture based on a template.'
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
