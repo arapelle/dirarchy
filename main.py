@@ -60,6 +60,7 @@ class Dirarchy:
     SKIP_GROUP_ID = VAR_NAME_GROUP_ID + 1
 
     def __init__(self, argv=None):
+        self.__source_file_stack = []
         self.__variables = SpecialDict()
         self._args = self._parse_args(argv)
         match self._args.ui:
@@ -302,13 +303,24 @@ class Dirarchy:
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
+    def __current_source_dir(self):
+        return self.__source_file_stack[-1]
+
     def __treat_xml_file(self, dirarchy_fpath, working_dir, expect):
         assert expect is None or expect == "dir" or expect == "file"
         print('#' * 80)
+        dirarchy_fpath = Path(dirarchy_fpath)
         print(f"Input file: {dirarchy_fpath}")
         with open(dirarchy_fpath, 'r') as dirarchy_file:
             tree = XMLTree.parse(dirarchy_file)
-            return self.__treat_root_node(tree.getroot(), working_dir, expect)
+            self.__source_file_stack.append(dirarchy_fpath.absolute().parent)
+            self.__variables['$CURRENT_SOURCE_DIR'] = self.__current_source_dir()
+            try:
+                return self.__treat_root_node(tree.getroot(), working_dir, expect)
+            finally:
+                self.__source_file_stack.pop(-1)
+                if len(self.__source_file_stack) > 0:
+                    self.__variables['$CURRENT_SOURCE_DIR'] = self.__current_source_dir()
 
     def treat_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
         self.__treat_xml_file(dirarchy_fpath, working_dir, None)
