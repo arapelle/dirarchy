@@ -22,6 +22,23 @@ class Dirarchy:
         TKINTER = auto()
         TERMINAL = auto()
 
+    CLASSIC_NAME_RESTR = r'[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*'
+    TRI_VERSION_RESTR = r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
+    # namespace_path := namespace_name(/namespace_name)*
+    NAMESPACE_NAME_RESTR = CLASSIC_NAME_RESTR
+    NAMESPACE_PATH_RESTR = fr"({NAMESPACE_NAME_RESTR})(/+{NAMESPACE_NAME_RESTR})*/*"
+    # template_name := (classic_name)-(tri_version)\.xml
+    TEMPLATE_NAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?\.xml"
+    # template_path := (namespace_path/)?template_name
+    TEMPLATE_PATH_REGEX = re.compile(f"({NAMESPACE_PATH_RESTR}/)?({TEMPLATE_NAME_RESTR})")
+    TEMPLATE_DIR_GROUP_ID = 1
+    TEMPLATE_FILENAME_GROUP_ID = 6
+    TEMPLATE_NAME_GROUP_ID = 7
+    TEMPLATE_VERSION_GROUP_ID = 10
+    TEMPLATE_VERSION_MAJOR_GROUP_ID = 11
+    TEMPLATE_VERSION_MINOR_GROUP_ID = 12
+    TEMPLATE_VERSION_PATCH_GROUP_ID = 13
+
     VAR_NAME_REGEX = re.compile(r'\A[a-zA-Z][a-zA-Z0-9_]*\Z')
     VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)\}|(\{\{|\}\})")
     VAR_NAME_GROUP_ID = 1
@@ -107,6 +124,8 @@ class Dirarchy:
         if template_fpath is not None:
             template_fpath = self.__format_str(template_fpath)
             print(f"<dir  {template_fpath}>")
+            if not re.fullmatch(self.TEMPLATE_PATH_REGEX, template_fpath):
+                raise Exception(f"The path '{template_fpath}' is not a valid path.")
             assert 'path' not in dir_node.attrib
             working_dir = self.__treat_xml_file(template_fpath, working_dir, "dir")
         else:
@@ -124,6 +143,8 @@ class Dirarchy:
         if template_fpath is not None:
             template_fpath = self.__format_str(template_fpath)
             print(f"<dir  {template_fpath}>")
+            if not re.fullmatch(self.TEMPLATE_PATH_REGEX, template_fpath):
+                raise Exception(f"The path '{template_fpath}' is not a valid path.")
             assert 'path' not in file_node.attrib
             working_dir = self.__treat_xml_file(template_fpath, working_dir, "file")
         else:
