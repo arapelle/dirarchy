@@ -73,7 +73,7 @@ class Dirarchy:
             template_fpath = self.__format_str(template_fpath)
             print(f"<dir  {template_fpath}>")
             assert 'path' not in dir_node.attrib
-            working_dir = self.treat_xml_file(template_fpath, working_dir, "dir")
+            working_dir = self.__treat_xml_file(template_fpath, working_dir, "dir")
         else:
             dir_path = self.__fsys_node_path(dir_node)
             print(f"<dir  {working_dir}/ {dir_path}>")
@@ -90,7 +90,7 @@ class Dirarchy:
             template_fpath = self.__format_str(template_fpath)
             print(f"<dir  {template_fpath}>")
             assert 'path' not in file_node.attrib
-            working_dir = self.treat_xml_file(template_fpath, working_dir, "file")
+            working_dir = self.__treat_xml_file(template_fpath, working_dir, "file")
         else:
             filepath = self.__fsys_node_path(file_node)
             print(f"<file {working_dir}/ {filepath}>")
@@ -167,7 +167,7 @@ class Dirarchy:
         dir_path = Path(dir_path_str)
         return dir_path
 
-    def treat_root_node(self, dirarchy_node: XMLTree.Element, working_dir, expect):
+    def __treat_root_node(self, dirarchy_node: XMLTree.Element, working_dir, expect):
         self.__treat_vars_node(dirarchy_node.find("vars"))
         dir_nodes = dirarchy_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
@@ -201,16 +201,16 @@ class Dirarchy:
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
-    def treat_xml_file(self, dirarchy_fpath, working_dir, expect):
+    def __treat_xml_file(self, dirarchy_fpath, working_dir, expect):
         assert expect is None or expect == "dir" or expect == "file"
         print('#' * 80)
         print(f"Input file: {dirarchy_fpath}")
         with open(dirarchy_fpath, 'r') as dirarchy_file:
             tree = XMLTree.parse(dirarchy_file)
-            return self.treat_root_node(tree.getroot(), working_dir, expect)
+            return self.__treat_root_node(tree.getroot(), working_dir, expect)
 
-    def treat_root_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
-        self.treat_xml_file(dirarchy_fpath, working_dir, None)
+    def treat_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
+        self.__treat_xml_file(dirarchy_fpath, working_dir, None)
 
 
 if __name__ == '__main__':
@@ -219,6 +219,6 @@ if __name__ == '__main__':
         shutil.rmtree(output_dpath)
     output_dpath.mkdir(parents=True)
     dirarchy = Dirarchy()
-    # dirarchy.treat_root_xml_file('rsc/dirtree.xml', output_dpath)
-    # dirarchy.treat_root_xml_file('rsc/fdirtree.xml', output_dpath)
-    dirarchy.treat_root_xml_file('rsc/rscdirtree.xml', output_dpath)
+    # dirarchy.treat_xml_file('rsc/dirtree.xml', output_dpath)
+    # dirarchy.treat_xml_file('rsc/fdirtree.xml', output_dpath)
+    dirarchy.treat_xml_file('rsc/rscdirtree.xml', output_dpath)
