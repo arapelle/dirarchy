@@ -288,10 +288,11 @@ class Dirarchy:
     def __strip_text(self, text):
         text = text.lstrip()
         if len(text) > 0:
-            idx = 1
-            while " \t".find(text[-idx]) != -1:
+            idx = 0
+            while " \t".find(text[-(idx + 1)]) != -1:
                 idx = idx + 1
-            text = text[:-idx + 1]
+            if idx > 0:
+                text = text[:-idx + 1]
         return text
 
     def __fsys_node_path(self, dir_node):
