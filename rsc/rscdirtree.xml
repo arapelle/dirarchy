@@ -9,6 +9,7 @@
         <if expr="fullmatch(r'[a-z]+','{base_name}')">
             <file path="rsc/story.txt" copy="{$CURRENT_SOURCE_DIR}/story.txt" />
         </if>
+        <dir template="basic.xml" />
         <match expr="{license}">
             <case value="MIT">
                 <file path="LICENSE_MIT.md">MIT</file>

@@ -1,6 +1,8 @@
 import argparse
 import glob
 import json
+import os
+import platform
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
@@ -73,6 +75,8 @@ class Dirarchy:
 
     def __init__(self, argv=None):
         self.__source_file_stack = []
+        self.__template_root_dpaths = self.__global_template_roots()
+        self.__template_root_dpaths.append(Path("."))
         self.__variables = SpecialDict()
         self._args = self._parse_args(argv)
         match self._args.ui:
@@ -179,16 +183,20 @@ class Dirarchy:
             if version_attr:
                 print("WARNING: The attribute version is ignored as the provided template is a file path "
                       f"(version or extension is contained in the path): '{template_fpath}'.")
-            return template_fpath
+            for template_root_dpath in self.__template_root_dpaths:
+                xml_path = template_root_dpath / template_fpath
+                if xml_path.exists():
+                    return xml_path
+            raise Exception(f"Template not found: '{template_fpath}'.")
         template_version = rmatch.group(self.TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID)
         if template_version:
             raise Exception(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
-        templates_root_dpath = Path(".")
         if not version_attr:
             name_pattern = f"{template_name}*.xml"
-            xml_path = templates_root_dpath / f"{template_fpath}.xml"
-            if xml_path.exists():
-                return xml_path
+            for template_root_dpath in self.__template_root_dpaths:
+                xml_path = template_root_dpath / f"{template_fpath}.xml"
+                if xml_path.exists():
+                    return xml_path
         else:
             rmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
             if not rmatch:
@@ -197,26 +205,55 @@ class Dirarchy:
             expected_minor = int(rmatch.group(2))
             expected_patch = int(rmatch.group(3))
             name_pattern = f"{template_name}-{expected_major}.*.*.xml"
-        t_dir = templates_root_dpath / template_dpath
-        template_file_list = glob.glob(name_pattern, root_dir=t_dir)
-        template_file_list.sort(reverse=True)
-        template_fpath = None
-        for template_file in template_file_list:
-            rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, Path(template_file).name)
-            if rmatch:
-                if not version_attr:
-                    template_fpath = f"{t_dir}/{template_file}"
-                    break
-                template_file_minor = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID))
-                template_file_patch = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID))
-                if template_file_minor > expected_minor \
-                        or template_file_minor == expected_minor and template_file_patch >= expected_patch:
-                    template_fpath = f"{t_dir}/{template_file}"
-                    break
+        for template_root_dpath in self.__template_root_dpaths:
+            t_dir = template_root_dpath / template_dpath
+            template_file_list = glob.glob(name_pattern, root_dir=t_dir)
+            template_file_list.sort(reverse=True)
+            template_fpath = None
+            for template_file in template_file_list:
+                rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, Path(template_file).name)
+                if rmatch:
+                    if not version_attr:
+                        template_fpath = f"{t_dir}/{template_file}"
+                        break
+                    template_file_minor = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID))
+                    template_file_patch = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID))
+                    if template_file_minor > expected_minor \
+                            or template_file_minor == expected_minor and template_file_patch >= expected_patch:
+                        template_fpath = f"{t_dir}/{template_file}"
+                        break
         if template_fpath is None:
             raise Exception(f"No template '{template_fname}' compatible with version {version_attr} found "
                             f"in {template_dpath}.")
         return template_fpath
+
+    def __global_template_roots(self):
+        roots = []
+        platform_system = platform.system().strip().lower()
+        match platform_system:
+            case "windows":
+                local_app_data_dpath = Path(os.environ['LOCALAPPDATA'])
+                templates_dpath = local_app_data_dpath / "dirarchy/templates"
+                templates_dpath.mkdir(parents=True, exist_ok=True)
+                roots.append(templates_dpath)
+                msystem_env_var = os.environ.get('MSYSTEM', None)
+                if msystem_env_var == 'MINGW64' or msystem_env_var == 'MINGW32':
+                    home_dpath = os.environ['HOME']
+                    templates_dpath = Path(f"{home_dpath}/.local/share/dirarchy/templates")
+                    templates_dpath.mkdir(parents=True, exist_ok=True)
+                    roots.append(templates_dpath)
+            case "linux":
+                home_dpath = os.environ['HOME']
+                templates_dpath = Path(f"{home_dpath}/.local/share/dirarchy/templates")
+                templates_dpath.mkdir(parents=True, exist_ok=True)
+                roots.append(templates_dpath)
+            case _:
+                raise Exception(f"System not handled: '{platform_system}'")
+        dirarchy_templates_path = os.environ.get('DIRARCHY_TEMPLATES_PATH', '')
+        for path in dirarchy_templates_path.split(':'):
+            if path:
+                roots.append(Path(path))
+        return roots
 
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
         template_fpath = file_node.attrib.get('template', None)
