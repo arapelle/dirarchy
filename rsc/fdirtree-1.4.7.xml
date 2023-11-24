@@ -2,7 +2,7 @@
 <dirarchy>
     <vars>
         <var name="namespace" type="gstr" default="ns" />
-        <var name="base_name" type="gstr" default="core" />
+        <var name="base_name" type="gstr" default="core" regex="[a-z_]{4,}" />
         <var name="subdir" type="gstr" />
         <var name="version" type="int" default="1" />
     </vars>

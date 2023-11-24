@@ -13,6 +13,17 @@ from terminal_ask_dialog import TerminalAskDialog
 import version
 
 
+class RegexFullMatch:
+    def __init__(self, regex):
+        if isinstance(regex, re.Pattern):
+            self.__regex = regex
+        else:
+            self.__regex = re.compile(regex)
+
+    def __call__(self, value_to_check: str):
+        return re.fullmatch(self.__regex, value_to_check)
+
+
 class SpecialDict(dict):
     def __missing__(self, key):
         return key.join("{}")
@@ -319,7 +330,9 @@ class Dirarchy:
             else:
                 var_type = var_node.attrib.get('type', 'str')
                 var_default = var_node.attrib.get('default', None)
-                var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default)
+                var_restr = var_node.attrib.get('regex', None)
+                regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
+                var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default, regex_full_match)
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
