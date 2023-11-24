@@ -236,7 +236,13 @@ class Dirarchy:
         return working_dir
 
     def __file_text(self, file_node: XMLTree.Element):
-        text: str = self.__strip_text(file_node.text)
+        copy_attr = file_node.attrib.get('copy')
+        if copy_attr is None:
+            text: str = self.__strip_text(file_node.text)
+        else:
+            copy_attr = self.__format_str(copy_attr)
+            with open(copy_attr) as copied_file:
+                text: str = copied_file.read()
         format_attr = file_node.attrib.get('format')
         if format_attr is None:
             format_attr = "format"
