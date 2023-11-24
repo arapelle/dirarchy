@@ -144,6 +144,8 @@ class Dirarchy:
                 return self.__treat_file_node(node, working_dir)
             case "if":
                 return self.__treat_if_node(node, working_dir)
+            case "match":
+                return self.__treat_match_node(node, working_dir)
             case _:
                 raise Exception(f"Unknown node type: {node.tag}.")
 
@@ -159,8 +161,7 @@ class Dirarchy:
             assert 'template' not in dir_node.attrib
             working_dir /= dir_path
             working_dir.mkdir(parents=True, exist_ok=True)
-        for child_node in dir_node:
-            self.__treat_action_node(child_node, working_dir)
+        self.__treat_action_children_nodes_of(dir_node, working_dir)
         return working_dir
 
     def __find_template(self, node, template_fpath):
@@ -254,8 +255,40 @@ class Dirarchy:
         expr_attr = self.__format_str(expr_attr)
         b_expr = eval(expr_attr)
         if b_expr:
-            for child_node in if_node:
-                self.__treat_action_node(child_node, working_dir)
+            self.__treat_action_children_nodes_of(if_node, working_dir)
+        return working_dir
+
+    def __treat_action_children_nodes_of(self, node, working_dir):
+        for child_node in node:
+            self.__treat_action_node(child_node, working_dir)
+
+    def __treat_match_node(self, match_node: XMLTree.Element, working_dir: Path):
+        expr_attr = match_node.attrib['expr']
+        expr_attr = self.__format_str(expr_attr)
+        assert len(match_node.text.strip()) == 0
+        found_case_node = None
+        default_case_node = None
+        for case_node in match_node:
+            assert case_node.tag == "case"
+            case_value = case_node.attrib.get('value', None)
+            if case_value is not None:
+                if expr_attr == self.__format_str(case_value):
+                    found_case_node = case_node
+                    break
+                continue
+            case_expr = case_node.attrib.get('expr', None)
+            if case_expr is not None:
+                if re.fullmatch(self.__format_str(case_expr), expr_attr):
+                    found_case_node = case_node
+                    break
+                continue
+            if default_case_node is not None:
+                raise Exception(f"A match node cannot have two default case node.")
+            found_case_node = case_node
+        if found_case_node:
+            self.__treat_action_children_nodes_of(found_case_node, working_dir)
+        elif default_case_node:
+            self.__treat_action_children_nodes_of(default_case_node, working_dir)
         return working_dir
 
     def __format_str(self, text: str):

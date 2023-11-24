@@ -2,7 +2,8 @@
 <dirarchy>
     <vars>
         <var name="subdir" value="sub" />
-        <var name="option" type="bool" default="True"/>
+        <var name="option" type="bool" default="True" />
+        <var name="license" type="gstr" default="MIT" />
     </vars>
     <dir template="{$CURRENT_SOURCE_DIR}/fdirtree" template-version="1.4.0">
         <if expr="fullmatch(r'[a-z]+','{base_name}')">
@@ -10,5 +11,18 @@
 Once upon a time...
             </file>
         </if>
+        <match expr="{license}">
+            <case value="MIT">
+                <file path="LICENSE_MIT.md">MIT</file>
+            </case>
+            <case expr="[a-z]+">
+                <file path="LICENSE_{license}.md">{license}</file>
+            </case>
+            <case>
+                <file path="LICENSE.md">
+                    Do what you want 'cause a pirate is free. You are a pirate!
+                </file>
+            </case>
+        </match>
     </dir>
 </dirarchy>
