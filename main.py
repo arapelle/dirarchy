@@ -371,8 +371,8 @@ class Dirarchy:
                 text = text[:-idx + 1]
         return text
 
-    def __fsys_node_path(self, dir_node):
-        dir_path_str = dir_node.attrib['path']
+    def __fsys_node_path(self, fsys_node):
+        dir_path_str = fsys_node.attrib['path']
         dir_path_str = self.__format_str(dir_path_str)
         dir_path = Path(dir_path_str)
         return dir_path

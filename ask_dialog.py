@@ -19,30 +19,35 @@ class AskDialog(ABC):
     def ask_valid_printable_string(self, label: str, default_value, check_fn):
         def __check_printable_str(value):
             return len(value) > 0 and (check_fn is None or check_fn(value))
+
         return self.ask_valid_string(label, default_value, __check_printable_str)
 
     def ask_valid_graphic_string(self, label: str, default_value, check_fn):
         def __check_graphic_str(value):
             value = value.strip()
             return len(value) > 0 and (check_fn is None or check_fn(value))
+
         return self.ask_valid_string(label, default_value, __check_graphic_str).strip()
 
     def ask_valid_int(self, label: str, default_value="0", check_fn=None):
         def __check_int(value):
             value = value.strip()
             return bool(re.match(r"\A-?\d+\Z", value)) and (check_fn is None or check_fn(value))
+
         return self.ask_valid_string(label, default_value, __check_int).strip()
 
     def ask_valid_uint(self, label: str, default_value="0", check_fn=None):
         def __check_uint(value):
             value = value.strip()
             return bool(re.match(r"\A\d+\Z", value)) and (check_fn is None or check_fn(value))
+
         return self.ask_valid_string(label, default_value, __check_uint).strip()
 
     def ask_valid_float(self, label: str, default_value="0.0", check_fn=None):
         def __check_float(value):
             value = value.strip()
             return bool(re.match(r"\A-?\d+(\.\d+)?\Z", value)) and (check_fn is None or check_fn(value))
+
         return self.ask_valid_string(label, default_value, __check_float).strip()
 
     def ask_valid_var(self, var_type: str, label: str, default_value=None, check_fn=None):
