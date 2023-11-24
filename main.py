@@ -34,13 +34,14 @@ class Dirarchy:
     TRI_VERSION_REGEX_PATCH_GROUP_ID = 3
 
     # template_filename := (classic_name)-(tri_version)\.xml
-    TEMPLATE_FILENAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?\.xml"
-    TEMPLATE_FILENAME_REGEX = re.compile(f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?\.xml")
+    TEMPLATE_FILENAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?(\.xml)?"
+    TEMPLATE_FILENAME_REGEX = re.compile(f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?(\.xml)?")
     TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID = 1
     TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID = 3
     TEMPLATE_FILENAME_REGEX_MAJOR_GROUP_ID = 5
     TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID = 6
     TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID = 7
+    TEMPLATE_FILENAME_REGEX_EXT_GROUP_ID = 8
     # namespace_path := namespace_name(/+namespace_name)*/*
     NAMESPACE_NAME_RESTR = CLASSIC_NAME_RESTR
     NAMESPACE_PATH_RESTR = fr"({NAMESPACE_NAME_RESTR})(/+{NAMESPACE_NAME_RESTR})*/*"
@@ -159,31 +160,50 @@ class Dirarchy:
         rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, template_fname)
         if not rmatch:
             raise Exception(f"The path '{template_fpath}' is not a valid path.")
-        version_attr = node.attrib.get('template-version', None).strip()
-        if version_attr:
-            vmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
-            if not vmatch:
+        version_attr = node.attrib.get('template-version', None)
+        template_name = rmatch.group(self.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
+        template_ext = rmatch.group(self.TEMPLATE_FILENAME_REGEX_EXT_GROUP_ID)
+        if template_ext is not None:
+            if version_attr:
+                print("WARNING: The attribute version is ignored as the provided template is a file path "
+                      f"(version or extension is contained in the path): '{template_fpath}'.")
+            return template_fpath
+        template_version = rmatch.group(self.TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID)
+        if template_version:
+            raise Exception(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
+        templates_root_dpath = Path(".")
+        if not version_attr:
+            name_pattern = f"{template_name}*.xml"
+            xml_path = templates_root_dpath / f"{template_fpath}.xml"
+            if xml_path.exists():
+                return xml_path
+        else:
+            rmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
+            if not rmatch:
                 raise Exception(f"Template version is not a valid version: '{version_attr}'.")
-            template_name = rmatch.group(self.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
-            expected_major = int(vmatch.group(1))
-            expected_minor = int(vmatch.group(2))
-            expected_patch = int(vmatch.group(3))
+            expected_major = int(rmatch.group(1))
+            expected_minor = int(rmatch.group(2))
+            expected_patch = int(rmatch.group(3))
             name_pattern = f"{template_name}-{expected_major}.*.*.xml"
-            template_file_list = glob.glob(name_pattern, root_dir=template_dpath)
-            template_file_list.sort(reverse=True)
-            template_fpath = None
-            for template_file in template_file_list:
-                rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, Path(template_file).name)
-                if rmatch:
-                    template_file_minor = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID))
-                    template_file_patch = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID))
-                    if template_file_minor > expected_minor \
-                            or template_file_minor == expected_minor and template_file_patch >= expected_patch:
-                        template_fpath = f"{template_dpath}/{template_file}"
-                        break
-            if template_fpath is None:
-                raise Exception(f"No template '{template_fname}' compatible with version {version_attr} found "
-                                f"in {template_dpath}.")
+        t_dir = templates_root_dpath / template_dpath
+        template_file_list = glob.glob(name_pattern, root_dir=t_dir)
+        template_file_list.sort(reverse=True)
+        template_fpath = None
+        for template_file in template_file_list:
+            rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, Path(template_file).name)
+            if rmatch:
+                if not version_attr:
+                    template_fpath = f"{t_dir}/{template_file}"
+                    break
+                template_file_minor = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID))
+                template_file_patch = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID))
+                if template_file_minor > expected_minor \
+                        or template_file_minor == expected_minor and template_file_patch >= expected_patch:
+                    template_fpath = f"{t_dir}/{template_file}"
+                    break
+        if template_fpath is None:
+            raise Exception(f"No template '{template_fname}' compatible with version {version_attr} found "
+                            f"in {template_dpath}.")
         return template_fpath
 
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
