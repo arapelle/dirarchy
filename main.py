@@ -1,4 +1,5 @@
 import argparse
+import glob
 import json
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
@@ -22,22 +23,36 @@ class Dirarchy:
         TKINTER = auto()
         TERMINAL = auto()
 
+    # classic_name (like hello_world_01)
     CLASSIC_NAME_RESTR = r'[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*'
+
+    # tri_version (like 0.1.0)
     TRI_VERSION_RESTR = r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
-    # namespace_path := namespace_name(/namespace_name)*
+    TRI_VERSION_REGEX = re.compile(TRI_VERSION_RESTR)
+    TRI_VERSION_REGEX_MAJOR_GROUP_ID = 1
+    TRI_VERSION_REGEX_MINOR_GROUP_ID = 2
+    TRI_VERSION_REGEX_PATCH_GROUP_ID = 3
+
+    # template_filename := (classic_name)-(tri_version)\.xml
+    TEMPLATE_FILENAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?\.xml"
+    TEMPLATE_FILENAME_REGEX = re.compile(f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?\.xml")
+    TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID = 1
+    TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID = 3
+    TEMPLATE_FILENAME_REGEX_MAJOR_GROUP_ID = 5
+    TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID = 6
+    TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID = 7
+    # namespace_path := namespace_name(/+namespace_name)*/*
     NAMESPACE_NAME_RESTR = CLASSIC_NAME_RESTR
     NAMESPACE_PATH_RESTR = fr"({NAMESPACE_NAME_RESTR})(/+{NAMESPACE_NAME_RESTR})*/*"
-    # template_name := (classic_name)-(tri_version)\.xml
-    TEMPLATE_NAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?\.xml"
     # template_path := (namespace_path/)?template_name
-    TEMPLATE_PATH_REGEX = re.compile(f"({NAMESPACE_PATH_RESTR}/)?({TEMPLATE_NAME_RESTR})")
-    TEMPLATE_DIR_GROUP_ID = 1
-    TEMPLATE_FILENAME_GROUP_ID = 6
-    TEMPLATE_NAME_GROUP_ID = 7
-    TEMPLATE_VERSION_GROUP_ID = 10
-    TEMPLATE_VERSION_MAJOR_GROUP_ID = 11
-    TEMPLATE_VERSION_MINOR_GROUP_ID = 12
-    TEMPLATE_VERSION_PATCH_GROUP_ID = 13
+    TEMPLATE_PATH_REGEX = re.compile(f"({NAMESPACE_PATH_RESTR}/)?({TEMPLATE_FILENAME_RESTR})")
+    TEMPLATE_PATH_REGEX_DIR_GROUP_ID = 1
+    TEMPLATE_PATH_REGEX_FILENAME_GROUP_ID = 6
+    TEMPLATE_PATH_REGEX_NAME_GROUP_ID = 7
+    TEMPLATE_PATH_REGEX_VERSION_GROUP_ID = 10
+    TEMPLATE_PATH_REGEX_MAJOR_GROUP_ID = 11
+    TEMPLATE_PATH_REGEX_MINOR_GROUP_ID = 12
+    TEMPLATE_PATH_REGEX_PATCH_GROUP_ID = 13
 
     VAR_NAME_REGEX = re.compile(r'\A[a-zA-Z][a-zA-Z0-9_]*\Z')
     VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)\}|(\{\{|\}\})")
@@ -122,11 +137,8 @@ class Dirarchy:
     def __treat_dir_node(self, dir_node: XMLTree.Element, working_dir: Path):
         template_fpath = dir_node.attrib.get('template', None)
         if template_fpath is not None:
-            template_fpath = self.__format_str(template_fpath)
             print(f"<dir  {template_fpath}>")
-            if not re.fullmatch(self.TEMPLATE_PATH_REGEX, template_fpath):
-                raise Exception(f"The path '{template_fpath}' is not a valid path.")
-            assert 'path' not in dir_node.attrib
+            template_fpath = self.__find_template(dir_node, template_fpath)
             working_dir = self.__treat_xml_file(template_fpath, working_dir, "dir")
         else:
             dir_path = self.__fsys_node_path(dir_node)
@@ -138,14 +150,46 @@ class Dirarchy:
             self.__treat_action_node(child_node, working_dir)
         return working_dir
 
+    def __find_template(self, node, template_fpath):
+        assert 'path' not in node.attrib
+        template_fpath = Path(self.__format_str(template_fpath))
+        template_dpath = template_fpath.parent
+        template_fname = template_fpath.name
+        rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, template_fname)
+        if not rmatch:
+            raise Exception(f"The path '{template_fpath}' is not a valid path.")
+        version_attr = node.attrib.get('template-version', None).strip()
+        if version_attr:
+            vmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
+            if not vmatch:
+                raise Exception(f"Template version is not a valid version: '{version_attr}'.")
+            template_name = rmatch.group(self.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
+            expected_major = int(vmatch.group(1))
+            expected_minor = int(vmatch.group(2))
+            expected_patch = int(vmatch.group(3))
+            name_pattern = f"{template_name}-{expected_major}.*.*.xml"
+            template_file_list = glob.glob(name_pattern, root_dir=template_dpath)
+            template_file_list.sort(reverse=True)
+            template_fpath = None
+            for template_file in template_file_list:
+                rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, Path(template_file).name)
+                if rmatch:
+                    template_file_minor = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID))
+                    template_file_patch = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID))
+                    if template_file_minor > expected_minor \
+                            or template_file_minor == expected_minor and template_file_patch >= expected_patch:
+                        template_fpath = f"{template_dpath}/{template_file}"
+                        break
+            if template_fpath is None:
+                raise Exception(f"No template '{template_fname}' compatible with version {version_attr} found "
+                                f"in {template_dpath}.")
+        return template_fpath
+
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
         template_fpath = file_node.attrib.get('template', None)
         if template_fpath is not None:
-            template_fpath = self.__format_str(template_fpath)
-            print(f"<dir  {template_fpath}>")
-            if not re.fullmatch(self.TEMPLATE_PATH_REGEX, template_fpath):
-                raise Exception(f"The path '{template_fpath}' is not a valid path.")
-            assert 'path' not in file_node.attrib
+            print(f"<file  {template_fpath}>")
+            template_fpath = self.__find_template(file_node, template_fpath)
             working_dir = self.__treat_xml_file(template_fpath, working_dir, "file")
         else:
             filepath = self.__fsys_node_path(file_node)

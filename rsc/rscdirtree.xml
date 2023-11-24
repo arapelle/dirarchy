@@ -4,7 +4,7 @@
         <var name="subdir" value="sub" />
         <var name="option" type="bool" default="True"/>
     </vars>
-    <dir template="rsc/fdirtree.xml">
+    <dir template="rsc/fdirtree.xml" template-version="1.4.0">
         <if expr="fullmatch(r'[a-z]+','{base_name}')">
             <file path="rsc/story.txt">
 Once upon a time...
