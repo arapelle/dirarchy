@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <dirarchy>
     <vars>
-        <var name="namespace" default="ns" />
-        <var name="base_name" type="str" default="core" />
-        <var name="subdir" />
+        <var name="namespace" type="gstr" default="ns" />
+        <var name="base_name" type="gstr" default="core" regex="[a-z_]{4,}" />
+        <var name="subdir" type="gstr" />
         <var name="version" type="int" default="1" />
     </vars>
     <dir path="{namespace}-{base_name}">
@@ -26,7 +26,7 @@ namespace {base_name}
             </file>
         </dir>
         <dir path="src/{namespace}/{base_name}">
-            <file path="{subdir}/feature.cpp" contents="super_format">
+            <file path="{subdir}/feature.cpp" format="super_format">
 #include &lt;{namespace}/{base_name}/feature.hpp&gt;
 
 inline namespace {namespace}

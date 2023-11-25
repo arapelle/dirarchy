@@ -2,10 +2,26 @@
 <dirarchy>
     <vars>
         <var name="subdir" value="sub" />
+        <var name="option" type="bool" default="True" />
+        <var name="license" type="gstr" default="MIT" />
     </vars>
-    <dir template="rsc/fdirtree.xml">
-        <file path="rsc/story.txt">
-Once upon a time...
-        </file>
+    <dir template="{$CURRENT_SOURCE_DIR}/fdirtree" template-version="1.4.0">
+        <if expr="fullmatch(r'[a-z]+','{base_name}')">
+            <file path="rsc/story.txt" copy="{$CURRENT_SOURCE_DIR}/story.txt" />
+        </if>
+        <dir template="basic.xml" />
+        <match expr="{license}">
+            <case value="MIT">
+                <file path="LICENSE_MIT.md">MIT</file>
+            </case>
+            <case expr="[a-z]+">
+                <file path="LICENSE_{license}.md">{license}</file>
+            </case>
+            <case>
+                <file path="LICENSE.md">
+                    Do what you want 'cause a pirate is free. You are a pirate!
+                </file>
+            </case>
+        </match>
     </dir>
 </dirarchy>
