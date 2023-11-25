@@ -3,6 +3,7 @@ import glob
 import json
 import os
 import platform
+import tempfile
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
@@ -107,6 +108,21 @@ class Dirarchy:
                     for key, value in var_dict.items():
                         self.__variables[key] = value
                         print(f"Set variable {key}={value}")
+        if self._args.custom_ui:
+            self.__set_variables_from_custom_ui(self._args.custom_ui)
+
+    def __set_variables_from_custom_ui(self, cmd: str):
+        vars_file = tempfile.NamedTemporaryFile("w", delete=False)
+        var_file_fpath = Path(vars_file.name)
+        json.dump(self.__variables, vars_file)
+        del vars_file
+        cmd_with_args = f"{cmd} {var_file_fpath}"
+        cmd_res = os.system(cmd_with_args)
+        if cmd_res != 0:
+            raise Exception(f"Execution of custom ui did not work well (returned {cmd_res}). command: {cmd_with_args}")
+        with open(var_file_fpath) as vars_file:
+            self.__variables = json.load(vars_file)
+        var_file_fpath.unlink(missing_ok=True)
 
     def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
@@ -125,6 +141,8 @@ class Dirarchy:
                                help='Set variables.')
         argparser.add_argument('--variables-files', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
+        argparser.add_argument('-c', '--custom-ui', metavar='cmd',
+                               help='Use a custom user interface to set variables before treating them with dirarchy.')
         argparser.add_argument('dirarchy_xml_files', nargs='+',
                                help='The dirarchy XML files to process.')
         args = argparser.parse_args(argv)
