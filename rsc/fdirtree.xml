@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <vars>
+        <var name="namespace" default="ns" />
+        <var name="base_name" type="str" default="core" />
+        <var name="subdir" />
+        <var name="version" type="int" default="1" />
+    </vars>
+    <dir path="{namespace}-{base_name}">
+        <dir path="include/{namespace}/{base_name}">
+            <file path="{subdir}/feature.hpp">
+#pragma once
+
+inline namespace {namespace}
+{{
+namespace {base_name}
+{{
+    std::string name();
+    int version();
+    inline std::string inline_name()
+    {{
+        return "{{!{base_name}}} {{{base_name}}} {{namespace}}";
+    }}
+}}
+}}
+            </file>
+        </dir>
+        <dir path="src/{namespace}/{base_name}">
+            <file path="{subdir}/feature.cpp" contents="super_format">
+#include &lt;{namespace}/{base_name}/feature.hpp&gt;
+
+inline namespace {namespace}
+{
+namespace {base_name}
+{
+    std::string name()
+    {
+        return "{!{base_name}} {{{base_name}}} {{namespace}}";
+    }
+    int version() { return {version}; }
+}
+}
+            </file>
+        </dir>
+        <file path="README.md">
+    # Project {namespace}-{base_name}
+        </file>
+    </dir>
+</dirarchy>

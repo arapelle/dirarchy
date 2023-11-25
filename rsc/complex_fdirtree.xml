@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<dir name="{project_name}">
+    <dir name="include" path="code/include" /> <!-- exclusion: name|path -->
+    <dir name="src" />
+    <dir template="" template-path="" /> <!-- default: contents="format"; exclusion: template|template-path -->
+    <file name="CMakeLists.txt"
+          template="default_cpp_cmakelists"
+          template-path="path/to/default_cpp_cmakelists.xml"
+          path="{$CURDIR}/subpath/to/CMakeLists.txt" contents="raw|format" />
+    <!-- default: contents="format"; exclusion: template|template-path|path -->
+    <file name="README.md">
+    </file>
+</dir>

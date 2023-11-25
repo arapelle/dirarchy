@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <vars>
+        <var name="subdir" value="sub" />
+    </vars>
+    <dir template="rsc/fdirtree.xml">
+        <file path="rsc/story.txt">
+Once upon a time...
+        </file>
+    </dir>
+</dirarchy>
