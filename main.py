@@ -294,11 +294,26 @@ class Dirarchy:
 
     def __treat_if_node(self, if_node: XMLTree.Element, working_dir: Path):
         from re import match, fullmatch
+        then_nodes = if_node.findall('then')
+        else_nodes = if_node.findall('else')
+        then_count = len(then_nodes)
+        else_count = len(else_nodes)
+        if then_count > 1:
+            raise Exception("Too many 'then' nodes for a 'if' node.")
+        if else_count > 1:
+            raise Exception("Too many 'else' nodes for a 'if' node.")
+        if else_count and then_count == 0:
+            raise Exception("A 'else' node is provided for a 'if' node but a 'then' node is missing.")
         expr_attr = if_node.attrib['expr']
         expr_attr = self.__format_str(expr_attr)
         b_expr = eval(expr_attr)
         if b_expr:
-            self.__treat_action_children_nodes_of(if_node, working_dir)
+            if then_count == 0:
+                self.__treat_action_children_nodes_of(if_node, working_dir)
+            else:
+                self.__treat_action_children_nodes_of(then_nodes[0], working_dir)
+        elif else_count > 0:
+            self.__treat_action_children_nodes_of(else_nodes[0], working_dir)
         return working_dir
 
     def __treat_action_children_nodes_of(self, node, working_dir):

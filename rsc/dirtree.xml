@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <dirarchy>
+    <vars>
+        <var name="b_expr" value="True" />
+    </vars>
     <dir path="project">
         <dir path="include/arba/core">
             <file path="feature/feature.hpp" format="raw">
@@ -18,5 +21,21 @@ int version() { return 1; }
         <file path="README.md">
 # Project arba-core
         </file>
+        <if expr="{b_expr}">
+            <then>
+                <file path="TRUE.txt" />
+            </then>
+            <else>
+                <file path="false.txt" />
+            </else>
+        </if>
+        <if expr="not {b_expr}">
+            <then>
+                <file path="true.txt" />
+            </then>
+            <else>
+                <file path="FALSE.txt" />
+            </else>
+        </if>
     </dir>
 </dirarchy>
