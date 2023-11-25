@@ -275,7 +275,7 @@ class Dirarchy:
     def __file_text(self, file_node: XMLTree.Element):
         copy_attr = file_node.attrib.get('copy')
         if copy_attr is None:
-            text: str = self.__strip_text(file_node.text)
+            text: str = "" if file_node.text is None else self.__strip_text(file_node.text)
         else:
             copy_attr = self.__format_str(copy_attr)
             with open(copy_attr) as copied_file:
@@ -308,7 +308,7 @@ class Dirarchy:
     def __treat_match_node(self, match_node: XMLTree.Element, working_dir: Path):
         expr_attr = match_node.attrib['expr']
         expr_attr = self.__format_str(expr_attr)
-        assert len(match_node.text.strip()) == 0
+        assert match_node.text is None or len(match_node.text.strip()) == 0
         found_case_node = None
         default_case_node = None
         for case_node in match_node:
