@@ -1,8 +1,11 @@
 import argparse
+import datetime
 import glob
 import json
 import os
 import platform
+import random
+import tempfile
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
@@ -10,6 +13,7 @@ import shutil
 import re
 import io
 
+import random_string
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
 import version
@@ -28,7 +32,21 @@ class RegexFullMatch:
 
 class SpecialDict(dict):
     def __missing__(self, key):
-        return key.join("{}")
+        match key:
+            case "$YEAR":
+                return str(datetime.date.today().year)
+            case "$MONTH":
+                return str(datetime.date.today().month)
+            case "$DAY":
+                return str(datetime.date.today().day)
+            case "$DATE_YMD":
+                today = datetime.date.today()
+                return f"{today.year}{today.month}{today.day}"
+            case "$DATE_Y_M_D":
+                today = datetime.date.today()
+                return f"{today.year}-{today.month}-{today.day}"
+            case _:
+                return key.join("{}")
 
 
 class Dirarchy:
@@ -89,9 +107,8 @@ class Dirarchy:
         self.__set_variables_from_args()
 
     def run(self):
-        if self._args.dirarchy_xml_files:
-            for input_file in self._args.dirarchy_xml_files:
-                self.treat_xml_file(input_file, self._args.working_dir)
+        if self._args.dirarchy_xml_file:
+            self.treat_xml_file(self._args.dirarchy_xml_file, self._args.working_dir)
 
     def __set_variables_from_args(self):
         if self._args.var:
@@ -107,6 +124,21 @@ class Dirarchy:
                     for key, value in var_dict.items():
                         self.__variables[key] = value
                         print(f"Set variable {key}={value}")
+        if self._args.custom_ui:
+            self.__set_variables_from_custom_ui(self._args.custom_ui)
+
+    def __set_variables_from_custom_ui(self, cmd: str):
+        vars_file = tempfile.NamedTemporaryFile("w", delete=False)
+        var_file_fpath = Path(vars_file.name)
+        json.dump(self.__variables, vars_file)
+        del vars_file
+        cmd_with_args = f"{cmd} {var_file_fpath}"
+        cmd_res = os.system(cmd_with_args)
+        if cmd_res != 0:
+            raise Exception(f"Execution of custom ui did not work well (returned {cmd_res}). command: {cmd_with_args}")
+        with open(var_file_fpath) as vars_file:
+            self.__variables = json.load(vars_file)
+        var_file_fpath.unlink(missing_ok=True)
 
     def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
@@ -125,8 +157,10 @@ class Dirarchy:
                                help='Set variables.')
         argparser.add_argument('--variables-files', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
-        argparser.add_argument('dirarchy_xml_files', nargs='+',
-                               help='The dirarchy XML files to process.')
+        argparser.add_argument('-c', '--custom-ui', metavar='cmd',
+                               help='Use a custom user interface to set variables before treating them with dirarchy.')
+        argparser.add_argument('dirarchy_xml_file',
+                               help='The dirarchy XML file to process.')
         args = argparser.parse_args(argv)
         if args.ui is None:
             args.ui = Dirarchy.UiType.TKINTER
@@ -275,7 +309,7 @@ class Dirarchy:
     def __file_text(self, file_node: XMLTree.Element):
         copy_attr = file_node.attrib.get('copy')
         if copy_attr is None:
-            text: str = self.__strip_text(file_node.text)
+            text: str = "" if file_node.text is None else self.__strip_text(file_node.text)
         else:
             copy_attr = self.__format_str(copy_attr)
             with open(copy_attr) as copied_file:
@@ -294,11 +328,26 @@ class Dirarchy:
 
     def __treat_if_node(self, if_node: XMLTree.Element, working_dir: Path):
         from re import match, fullmatch
+        then_nodes = if_node.findall('then')
+        else_nodes = if_node.findall('else')
+        then_count = len(then_nodes)
+        else_count = len(else_nodes)
+        if then_count > 1:
+            raise Exception("Too many 'then' nodes for a 'if' node.")
+        if else_count > 1:
+            raise Exception("Too many 'else' nodes for a 'if' node.")
+        if else_count and then_count == 0:
+            raise Exception("A 'else' node is provided for a 'if' node but a 'then' node is missing.")
         expr_attr = if_node.attrib['expr']
         expr_attr = self.__format_str(expr_attr)
         b_expr = eval(expr_attr)
         if b_expr:
-            self.__treat_action_children_nodes_of(if_node, working_dir)
+            if then_count == 0:
+                self.__treat_action_children_nodes_of(if_node, working_dir)
+            else:
+                self.__treat_action_children_nodes_of(then_nodes[0], working_dir)
+        elif else_count > 0:
+            self.__treat_action_children_nodes_of(else_nodes[0], working_dir)
         return working_dir
 
     def __treat_action_children_nodes_of(self, node, working_dir):
@@ -308,7 +357,7 @@ class Dirarchy:
     def __treat_match_node(self, match_node: XMLTree.Element, working_dir: Path):
         expr_attr = match_node.attrib['expr']
         expr_attr = self.__format_str(expr_attr)
-        assert len(match_node.text.strip()) == 0
+        assert match_node.text is None or len(match_node.text.strip()) == 0
         found_case_node = None
         default_case_node = None
         for case_node in match_node:
@@ -405,13 +454,78 @@ class Dirarchy:
             if var_value is not None:
                 var_value = self.__format_str(var_value)
             else:
-                var_type = var_node.attrib.get('type', 'str')
-                var_default = var_node.attrib.get('default', None)
-                var_restr = var_node.attrib.get('regex', None)
-                regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
-                var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default, regex_full_match)
+                var_rand_value = var_node.attrib.get('rand_value', None)
+                if var_rand_value is not None:
+                    var_value = self.generate_rand_value(var_rand_value)
+                else:
+                    var_type = var_node.attrib.get('type', 'str')
+                    var_default = var_node.attrib.get('default', None)
+                    var_restr = var_node.attrib.get('regex', None)
+                    regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
+                    var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default, regex_full_match)
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
+
+    def generate_rand_value(self, var_rand_value: str):
+        rmatch = re.fullmatch(r"(int|float|digit|alpha|lower|upper|alnum|snake_case|"
+                              r"lower_sisy|upper_sisy|format_cvqd|'([ -~]+)'),\s*([!-~][ -~]*[!-~])\s*", var_rand_value)
+        if not rmatch:
+            raise Exception(f"Bad rand value: '{var_rand_value}'.")
+
+        rand_category = rmatch.group(1)
+        match rand_category:
+            case 'int':
+                return Dirarchy.__generate_rand_int(rmatch.group(3))
+            case 'float':
+                return Dirarchy.__generate_rand_float(rmatch.group(3))
+
+        rand_params = rmatch.group(3)
+        if rand_category == 'format_cvqd':
+            p_match = re.fullmatch(r"\s*'([^abefghijklmnoprstuwxyzABEFGHIJKLMNOPRSTUWXYZ]+)'\s*",
+                                   rand_params)
+            if not p_match:
+                raise Exception(f"String to format_cvqd is not a valid string: '{rand_params}'.")
+            return random_string.random_format_cvqd_string(p_match.group(1))
+
+        char_set = rmatch.group(2)
+        min_len, max_len = [int(x) for x in rand_params.split(',')]
+        match rand_category:
+            case 'digit':
+                return random_string.random_digit_string(min_len, max_len)
+            case 'alpha':
+                return random_string.random_alpha_string(min_len, max_len)
+            case 'lower':
+                return random_string.random_lower_string(min_len, max_len)
+            case 'upper':
+                return random_string.random_upper_string(min_len, max_len)
+            case 'alnum':
+                return random_string.random_alnum_string(min_len, max_len)
+            case 'lower_sisy':
+                return random_string.random_lower_sisy_string(min_len, max_len)
+            case 'upper_sisy':
+                return random_string.random_upper_sisy_string(min_len, max_len)
+            case 'snake_case':
+                return random_string.random_snake_case_string(min_len, max_len)
+            case _:
+                return random_string.random_string(char_set, min_len, max_len)
+
+    @classmethod
+    def __generate_rand_int(cls, params: str):
+        rmatch = re.fullmatch(r'\s*([-+]?\d+)s*,\s*([-+]?\d+)\s*', params)
+        if not rmatch:
+            raise Exception(f"Bad rand int parameters: {params}. Two integers are expected: min, max.")
+        min_value = int(rmatch.group(1))
+        max_value = int(rmatch.group(2))
+        return str(random.randint(min_value, max_value))
+
+    @classmethod
+    def __generate_rand_float(cls, params: str):
+        rmatch = re.fullmatch(r'\s*([-+]?\d+(\.\d*)?)s*,\s*([-+]?\d+(\.\d*))\s*', params)
+        if not rmatch:
+            raise Exception(f"Bad rand int parameters: {params}. Two integers are expected: min, max.")
+        min_value = float(rmatch.group(1))
+        max_value = float(rmatch.group(3))
+        return f"{random.uniform(min_value, max_value):.3f}"
 
     def __current_source_dir(self):
         return self.__source_file_stack[-1]
