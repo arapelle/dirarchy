@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import glob
 import json
 import os
@@ -29,7 +30,21 @@ class RegexFullMatch:
 
 class SpecialDict(dict):
     def __missing__(self, key):
-        return key.join("{}")
+        match key:
+            case "$YEAR":
+                return str(datetime.date.today().year)
+            case "$MONTH":
+                return str(datetime.date.today().month)
+            case "$DAY":
+                return str(datetime.date.today().day)
+            case "$DATE_YMD":
+                today = datetime.date.today()
+                return f"{today.year}{today.month}{today.day}"
+            case "$DATE_Y_M_D":
+                today = datetime.date.today()
+                return f"{today.year}-{today.month}-{today.day}"
+            case _:
+                return key.join("{}")
 
 
 class Dirarchy:
