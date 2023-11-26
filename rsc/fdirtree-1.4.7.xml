@@ -5,6 +5,11 @@
         <var name="base_name" type="gstr" default="core" regex="[a-z_]{4,}" />
         <var name="subdir" type="gstr" />
         <var name="version" type="int" default="1" />
+        <var name="rand_i" rand_value="int, 45, 100" />
+        <var name="rand_f" rand_value="float, -4.1, 12.354" />
+        <var name="rand_snake_s" rand_value="snake_case, 2, 10" />
+        <var name="rand_sisy_s" rand_value="lower_sisy, 2, 10" />
+        <var name="rand_format_cvqd" rand_value="format_cvqd, 'Cvcvq_cvcvq_cv_dd'" />
     </vars>
     <dir path="{namespace}-{base_name}">
         <dir path="include/{namespace}/{base_name}">
@@ -43,7 +48,12 @@ namespace {base_name}
             </file>
         </dir>
         <file path="README.md">
-    # Project {namespace}-{base_name}
+# Project {namespace}-{base_name}
+{rand_i}
+{rand_f}
+{rand_snake_s}
+{rand_sisy_s}
+{rand_format_cvqd}
         </file>
     </dir>
 </dirarchy>
