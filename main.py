@@ -90,9 +90,8 @@ class Dirarchy:
         self.__set_variables_from_args()
 
     def run(self):
-        if self._args.dirarchy_xml_files:
-            for input_file in self._args.dirarchy_xml_files:
-                self.treat_xml_file(input_file, self._args.working_dir)
+        if self._args.dirarchy_xml_file:
+            self.treat_xml_file(self._args.dirarchy_xml_file, self._args.working_dir)
 
     def __set_variables_from_args(self):
         if self._args.var:
@@ -143,8 +142,8 @@ class Dirarchy:
                                help='Set variables from a JSON files.')
         argparser.add_argument('-c', '--custom-ui', metavar='cmd',
                                help='Use a custom user interface to set variables before treating them with dirarchy.')
-        argparser.add_argument('dirarchy_xml_files', nargs='+',
-                               help='The dirarchy XML files to process.')
+        argparser.add_argument('dirarchy_xml_file',
+                               help='The dirarchy XML file to process.')
         args = argparser.parse_args(argv)
         if args.ui is None:
             args.ui = Dirarchy.UiType.TKINTER
