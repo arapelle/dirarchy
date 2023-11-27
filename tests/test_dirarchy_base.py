@@ -9,12 +9,13 @@ from main import Dirarchy
 
 class TestDirarchyBase(TestCase):
     __STDIN = sys.stdin
-    __TRIVIAL_FDIRTREE_STR = """<?xml version="1.0"?>
+    __TRIVIAL_DIRARCHY_STR = """<?xml version="1.0"?>
 <dirarchy>
-    <dir path="{}">
-        <file path="data.txt">
-{}
-        </file>
+    <vars>
+{vars_definitions}
+    </vars>
+    <dir path="{project_root_dir}" {dir_attrs}>
+        <file path="data.txt" {file_attrs}>{file_contents}</file>
     </dir>
 </dirarchy>
     """
@@ -35,13 +36,50 @@ class TestDirarchyBase(TestCase):
         generated_input_dir_path.mkdir(exist_ok=True)
         self._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
 
-    def _test_trivial_fdirtree_str(self, project_root_dir, file_contents):
+    def _run_generated_trivial_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None, **kargs):
+        if argv is None:
+            argv = []
+        generated_dirarchy_file_path = self._generate_trivial_dirarchy_file(project_root_dir, **kargs)
+        dirarchy = Dirarchy(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
+        if stdin_str:
+            sys.stdin = io.StringIO(stdin_str)
+        else:
+            sys.stdin = TestDirarchyBase.__STDIN
+        dirarchy.run()
+        with open(f"{self._output_dirname}/{project_root_dir}/data.txt") as data_file:
+            return data_file.read()
+
+    def _test_generated_trivial_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None, **kargs):
+        if argv is None:
+            argv = []
+        self._generate_trivial_dirarchy_file(project_root_dir, **kargs)
+        self._test_generated_dirarchy_file(project_root_dir, argv, stdin_str)
+
+    def _test_generated_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None):
+        if argv is None:
+            argv = []
+        generated_input_dir_path = Path(f"{self._generated_input_dirname}")
+        generated_dirarchy_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
+        dirarchy = Dirarchy(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
+        self.__run_dirarchy_and_check_output(dirarchy, project_root_dir, stdin_str)
+
+    def _generate_trivial_dirarchy_file(self, project_root_dir, **kargs):
+        keys = ["vars_definitions", "dir_attrs", "file_attrs", "file_contents"]
+        for key in keys:
+            if key not in kargs:
+                kargs[key] = ""
         generated_input_dir_path = Path(f"{self._generated_input_dirname}")
         generated_dirarchy_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
         with open(generated_dirarchy_file_path, 'w') as generated_dirarchy_file:
-            generated_dirarchy_file.write(self.__TRIVIAL_FDIRTREE_STR.format(project_root_dir, file_contents))
-        dirarchy = Dirarchy(self._ut_context_argv + ['--', generated_dirarchy_file_path])
-        sys.stdin = TestDirarchyBase.__STDIN
+            dirarchy_contents = self.__TRIVIAL_DIRARCHY_STR.format(project_root_dir=project_root_dir, **kargs)
+            generated_dirarchy_file.write(dirarchy_contents)
+        return generated_dirarchy_file_path
+
+    def __run_dirarchy_and_check_output(self, dirarchy: Dirarchy, project_root_dir, stdin_str):
+        if stdin_str:
+            sys.stdin = io.StringIO(stdin_str)
+        else:
+            sys.stdin = TestDirarchyBase.__STDIN
         dirarchy.run()
         self._compare_output_and_expected(project_root_dir)
 
@@ -49,12 +87,7 @@ class TestDirarchyBase(TestCase):
         if argv is None:
             argv = ['--', f'input/{project_root_dir}.xml']
         dirarchy = Dirarchy(self._ut_context_argv + argv)
-        if stdin_str:
-            sys.stdin = io.StringIO(stdin_str)
-        else:
-            sys.stdin = TestDirarchyBase.__STDIN
-        dirarchy.run()
-        self._compare_output_and_expected(project_root_dir)
+        self.__run_dirarchy_and_check_output(dirarchy, project_root_dir, stdin_str)
 
     def _compare_output_and_expected(self, project_root_dir):
         left_dir = f"{self._output_dirname}/{project_root_dir}"

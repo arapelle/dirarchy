@@ -45,7 +45,7 @@ class SpecialDict(dict):
                 today = datetime.date.today()
                 return f"{today.year}-{today.month}-{today.day}"
             case _:
-                return key.join("{}")
+                raise KeyError(key)
 
 
 class Dirarchy:
@@ -136,7 +136,7 @@ class Dirarchy:
         if cmd_res != 0:
             raise Exception(f"Execution of custom ui did not work well (returned {cmd_res}). command: {cmd_with_args}")
         with open(var_file_fpath) as vars_file:
-            self.__variables = json.load(vars_file)
+            self.__variables = SpecialDict(json.load(vars_file))
         var_file_fpath.unlink(missing_ok=True)
 
     def _parse_args(self, argv=None):
