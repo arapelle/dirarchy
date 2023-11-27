@@ -9,15 +9,41 @@ from main import Dirarchy
 
 class TestDirarchyBase(TestCase):
     __STDIN = sys.stdin
+    __TRIVIAL_FDIRTREE_STR = """<?xml version="1.0"?>
+<dirarchy>
+    <dir path="{}">
+        <file path="data.txt">
+{}
+        </file>
+    </dir>
+</dirarchy>
+    """
 
     def setUp(self):
         self._output_dirname = "output"
         self._expected_dirname = "expected"
-        output_dpath = Path.cwd() / f"{self._output_dirname}"
+        self._generated_input_dirname = "generated_input"
+        output_dpath = Path(f"{self._output_dirname}")
         if output_dpath.exists():
             import shutil
             shutil.rmtree(output_dpath)
+        output_dpath.mkdir(parents=True)
+        generated_input_dir_path = Path.cwd() / f"{self._generated_input_dirname}"
+        if generated_input_dir_path.exists():
+            import shutil
+            shutil.rmtree(generated_input_dir_path)
+        generated_input_dir_path.mkdir(exist_ok=True)
         self._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
+
+    def _test_trivial_fdirtree_str(self, project_root_dir, file_contents):
+        generated_input_dir_path = Path(f"{self._generated_input_dirname}")
+        generated_dirarchy_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
+        with open(generated_dirarchy_file_path, 'w') as generated_dirarchy_file:
+            generated_dirarchy_file.write(self.__TRIVIAL_FDIRTREE_STR.format(project_root_dir, file_contents))
+        dirarchy = Dirarchy(self._ut_context_argv + ['--', generated_dirarchy_file_path])
+        sys.stdin = TestDirarchyBase.__STDIN
+        dirarchy.run()
+        self._compare_output_and_expected(project_root_dir)
 
     def _test_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None):
         if argv is None:

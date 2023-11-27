@@ -2,3 +2,4 @@ build/
 .idea/
 output/
 __pycache__
+generated_input
