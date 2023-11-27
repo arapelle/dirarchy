@@ -19,7 +19,7 @@ class TestDirarchyBase(TestCase):
             shutil.rmtree(output_dpath)
         self._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
 
-    def _test_dirarchy_expect_success(self, project_root_dir, argv=None, stdin_str=None):
+    def _test_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None):
         if argv is None:
             argv = ['--', f'input/{project_root_dir}.xml']
         dirarchy = Dirarchy(self._ut_context_argv + argv)
