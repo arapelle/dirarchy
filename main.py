@@ -9,7 +9,6 @@ import tempfile
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
-import shutil
 import re
 import io
 
@@ -551,10 +550,5 @@ class Dirarchy:
 
 
 if __name__ == '__main__':
-    output_dpath = Path.cwd() / "output"
-    if output_dpath.exists():
-        print(f'Remove {output_dpath}')
-        shutil.rmtree(output_dpath)
-    output_dpath.mkdir(parents=True)
     dirarchy = Dirarchy()
     dirarchy.run()
