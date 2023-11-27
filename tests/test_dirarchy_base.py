@@ -1,9 +1,15 @@
 import filecmp
+import io
+import sys
 from pathlib import Path
 from unittest import TestCase
 
+from main import Dirarchy
+
 
 class TestDirarchyBase(TestCase):
+    __STDIN = sys.stdin
+
     def setUp(self):
         self._output_dirname = "output"
         self._expected_dirname = "expected"
@@ -13,18 +19,28 @@ class TestDirarchyBase(TestCase):
             shutil.rmtree(output_dpath)
         self._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
 
-    def compare_output_and_expected(self, project_root_dir):
+    def _test_dirarchy_expect_success(self, project_root_dir, argv=None, stdin_str=None):
+        if argv is None:
+            argv = ['--', f'input/{project_root_dir}.xml']
+        dirarchy = Dirarchy(self._ut_context_argv + argv)
+        if stdin_str:
+            sys.stdin = io.StringIO(stdin_str)
+        else:
+            sys.stdin = TestDirarchyBase.__STDIN
+        dirarchy.run()
+        self._compare_output_and_expected(project_root_dir)
+
+    def _compare_output_and_expected(self, project_root_dir):
         left_dir = f"{self._output_dirname}/{project_root_dir}"
         right_dir = f"{self._expected_dirname}/{project_root_dir}"
-        self.compare_directories(filecmp.dircmp(left_dir, right_dir))
+        self._compare_directories(filecmp.dircmp(left_dir, right_dir))
 
-    def compare_directories(self, dcmp):
+    def _compare_directories(self, dcmp):
         if dcmp.diff_files:
-            diff_files = [f"{dcmp.right}/{x}" for x in dcmp.diff_files]
             for diff_file in dcmp.diff_files:
                 left_path = f"{dcmp.left}/{diff_file}"
                 right_path = f"{dcmp.right}/{diff_file}"
-                self.diff_files(left_path, right_path)
+                self._diff_files(left_path, right_path)
         if dcmp.common_funny:
             common_funny = [f"{dcmp.right}/{x}" for x in dcmp.common_funny]
             self.assertListEqual([], common_funny)
@@ -39,10 +55,10 @@ class TestDirarchyBase(TestCase):
             self.assertListEqual([], left_only)
         # recurse:
         for sub_dcmp in dcmp.subdirs.values():
-            self.compare_directories(sub_dcmp)
+            self._compare_directories(sub_dcmp)
 
-    def diff_files(self, left_path, right_path):
-        print("### start of diff_files ###")
+    def _diff_files(self, left_path, right_path):
+        print("### start of _diff_files ###")
         import difflib
         with open(left_path) as left_file:
             left_text = left_file.readlines()
