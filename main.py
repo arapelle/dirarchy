@@ -320,7 +320,7 @@ class Dirarchy:
         if not format_attr_list or "raw" in format_attr_list:
             return text
         if "format" in format_attr_list:
-            text = self.__super_format_str(text)
+            text = self.__format_str(text)
         elif "super_format" in format_attr_list:
             text = self.__super_format_str(text)
         return text
