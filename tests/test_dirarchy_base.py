@@ -1,6 +1,7 @@
 import filecmp
 import io
 import sys
+import unittest
 from pathlib import Path
 from unittest import TestCase
 
@@ -20,21 +21,40 @@ class TestDirarchyBase(TestCase):
 </dirarchy>
     """
 
-    def setUp(self):
-        self._output_dirname = "output"
-        self._expected_dirname = "expected"
-        self._generated_input_dirname = "generated_input"
-        output_dpath = Path(f"{self._output_dirname}")
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls._output_dirname = "output"
+        cls._expected_dirname = "expected"
+        cls._generated_input_dirname = "generated_input"
+        output_dpath = Path(f"{cls._output_dirname}")
         if output_dpath.exists():
             import shutil
             shutil.rmtree(output_dpath)
         output_dpath.mkdir(parents=True)
-        generated_input_dir_path = Path.cwd() / f"{self._generated_input_dirname}"
+        generated_input_dir_path = Path.cwd() / f"{cls._generated_input_dirname}"
         if generated_input_dir_path.exists():
             import shutil
             shutil.rmtree(generated_input_dir_path)
         generated_input_dir_path.mkdir(exist_ok=True)
-        self._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
+        cls._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
+
+    def run(self, result=None):
+        assert result is not None
+        self.__set_unit_tests_result(result)
+        TestCase.run(self, result)  # call superclass run method
+
+    @classmethod
+    def __set_unit_tests_result(cls, unit_tests_result):
+        cls.__unit_tests_result = unit_tests_result
+
+    @classmethod
+    def tearDownClass(cls):
+        if len(cls.__unit_tests_result.errors) == 0 and len(cls.__unit_tests_result.failures) == 0:
+            import shutil
+            output_dpath = Path(f"{cls._output_dirname}")
+            shutil.rmtree(output_dpath)
+            generated_input_dir_path = Path.cwd() / f"{cls._generated_input_dirname}"
+            shutil.rmtree(generated_input_dir_path)
 
     def _run_generated_trivial_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None, **kargs):
         if argv is None:
