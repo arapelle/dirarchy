@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 
 from tests.test_dirarchy_base import TestDirarchyBase
 
@@ -23,6 +24,14 @@ class TestDirarchy(TestDirarchyBase):
             self.fail()
         except KeyError:
             pass
+
+    def test_trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
+        project_root_dir = "builtin_CURRENT_SOURCE_DIR"
+        f_contents = "{$CURRENT_SOURCE_DIR}"
+        extracted_value = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
+        extracted_value = Path(extracted_value).resolve()
+        expected_value = (Path.cwd() / self._generated_input_dirname).resolve()
+        self.assertEqual(extracted_value, expected_value)
 
     def test_trivial_fdirtree__builtin_date_vars__exception(self):
         project_root_dir = "builtin_date_vars"
