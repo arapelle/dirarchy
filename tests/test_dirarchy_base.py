@@ -83,9 +83,11 @@ class TestDirarchyBase(TestCase):
         dirarchy.run()
         self._compare_output_and_expected(project_root_dir)
 
-    def _test_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None):
+    def _test_dirarchy_file(self, dirarchy_filestem, project_root_dir=None, argv=None, stdin_str=None):
+        if project_root_dir is None:
+            project_root_dir = dirarchy_filestem
         if argv is None:
-            argv = ['--', f'input/{project_root_dir}.xml']
+            argv = ['--', f'input/{dirarchy_filestem}.xml']
         dirarchy = Dirarchy(self._ut_context_argv + argv)
         self.__run_dirarchy_and_check_output(dirarchy, project_root_dir, stdin_str)
 
