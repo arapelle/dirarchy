@@ -11,6 +11,21 @@ class TestDirarchy(TestDirarchyBase):
     def test__simple_fdirtree__valid__ok(self):
         self._test_dirarchy_file("simple_fdirtree", stdin_str='arba\ncore')
 
+    def test__if_fdirtree__valid_yes_yes__ok(self):
+        output_root_dir="if_valid_yes_yes"
+        in_str = f'{output_root_dir}\nyes\nyes'
+        self._test_dirarchy_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__if_fdirtree__valid_yes_no__ok(self):
+        output_root_dir="if_valid_yes_no"
+        in_str = f'{output_root_dir}\nyes\nno'
+        self._test_dirarchy_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__if_fdirtree__valid_no_no__ok(self):
+        output_root_dir="if_valid_no_no"
+        in_str = f'{output_root_dir}\nno\nno'
+        self._test_dirarchy_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
     def test__trivial_dirarchy__bad_format_str__exception(self):
         try:
             self._run_generated_trivial_dirarchy_file("bad_format_str", file_contents="{whut")
