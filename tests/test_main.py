@@ -1,4 +1,5 @@
 import datetime
+import unittest
 from pathlib import Path
 
 from tests.test_dirarchy_base import TestDirarchyBase
@@ -54,3 +55,7 @@ class TestDirarchy(TestDirarchyBase):
         extracted_value = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
         expected_value = datetime.date.today().strftime("%Y,%m,%d,%Y%m%d,%Y-%m-%d")
         self.assertEqual(extracted_value, expected_value)
+
+
+if __name__ == '__main__':
+    unittest.main()
