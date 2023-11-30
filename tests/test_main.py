@@ -69,6 +69,24 @@ class TestDirarchy(TestDirarchyBase):
         self._test_dirarchy_file("match_fdirtree__valid_without_default",
                                  project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__match_fdirtree__invalid_two_default__exception(self):
+        try:
+            output_root_dir = "match_fdirtree__invalid_two_default"
+            in_str = f'{output_root_dir}\nno_match'
+            self._test_dirarchy_file(output_root_dir, stdin_str=in_str)
+            self.fail()
+        except Exception as ex:
+            self.assertEqual(str(ex), "A match node cannot have two default case nodes.")
+
+    def test__match_fdirtree__invalid_missing_case__exception(self):
+        try:
+            output_root_dir = "match_fdirtree__invalid_missing_case"
+            in_str = f'{output_root_dir}\nno_match'
+            self._test_dirarchy_file(output_root_dir, stdin_str=in_str)
+            self.fail()
+        except Exception as ex:
+            self.assertEqual(str(ex), "case nodes are missing in match node.")
+
     def test__trivial_dirarchy__bad_format_str__exception(self):
         try:
             self._run_generated_trivial_dirarchy_file("bad_format_str", file_contents="{whut")
