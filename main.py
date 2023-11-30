@@ -359,6 +359,8 @@ class Dirarchy:
         assert match_node.text is None or len(match_node.text.strip()) == 0
         found_case_node = None
         default_case_node = None
+        if len(match_node) == 0:
+            raise Exception("case nodes are missing in match node.")
         for case_node in match_node:
             assert case_node.tag == "case"
             case_value = case_node.attrib.get('value', None)
