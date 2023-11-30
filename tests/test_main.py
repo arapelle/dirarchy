@@ -13,19 +13,37 @@ class TestDirarchy(TestDirarchyBase):
         self._test_dirarchy_file("simple_fdirtree", stdin_str='arba\ncore')
 
     def test__if_fdirtree__valid_yes_yes__ok(self):
-        output_root_dir="if_valid_yes_yes"
+        output_root_dir = "if_valid_yes_yes"
         in_str = f'{output_root_dir}\nyes\nyes'
         self._test_dirarchy_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__if_fdirtree__valid_yes_no__ok(self):
-        output_root_dir="if_valid_yes_no"
+        output_root_dir = "if_valid_yes_no"
         in_str = f'{output_root_dir}\nyes\nno'
         self._test_dirarchy_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__if_fdirtree__valid_no_no__ok(self):
-        output_root_dir="if_valid_no_no"
+        output_root_dir = "if_valid_no_no"
         in_str = f'{output_root_dir}\nno\nno'
         self._test_dirarchy_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__if_fdirtree__invalid_two_then__exception(self):
+        try:
+            output_root_dir = "if_fdirtree__invalid_two_then"
+            in_str = f'{output_root_dir}\nyes'
+            self._test_dirarchy_file(output_root_dir, stdin_str=in_str)
+            self.fail()
+        except Exception as ex:
+            self.assertEqual(str(ex), "Too many 'then' nodes for a 'if' node.")
+
+    def test__if_fdirtree__invalid_two_else__exception(self):
+        try:
+            output_root_dir = "if_fdirtree__invalid_two_else"
+            in_str = f'{output_root_dir}\nyes'
+            self._test_dirarchy_file(output_root_dir, stdin_str=in_str)
+            self.fail()
+        except Exception as ex:
+            self.assertEqual(str(ex), "Too many 'else' nodes for a 'if' node.")
 
     def test__trivial_dirarchy__bad_format_str__exception(self):
         try:
