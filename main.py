@@ -106,8 +106,10 @@ class Dirarchy:
         self.__set_variables_from_args()
 
     def run(self):
-        if self._args.dirarchy_xml_file:
+        if Path(self._args.working_dir).exists():
             self.treat_xml_file(self._args.dirarchy_xml_file, self._args.working_dir)
+        else:
+            raise Exception(f"The provided output directory does not exist: '{self._args.working_dir}'.")
 
     def __set_variables_from_args(self):
         if self._args.var:

@@ -87,6 +87,17 @@ class TestDirarchy(TestDirarchyBase):
         except Exception as ex:
             self.assertEqual(str(ex), "case nodes are missing in match node.")
 
+    def test__cli_args__invalid_output_dir__exception(self):
+        try:
+            context_argv = ['--terminal', '-d', f'__not_found__']
+            output_root_dir = "cli_args__invalid_output_dir"
+            in_str = f'{output_root_dir}\nok\nok'
+            self._test_dirarchy_file("simple_fdirtree", project_root_dir=output_root_dir, stdin_str=in_str,
+                                     context_argv=context_argv)
+            self.fail()
+        except Exception as ex:
+            self.assertEqual(str(ex), "The provided output directory does not exist: '__not_found__'.")
+
     def test__trivial_dirarchy__bad_format_str__exception(self):
         try:
             self._run_generated_trivial_dirarchy_file("bad_format_str", file_contents="{whut")
