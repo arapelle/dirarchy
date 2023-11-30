@@ -374,8 +374,8 @@ class Dirarchy:
                     break
                 continue
             if default_case_node is not None:
-                raise Exception(f"A match node cannot have two default case node.")
-            found_case_node = case_node
+                raise Exception(f"A match node cannot have two default case nodes.")
+            default_case_node = case_node
         if found_case_node:
             self.__treat_action_children_nodes_of(found_case_node, working_dir)
         elif default_case_node:
