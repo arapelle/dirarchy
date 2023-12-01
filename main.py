@@ -172,7 +172,7 @@ class Dirarchy:
         key, value = key_value_str.split('=')
         if re.match(Dirarchy.VAR_NAME_REGEX, key):
             return key, value
-        return None
+        raise RuntimeError(key_value_str)
 
     def __treat_action_node(self, node: XMLTree.Element, working_dir):
         assert node is not None
