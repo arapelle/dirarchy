@@ -45,6 +45,30 @@ class TestDirarchy(TestDirarchyBase):
         except Exception as ex:
             self.assertEqual(str(ex), "Too many 'else' nodes for a 'if' node.")
 
+    def test__match_fdirtree__valid_value__ok(self):
+        output_root_dir = "match_valid_value"
+        in_str = f'{output_root_dir}\nvalue'
+        self._test_dirarchy_file("match_fdirtree__valid_with_default",
+                                 project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__match_fdirtree__valid_expr_09__ok(self):
+        output_root_dir = "match_valid_expr_09"
+        in_str = f'{output_root_dir}\n1235'
+        self._test_dirarchy_file("match_fdirtree__valid_with_default",
+                                 project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__match_fdirtree__valid_default__ok(self):
+        output_root_dir = "match_valid_default"
+        in_str = f'{output_root_dir}\ndefault_case'
+        self._test_dirarchy_file("match_fdirtree__valid_with_default",
+                                 project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__match_fdirtree__valid_no_match__ok(self):
+        output_root_dir = "match_valid_no_match"
+        in_str = f'{output_root_dir}\nno_match'
+        self._test_dirarchy_file("match_fdirtree__valid_without_default",
+                                 project_root_dir=output_root_dir, stdin_str=in_str)
+
     def test__trivial_dirarchy__bad_format_str__exception(self):
         try:
             self._run_generated_trivial_dirarchy_file("bad_format_str", file_contents="{whut")
