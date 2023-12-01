@@ -150,6 +150,10 @@ class Dirarchy:
                                dest='ui', const=Dirarchy.UiType.TKINTER, help='Use tkinter I/O.')
         argparser.add_argument('-T', f'--{Dirarchy.UiType.TERMINAL}'.lower(), action='store_const',
                                dest='ui', const=Dirarchy.UiType.TERMINAL, default='terminal', help='Use terminal I/O.')
+        argparser.add_argument('-C', '--custom-ui', metavar='custom_ui_cmd',
+                               help='Use a custom user interface to set variables before treating them with dirarchy. '
+                                    '(Executing custom_ui_cmd in shell is expected to use the desired custom '
+                                    'interface.)')
         argparser.add_argument('-o', '--output-dir', metavar='dir_path',
                                default=Path.cwd(),
                                help='The directory where to generate the desired hierarchy (dir or file).')
@@ -158,8 +162,6 @@ class Dirarchy:
                                help='Set variables.')
         argparser.add_argument('--var-files', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
-        argparser.add_argument('-c', '--custom-ui', metavar='cmd',
-                               help='Use a custom user interface to set variables before treating them with dirarchy.')
         argparser.add_argument('dirarchy_xml_file',
                                help='The dirarchy XML file to process.')
         args = argparser.parse_args(argv)
