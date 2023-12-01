@@ -1,3 +1,5 @@
+import datetime
+
 from tests.test_dirarchy_base import TestDirarchyBase
 
 
@@ -21,3 +23,10 @@ class TestDirarchy(TestDirarchyBase):
             self.fail()
         except KeyError:
             pass
+
+    def test_trivial_fdirtree__builtin_date_vars__exception(self):
+        project_root_dir = "builtin_date_vars"
+        f_contents = "{$YEAR},{$MONTH},{$DAY},{$DATE_YMD},{$DATE_Y_M_D}"
+        extracted_value = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
+        expected_value = datetime.date.today().strftime("%Y,%m,%d,%Y%m%d,%Y-%m-%d")
+        self.assertEqual(extracted_value, expected_value)
