@@ -98,6 +98,32 @@ class TestDirarchy(TestDirarchyBase):
         except Exception as ex:
             self.assertEqual(str(ex), "The provided output directory does not exist: '__not_found__'.")
 
+    def test__cli_args__valid_v__ok(self):
+        output_root_dir = "cli_args__valid_v"
+        args = ['--var', 'text=coucou', 'other_text=']
+        var_defs = '<var name="text"" />\n<var name="other_text" />'
+        self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+
+    def test__cli_args__valid_var__ok(self):
+        output_root_dir = "cli_args__valid_var"
+        args = ['--var', 'text=coucou', 'other_text=']
+        var_defs = '<var name="text"" />\n<var name="other_text" />'
+        self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+
+    def test__cli_args__invalid_v__exception(self):
+        bad_var = 'bad-var=coucou'
+        try:
+            output_root_dir = "cli_args__invalid_v"
+            args = ['-v', 'text=coucou', bad_var]
+            var_defs = '<var name="text" value="{text}" />'
+            self._run_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                      var_definitions=var_defs, file_contents="{text}")
+            self.fail()
+        except RuntimeError as err:
+            self.assertEqual(str(err), bad_var)
+
     def test__trivial_dirarchy__bad_format_str__exception(self):
         try:
             self._run_generated_trivial_dirarchy_file("bad_format_str", file_contents="{whut")
