@@ -45,6 +45,15 @@ class TestDirarchy(TestDirarchyBase):
         except Exception as ex:
             self.assertEqual(str(ex), "Too many 'else' nodes for a 'if' node.")
 
+    def test__if_fdirtree__invalid_missing_then__exception(self):
+        try:
+            output_root_dir = "if_fdirtree__invalid_missing_then"
+            in_str = f'{output_root_dir}\nyes'
+            self._test_dirarchy_file(output_root_dir, stdin_str=in_str)
+            self.fail()
+        except Exception as ex:
+            self.assertEqual(str(ex), "A 'else' node is provided for a 'if' node but a 'then' node is missing.")
+
     def test__match_fdirtree__valid_value__ok(self):
         output_root_dir = "match_valid_value"
         in_str = f'{output_root_dir}\nvalue'
