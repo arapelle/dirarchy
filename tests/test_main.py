@@ -89,7 +89,7 @@ class TestDirarchy(TestDirarchyBase):
 
     def test__cli_args__invalid_output_dir__exception(self):
         try:
-            context_argv = ['--terminal', '-d', f'__not_found__']
+            context_argv = ['--terminal', '-o', f'__not_found__']
             output_root_dir = "cli_args__invalid_output_dir"
             in_str = f'{output_root_dir}\nok\nok'
             self._test_dirarchy_file("simple_fdirtree", project_root_dir=output_root_dir, stdin_str=in_str,

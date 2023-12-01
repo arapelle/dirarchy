@@ -36,7 +36,7 @@ class TestDirarchyBase(TestCase):
             import shutil
             shutil.rmtree(generated_input_dir_path)
         generated_input_dir_path.mkdir(exist_ok=True)
-        cls._ut_context_argv = ['--terminal', '-d', f'{output_dpath}']
+        cls._ut_context_argv = ['--terminal', '-o', f'{output_dpath}']
 
     def run(self, result=None):
         assert result is not None

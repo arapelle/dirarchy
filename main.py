@@ -106,22 +106,22 @@ class Dirarchy:
         self.__set_variables_from_args()
 
     def run(self):
-        if Path(self._args.working_dir).exists():
-            self.treat_xml_file(self._args.dirarchy_xml_file, self._args.working_dir)
+        if Path(self._args.output_dir).exists():
+            self.treat_xml_file(self._args.dirarchy_xml_file, self._args.output_dir)
         else:
-            raise Exception(f"The provided output directory does not exist: '{self._args.working_dir}'.")
+            raise Exception(f"The provided output directory does not exist: '{self._args.output_dir}'.")
 
     def __set_variables_from_args(self):
         if self._args.var:
             for key, value in self._args.var:
                 self.__variables[key] = value
                 print(f"Set variable {key}={value}")
-        if self._args.variables_files:
-            for variables_file in self._args.variables_files:
-                with open(variables_file) as vars_file:
+        if self._args.var_files:
+            for var_file in self._args.var_files:
+                with open(var_file) as vars_file:
                     var_dict = json.load(vars_file)
                     if not isinstance(var_dict, dict):
-                        raise Exception(f"The variables file '{variables_file}' does not contain a valid JSON dict.")
+                        raise Exception(f"The variables file '{var_file}' does not contain a valid JSON dict.")
                     for key, value in var_dict.items():
                         self.__variables[key] = value
                         print(f"Set variable {key}={value}")
@@ -150,13 +150,13 @@ class Dirarchy:
                                dest='ui', const=Dirarchy.UiType.TKINTER, help='Use tkinter I/O.')
         argparser.add_argument('-T', f'--{Dirarchy.UiType.TERMINAL}'.lower(), action='store_const',
                                dest='ui', const=Dirarchy.UiType.TERMINAL, default='terminal', help='Use terminal I/O.')
-        argparser.add_argument('-d', '--working-dir', metavar='dir_path',
+        argparser.add_argument('-o', '--output-dir', metavar='dir_path',
                                default=Path.cwd(),
-                               help='The directory where to generate the directory architecture.')
+                               help='The directory where to generate the desired hierarchy (dir or file).')
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
                                type=Dirarchy.var_from_key_value_str,
                                help='Set variables.')
-        argparser.add_argument('--variables-files', metavar='var_json_files', nargs='+',
+        argparser.add_argument('--var-files', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
         argparser.add_argument('-c', '--custom-ui', metavar='cmd',
                                help='Use a custom user interface to set variables before treating them with dirarchy.')
