@@ -110,14 +110,21 @@ class TestDirarchy(TestDirarchyBase):
     def test__cli_args__valid_v__ok(self):
         output_root_dir = "cli_args__valid_v"
         args = ['--var', 'text=coucou', 'other_text=']
-        var_defs = '<var name="text"" />\n<var name="other_text" />'
+        var_defs = '<var name="text" />\n<var name="other_text" />'
         self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
     def test__cli_args__valid_var__ok(self):
         output_root_dir = "cli_args__valid_var"
         args = ['--var', 'text=coucou', 'other_text=']
-        var_defs = '<var name="text"" />\n<var name="other_text" />'
+        var_defs = '<var name="text" />\n<var name="other_text" />'
+        self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+
+    def test__cli_args__valid_var_override__ok(self):
+        output_root_dir = "cli_args__valid_var_override"
+        args = ['--var', 'text=good_value', 'other_text=']
+        var_defs = '<var name="text" value="bad_value" />\n<var name="other_text" />'
         self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
