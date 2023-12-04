@@ -116,8 +116,8 @@ class Dirarchy:
             for key, value in self._args.var:
                 self.__variables[key] = value
                 print(f"Set variable {key}={value}")
-        if self._args.var_files:
-            for var_file in self._args.var_files:
+        if self._args.var_file:
+            for var_file in self._args.var_file:
                 with open(var_file) as vars_file:
                     var_dict = json.load(vars_file)
                     if not isinstance(var_dict, dict):
@@ -160,7 +160,7 @@ class Dirarchy:
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
                                type=Dirarchy.var_from_key_value_str,
                                help='Set variables.')
-        argparser.add_argument('--var-files', metavar='var_json_files', nargs='+',
+        argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
         argparser.add_argument('dirarchy_xml_file',
                                help='The dirarchy XML file to process.')
