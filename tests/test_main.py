@@ -154,6 +154,13 @@ class TestDirarchy(TestDirarchyBase):
         except KeyError:
             pass
 
+    def test__var_file__valid_var_file__ok(self):
+        output_root_dir = "var_file__valid_var_file"
+        args = ['--var-file', 'input/var_files/texts.json']
+        var_defs = '<var name="text" />\n<var name="other_text" />'
+        self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+
     def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
         project_root_dir = "builtin_CURRENT_SOURCE_DIR"
         f_contents = "{$CURRENT_SOURCE_DIR}"
