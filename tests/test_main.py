@@ -1,4 +1,5 @@
 import datetime
+import sys
 import unittest
 from json import JSONDecodeError
 from pathlib import Path
@@ -162,7 +163,7 @@ class TestDirarchy(TestDirarchyBase):
         self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
-    def test__var_file__unknown_var_file__ok(self):
+    def test__var_file__unknown_var_file__exception(self):
         json_fpath = 'input/var_files/not_found.json'
         try:
             output_root_dir = "var_file__unknown_var_file"
@@ -172,7 +173,7 @@ class TestDirarchy(TestDirarchyBase):
         except FileNotFoundError as err:
             self.assertTrue(str(err).find(f"No such file or directory: '{json_fpath}'") != -1)
 
-    def test__var_file__bad_var_file__ok(self):
+    def test__var_file__bad_var_file__exception(self):
         json_fpath = 'input/var_files/bad.json'
         try:
             output_root_dir = "var_file__bad_var_file"
@@ -183,6 +184,23 @@ class TestDirarchy(TestDirarchyBase):
             self.fail()
         except JSONDecodeError:
             pass
+
+    def test__custom_ui__valid_cmd__ok(self):
+        output_root_dir = "custom_ui__valid_cmd"
+        args = ['-C', f'{sys.executable} input/custom_ui/myui.py']
+        var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
+        self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+
+    def test__custom_ui__invalid_cmd__exception(self):
+        try:
+            output_root_dir = "custom_ui__invalid_cmd"
+            args = ['-C', f'{sys.executable} input/custom_ui/not_found.py']
+            var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
+            self._run_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                      var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+        except RuntimeError as err:
+            self.assertTrue(str(err).find("Execution of custom ui did not work well") != -1)
 
     def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
         project_root_dir = "builtin_CURRENT_SOURCE_DIR"

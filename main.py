@@ -129,14 +129,14 @@ class Dirarchy:
             self.__set_variables_from_custom_ui(self._args.custom_ui)
 
     def __set_variables_from_custom_ui(self, cmd: str):
-        vars_file = tempfile.NamedTemporaryFile("w", delete=False)
-        var_file_fpath = Path(vars_file.name)
-        json.dump(self.__variables, vars_file)
-        del vars_file
+        with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
+            var_file_fpath = Path(vars_file.name)
+            json.dump(self.__variables, vars_file)
         cmd_with_args = f"{cmd} {var_file_fpath}"
         cmd_res = os.system(cmd_with_args)
         if cmd_res != 0:
-            raise Exception(f"Execution of custom ui did not work well (returned {cmd_res}). command: {cmd_with_args}")
+            raise RuntimeError(f"Execution of custom ui did not work well (returned {cmd_res}). "
+                               f"command: {cmd_with_args}")
         with open(var_file_fpath) as vars_file:
             self.__variables = SpecialDict(json.load(vars_file))
         var_file_fpath.unlink(missing_ok=True)

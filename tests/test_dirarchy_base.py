@@ -13,7 +13,7 @@ class TestDirarchyBase(TestCase):
     __TRIVIAL_DIRARCHY_STR = """<?xml version="1.0"?>
 <dirarchy>
     <vars>
-{vars_definitions}
+{var_definitions}
     </vars>
     <dir path="{project_root_dir}" {dir_attrs}>
         <file path="data.txt" {file_attrs}>{file_contents}</file>
@@ -84,7 +84,7 @@ class TestDirarchyBase(TestCase):
         self.__run_dirarchy_and_check_output(dirarchy, project_root_dir, stdin_str)
 
     def _generate_trivial_dirarchy_file(self, project_root_dir, **kargs):
-        keys = ["vars_definitions", "dir_attrs", "file_attrs", "file_contents"]
+        keys = ["var_definitions", "dir_attrs", "file_attrs", "file_contents"]
         for key in keys:
             if key not in kargs:
                 kargs[key] = ""
