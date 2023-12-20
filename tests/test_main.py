@@ -1,5 +1,6 @@
 import datetime
 import unittest
+from json import JSONDecodeError
 from pathlib import Path
 
 from tests.test_dirarchy_base import TestDirarchyBase
@@ -160,6 +161,28 @@ class TestDirarchy(TestDirarchyBase):
         var_defs = '<var name="text" />\n<var name="other_text" />'
         self._test_generated_trivial_dirarchy_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+
+    def test__var_file__unknown_var_file__ok(self):
+        json_fpath = 'input/var_files/not_found.json'
+        try:
+            output_root_dir = "var_file__unknown_var_file"
+            args = ['--var-file', json_fpath]
+            self._run_generated_trivial_dirarchy_file(output_root_dir, argv=args)
+            self.fail()
+        except FileNotFoundError as err:
+            self.assertTrue(str(err).find(f"No such file or directory: '{json_fpath}'") != -1)
+
+    def test__var_file__bad_var_file__ok(self):
+        json_fpath = 'input/var_files/bad.json'
+        try:
+            output_root_dir = "var_file__bad_var_file"
+            args = ['--var-file', json_fpath]
+            var_defs = '<var name="text" />\n<var name="other_text" />'
+            self._run_generated_trivial_dirarchy_file(output_root_dir, argv=args,
+                                                      var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+            self.fail()
+        except JSONDecodeError:
+            pass
 
     def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
         project_root_dir = "builtin_CURRENT_SOURCE_DIR"
