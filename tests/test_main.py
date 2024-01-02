@@ -202,6 +202,11 @@ class TestDirarchy(TestDirarchyBase):
         except RuntimeError as err:
             self.assertTrue(str(err).find("Execution of custom ui did not work well") != -1)
 
+    def test__file_fdirtree__format_raw__ok(self):
+        output_root_dir = "file_fdirtree__format_raw"
+        in_str = f'{output_root_dir}\nraw\nunused_message'
+        self._test_dirarchy_file("file_fdirtree__valid_format", project_root_dir=output_root_dir, stdin_str=in_str)
+
     def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
         project_root_dir = "builtin_CURRENT_SOURCE_DIR"
         f_contents = "{$CURRENT_SOURCE_DIR}"
