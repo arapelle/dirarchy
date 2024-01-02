@@ -320,6 +320,8 @@ class Dirarchy:
         format_attr = file_node.attrib.get('format')
         if format_attr is None:
             format_attr = "format"
+        else:
+            format_attr = self.__format_str(format_attr)
         format_attr_list: list = format_attr.split('|')
         if not format_attr_list or "raw" in format_attr_list:
             return text
