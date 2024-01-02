@@ -207,6 +207,26 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\nraw\nunused_message'
         self._test_dirarchy_file("file_fdirtree__valid_format", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__file_fdirtree__copy_raw__ok(self):
+        output_root_dir = "file_fdirtree__copy_raw"
+        in_str = f'{output_root_dir}\nfruits.txt\nraw\nPeer'
+        self._test_dirarchy_file("file_fdirtree__copy", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_fdirtree__copy_format__ok(self):
+        output_root_dir = "file_fdirtree__copy_format"
+        in_str = f'{output_root_dir}\nfruits.txt\nformat\nPear'
+        self._test_dirarchy_file("file_fdirtree__copy", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_fdirtree__copy_bad_file__exception(self):
+        filename = "unknown.txt"
+        try:
+            output_root_dir = "file_fdirtree__copy_bad_file"
+            in_str = f'{output_root_dir}\n{filename}\nformat\nPear'
+            self._test_dirarchy_file("file_fdirtree__copy", project_root_dir=output_root_dir, stdin_str=in_str)
+            self.fail()
+        except FileNotFoundError as err:
+            self.assertTrue(str(err).find(f"{filename}") != -1)
+
     def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
         project_root_dir = "builtin_CURRENT_SOURCE_DIR"
         f_contents = "{$CURRENT_SOURCE_DIR}"
