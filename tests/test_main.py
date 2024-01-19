@@ -242,6 +242,11 @@ class TestDirarchy(TestDirarchyBase):
         expected_value = datetime.date.today().strftime("%Y,%m,%d,%Y%m%d,%Y-%m-%d")
         self.assertEqual(extracted_value, expected_value)
 
+    def test__dir_template__local_xml__ok(self):
+        output_root_dir = "dir_template__valid_local_xml"
+        in_str = f'{output_root_dir}\ninput/templates\nmy_equipment'
+        self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
 
 if __name__ == '__main__':
     unittest.main()
