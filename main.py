@@ -264,7 +264,24 @@ class Dirarchy:
                             f"in {template_dpath}.")
         return template_fpath
 
-    def __global_template_roots(self):
+    @staticmethod
+    def __global_template_roots():
+        roots = []
+        roots.extend(Dirarchy.system_template_roots())
+        roots.extend(Dirarchy.environment_template_roots())
+        return roots
+
+    @staticmethod
+    def environment_template_roots():
+        roots = []
+        dirarchy_templates_path = os.environ.get('DIRARCHY_TEMPLATES_PATH', '')
+        for path in dirarchy_templates_path.split(':'):
+            if path:
+                roots.append(Path(path))
+        return roots
+
+    @staticmethod
+    def system_template_roots():
         roots = []
         platform_system = platform.system().strip().lower()
         match platform_system:
@@ -286,10 +303,6 @@ class Dirarchy:
                 roots.append(templates_dpath)
             case _:
                 raise Exception(f"System not handled: '{platform_system}'")
-        dirarchy_templates_path = os.environ.get('DIRARCHY_TEMPLATES_PATH', '')
-        for path in dirarchy_templates_path.split(':'):
-            if path:
-                roots.append(Path(path))
         return roots
 
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
