@@ -455,7 +455,7 @@ class Dirarchy:
                 raise Exception("Directory template was expected!")
             file_nodes = dirarchy_node.findall("file")
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
-            if expect == "file":
+            if fsys_node is None and expect == "file":
                 raise Exception("File template was expected!")
         return self.__treat_action_node(fsys_node, working_dir)
 
