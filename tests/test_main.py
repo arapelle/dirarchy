@@ -258,6 +258,11 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\n{template_local_root}\nmy_equipment'
         self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__file_template__local_xml__ok(self):
+        output_root_dir = "file_template__valid_local_xml"
+        in_str = f'{output_root_dir}\ninput/templates\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
 
 if __name__ == '__main__':
     unittest.main()
