@@ -1,10 +1,12 @@
 import datetime
+import shutil
 import sys
 import unittest
 from json import JSONDecodeError
 from pathlib import Path
 
 from tests.test_dirarchy_base import TestDirarchyBase
+from main import Dirarchy
 
 
 class TestDirarchy(TestDirarchyBase):
@@ -245,6 +247,15 @@ class TestDirarchy(TestDirarchyBase):
     def test__dir_template__local_xml__ok(self):
         output_root_dir = "dir_template__valid_local_xml"
         in_str = f'{output_root_dir}\ninput/templates\nmy_equipment'
+        self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__dir_template__global_xml__ok(self):
+        output_root_dir = "dir_template__valid_global_xml"
+        template_local_root = "temdir"
+        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
+        template_root.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile("input/templates/temdir.xml", f"{template_root}/temdir.xml")
+        in_str = f'{output_root_dir}\n{template_local_root}\nmy_equipment'
         self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
 
