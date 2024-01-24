@@ -57,15 +57,22 @@ class Dirarchy:
     CLASSIC_NAME_RESTR = r'[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*'
 
     # tri_version (like 0.1.0)
-    TRI_VERSION_RESTR = r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
+    TRI_VERSION_RESTR = r'(0|[1-9]\d*)(\.(0|[1-9]\d*))?(\.(0|[1-9]\d*))?'
     TRI_VERSION_REGEX = re.compile(TRI_VERSION_RESTR)
     TRI_VERSION_REGEX_MAJOR_GROUP_ID = 1
-    TRI_VERSION_REGEX_MINOR_GROUP_ID = 2
-    TRI_VERSION_REGEX_PATCH_GROUP_ID = 3
+    TRI_VERSION_REGEX_MINOR_GROUP_ID = 3
+    TRI_VERSION_REGEX_PATCH_GROUP_ID = 5
+
+    # full_tri_version (like 0.1.0, or 0.1 or 0)
+    FULL_TRI_VERSION_RESTR = r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
+    FULL_TRI_VERSION_REGEX = re.compile(FULL_TRI_VERSION_RESTR)
+    FULL_TRI_VERSION_REGEX_MAJOR_GROUP_ID = 1
+    FULL_TRI_VERSION_REGEX_MINOR_GROUP_ID = 2
+    FULL_TRI_VERSION_REGEX_PATCH_GROUP_ID = 3
 
     # template_filename := (classic_name)-(tri_version)\.xml
-    TEMPLATE_FILENAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?(\.xml)?"
-    TEMPLATE_FILENAME_REGEX = re.compile(f"({CLASSIC_NAME_RESTR})(-({TRI_VERSION_RESTR}))?(\.xml)?")
+    TEMPLATE_FILENAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({FULL_TRI_VERSION_RESTR}))?(\.xml)?"
+    TEMPLATE_FILENAME_REGEX = re.compile(f"({CLASSIC_NAME_RESTR})(-({FULL_TRI_VERSION_RESTR}))?(\.xml)?")
     TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID = 1
     TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID = 3
     TEMPLATE_FILENAME_REGEX_MAJOR_GROUP_ID = 5
@@ -214,6 +221,8 @@ class Dirarchy:
         if not rmatch:
             raise Exception(f"The path '{template_fpath}' is not a valid path.")
         version_attr = node.attrib.get('template-version', None)
+        if version_attr:
+            version_attr = self.__format_str(version_attr)
         template_name = rmatch.group(self.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
         template_ext = rmatch.group(self.TEMPLATE_FILENAME_REGEX_EXT_GROUP_ID)
         if template_ext is not None:
@@ -229,7 +238,6 @@ class Dirarchy:
         if template_version:
             raise Exception(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
         if not version_attr:
-            name_pattern = f"{template_name}*.xml"
             for template_root_dpath in self.__template_root_dpaths:
                 xml_path = template_root_dpath / f"{template_fpath}.xml"
                 if xml_path.exists():
@@ -238,10 +246,23 @@ class Dirarchy:
             rmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
             if not rmatch:
                 raise Exception(f"Template version is not a valid version: '{version_attr}'.")
-            expected_major = int(rmatch.group(1))
-            expected_minor = int(rmatch.group(2))
-            expected_patch = int(rmatch.group(3))
-            name_pattern = f"{template_name}-{expected_major}.*.*.xml"
+            expected_major = int(rmatch.group(self.TRI_VERSION_REGEX_MAJOR_GROUP_ID))
+            name_pattern = f"{template_name}-{expected_major}"
+            expected_minor = rmatch.group(self.TRI_VERSION_REGEX_MINOR_GROUP_ID)
+            if expected_minor:
+                name_pattern = f"{name_pattern}.{expected_minor}"
+                expected_minor = int(expected_minor)
+            else:
+                name_pattern = f"{name_pattern}.*"
+                expected_minor = 0
+            expected_patch = rmatch.group(self.TRI_VERSION_REGEX_PATCH_GROUP_ID)
+            if expected_patch:
+                name_pattern = f"{name_pattern}.{expected_patch}"
+                expected_patch = int(expected_patch)
+            else:
+                name_pattern = f"{name_pattern}.*"
+                expected_patch = 0
+            name_pattern = f"{name_pattern}.xml"
         for template_root_dpath in self.__template_root_dpaths:
             t_dir = template_root_dpath / template_dpath
             template_file_list = glob.glob(name_pattern, root_dir=t_dir)
@@ -259,6 +280,8 @@ class Dirarchy:
                             or template_file_minor == expected_minor and template_file_patch >= expected_patch:
                         template_fpath = f"{t_dir}/{template_file}"
                         break
+            if template_fpath is not None:
+                break
         if template_fpath is None:
             raise Exception(f"No template '{template_fname}' compatible with version {version_attr} found "
                             f"in {template_dpath}.")
