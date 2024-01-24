@@ -315,6 +315,11 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\ninput/templates\ntemfile\nobject.txt\nsword\nshield'
         self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__file_template__global_path_last__ok(self):
+        output_root_dir = "file_template__valid_global_path_last"
+        in_str = f'{output_root_dir}\ntemfile\ntemfile\nobject.txt\nsword\nshield'
+        self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
 
 if __name__ == '__main__':
     unittest.main()
