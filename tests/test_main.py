@@ -272,12 +272,12 @@ class TestDirarchy(TestDirarchyBase):
 
     def test__file_template__local_xml__ok(self):
         output_root_dir = "file_template__valid_local_xml"
-        in_str = f'{output_root_dir}\ninput/templates\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ninput/templates\ntemfile-1.0.0.xml\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__global_xml__ok(self):
         output_root_dir = "file_template__valid_global_xml"
-        in_str = f'{output_root_dir}\ntemfile\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ntemfile\ntemfile-1.0.0.xml\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__local_path_1_1_0__ok(self):
@@ -309,6 +309,11 @@ class TestDirarchy(TestDirarchyBase):
         output_root_dir = "file_template__valid_global_path_1"
         in_str = f'{output_root_dir}\ntemfile\n1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_template__local_path_last__ok(self):
+        output_root_dir = "file_template__valid_local_path_last"
+        in_str = f'{output_root_dir}\ninput/templates\ntemfile\nobject.txt\nsword\nshield'
+        self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
 
 if __name__ == '__main__':
