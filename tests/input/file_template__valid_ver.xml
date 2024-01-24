@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-z0-9_]+" />
+        <var name="template_root" type="gstr" />
+        <var name="template_ver" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="{template_root}/temfile" template-version="{template_ver}" />
+        <file path="what.md">
+Object file
+        </file>
+    </dir>
+</dirarchy>

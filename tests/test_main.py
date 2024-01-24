@@ -272,6 +272,21 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\n{template_local_root}\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__file_template__local_path_1_1_0__ok(self):
+        output_root_dir = "file_template__valid_local_path_1_1_0"
+        in_str = f'{output_root_dir}\ninput/templates\n1.1.0\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_template__local_path_1_1__ok(self):
+        output_root_dir = "file_template__valid_local_path_1_1"
+        in_str = f'{output_root_dir}\ninput/templates\n1.1\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_template__local_path_1__ok(self):
+        output_root_dir = "file_template__valid_local_path_1"
+        in_str = f'{output_root_dir}\ninput/templates\n1\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
 
 if __name__ == '__main__':
     unittest.main()

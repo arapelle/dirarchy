@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <vars>
+        <var name="filename" type="gstr" regex="[a-z_\\.]+" />
+        <var name="first_object" type="gstr" default="ball" />
+        <var name="second_object" type="gstr" default="whip" />
+    </vars>
+    <file path="{filename}">
+- FIRST OBJECT: {first_object}.
+- SECOND OBJECT: {second_object}.
+    </file>
+</dirarchy>
