@@ -242,6 +242,10 @@ class Dirarchy:
                 xml_path = template_root_dpath / f"{template_fpath}.xml"
                 if xml_path.exists():
                     return xml_path
+            name_pattern = f"{template_name}-*.*.*.xml"
+            expected_major = 0
+            expected_minor = 0
+            expected_patch = 0
         else:
             rmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
             if not rmatch:
