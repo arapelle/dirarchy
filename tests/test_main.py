@@ -326,6 +326,11 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\ninput/templates\ntemdir\nmy_equipment'
         self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__dir_template__global_path_xml__ok(self):
+        output_root_dir = "dir_template__valid_global_path_xml"
+        in_str = f'{output_root_dir}\ntemdir\ntemdir\nmy_equipment'
+        self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+
 
 if __name__ == '__main__':
     unittest.main()
