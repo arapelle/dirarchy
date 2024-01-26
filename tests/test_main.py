@@ -331,6 +331,17 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\ntemdir\ntemdir\nmy_equipment'
         self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__dir_template__invalid_path_ver_wo_ext__err(self):
+        filename = "temdir-1.0.0"
+        try:
+            output_root_dir = "dir_template__invalid_local_path_xml"
+            in_str = f'{output_root_dir}\ninput/templates\n{filename}\nmy_equipment'
+            self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+            self.fail()
+        except RuntimeError as err:
+            self.assertTrue(str(err).startswith("The extension '.xml' is missing at the end of the template path: "))
+            self.assertTrue(str(err).find(f"{filename}") != -1)
+
 
 if __name__ == '__main__':
     unittest.main()
