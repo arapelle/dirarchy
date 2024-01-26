@@ -283,32 +283,32 @@ class TestDirarchy(TestDirarchyBase):
 
     def test__file_template__local_path_1_1_0__ok(self):
         output_root_dir = "file_template__valid_local_path_1_1_0"
-        in_str = f'{output_root_dir}\ninput/templates\n1.1.0\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ninput/templates\ntemfile\n1.1.0\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__local_path_1_1__ok(self):
         output_root_dir = "file_template__valid_local_path_1_1"
-        in_str = f'{output_root_dir}\ninput/templates\n1.1\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ninput/templates\ntemfile\n1.1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__local_path_1__ok(self):
         output_root_dir = "file_template__valid_local_path_1"
-        in_str = f'{output_root_dir}\ninput/templates\n1\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ninput/templates\ntemfile\n1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__global_path_1_1_0__ok(self):
         output_root_dir = "file_template__valid_global_path_1_1_0"
-        in_str = f'{output_root_dir}\ntemfile\n1.1.0\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ntemfile\ntemfile\n1.1.0\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__global_path_1_1__ok(self):
         output_root_dir = "file_template__valid_global_path_1_1"
-        in_str = f'{output_root_dir}\ntemfile\n1.1\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ntemfile\ntemfile\n1.1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__global_path_1__ok(self):
         output_root_dir = "file_template__valid_global_path_1"
-        in_str = f'{output_root_dir}\ntemfile\n1\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ntemfile\ntemfile\n1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__local_path_last__ok(self):
@@ -340,6 +340,17 @@ class TestDirarchy(TestDirarchyBase):
             self.fail()
         except RuntimeError as err:
             self.assertTrue(str(err).startswith("The extension '.xml' is missing at the end of the template path: "))
+            self.assertTrue(str(err).find(f"{filename}") != -1)
+
+    def test__dir_template__invalid_xml__err(self):
+        filename = "notfound.xml"
+        try:
+            output_root_dir = "dir_template__invalid_xml"
+            in_str = f'{output_root_dir}\ninput/templates\n{filename}\nmy_equipment'
+            self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+            self.fail()
+        except RuntimeError as err:
+            self.assertTrue(str(err).startswith("Template not found: "))
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
 
