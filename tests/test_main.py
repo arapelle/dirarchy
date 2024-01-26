@@ -311,6 +311,17 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f'{output_root_dir}\ntemfile\ntemfile\n1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__file_template__local_path_4_0_4__err(self):
+        filename = "temfile"
+        try:
+            output_root_dir = "file_template__invalid_local_path_4_0_4"
+            in_str = f'{output_root_dir}\ninput/templates\n{filename}\n4.0.4\nobject.txt\nsword'
+            self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+        except RuntimeError as err:
+            self.assertTrue(str(err).startswith("No template "))
+            self.assertTrue(str(err).find(f"compatible with version ") != -1)
+            self.assertTrue(str(err).find(f"{filename}") != -1)
+
     def test__file_template__local_path_last__ok(self):
         output_root_dir = "file_template__valid_local_path_last"
         in_str = f'{output_root_dir}\ninput/templates\ntemfile\nobject.txt\nsword\nshield'
