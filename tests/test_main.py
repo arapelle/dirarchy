@@ -244,6 +244,22 @@ class TestDirarchy(TestDirarchyBase):
         expected_value = datetime.date.today().strftime("%Y,%m,%d,%Y%m%d,%Y-%m-%d")
         self.assertEqual(extracted_value, expected_value)
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        TestDirarchyBase.setUpClass()
+        template_local_root = "temfile"
+        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
+        template_root.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile("input/templates/temfile-1.0.0.xml", f"{template_root}/temfile-1.0.0.xml")
+        shutil.copyfile("input/templates/temfile-1.1.0.xml", f"{template_root}/temfile-1.1.0.xml")
+        shutil.copyfile("input/templates/temfile-1.1.1.xml", f"{template_root}/temfile-1.1.1.xml")
+        shutil.copyfile("input/templates/temfile-1.2.0.xml", f"{template_root}/temfile-1.2.0.xml")
+        shutil.copyfile("input/templates/temfile-2.0.0.xml", f"{template_root}/temfile-2.0.0.xml")
+        template_local_root = "temdir"
+        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
+        template_root.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile("input/templates/temdir.xml", f"{template_root}/temdir.xml")
+
     def test__dir_template__local_xml__ok(self):
         output_root_dir = "dir_template__valid_local_xml"
         in_str = f'{output_root_dir}\ninput/templates\nmy_equipment'
@@ -251,11 +267,7 @@ class TestDirarchy(TestDirarchyBase):
 
     def test__dir_template__global_xml__ok(self):
         output_root_dir = "dir_template__valid_global_xml"
-        template_local_root = "temdir"
-        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
-        template_root.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile("input/templates/temdir.xml", f"{template_root}/temdir.xml")
-        in_str = f'{output_root_dir}\n{template_local_root}\nmy_equipment'
+        in_str = f'{output_root_dir}\ntemdir\nmy_equipment'
         self._test_dirarchy_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__local_xml__ok(self):
@@ -265,11 +277,7 @@ class TestDirarchy(TestDirarchyBase):
 
     def test__file_template__global_xml__ok(self):
         output_root_dir = "file_template__valid_global_xml"
-        template_local_root = "temfile"
-        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
-        template_root.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile("input/templates/temfile-1.0.0.xml", f"{template_root}/temfile-1.0.0.xml")
-        in_str = f'{output_root_dir}\n{template_local_root}\nobject.txt\nsword'
+        in_str = f'{output_root_dir}\ntemfile\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__file_template__local_path_1_1_0__ok(self):
@@ -285,6 +293,21 @@ class TestDirarchy(TestDirarchyBase):
     def test__file_template__local_path_1__ok(self):
         output_root_dir = "file_template__valid_local_path_1"
         in_str = f'{output_root_dir}\ninput/templates\n1\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_template__global_path_1_1_0__ok(self):
+        output_root_dir = "file_template__valid_global_path_1_1_0"
+        in_str = f'{output_root_dir}\ntemfile\n1.1.0\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_template__global_path_1_1__ok(self):
+        output_root_dir = "file_template__valid_global_path_1_1"
+        in_str = f'{output_root_dir}\ntemfile\n1.1\nobject.txt\nsword'
+        self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
+
+    def test__file_template__global_path_1__ok(self):
+        output_root_dir = "file_template__valid_global_path_1"
+        in_str = f'{output_root_dir}\ntemfile\n1\nobject.txt\nsword'
         self._test_dirarchy_file("file_template__valid_ver", project_root_dir=output_root_dir, stdin_str=in_str)
 
 
