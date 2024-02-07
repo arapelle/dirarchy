@@ -461,6 +461,13 @@ class TestDirarchy(TestDirarchyBase):
         self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
                                                    file_contents="'{first}'\n")
 
+    def test__vars_regex__bad_str_good_str__ok(self):
+        output_root_dir = "vars_regex__bad_str_good_str"
+        var_defs = '<var name="first" type="gstr" regex="[A-Z]{4}_[0-9]{2}" />'
+        in_str = "\nbale_26\nBANA23\nAZER_58"
+        self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                   file_contents="'{first}'\n")
+
 
 if __name__ == '__main__':
     unittest.main()
