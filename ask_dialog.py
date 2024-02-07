@@ -27,7 +27,7 @@ class AskDialog(ABC):
             value = value.strip()
             return len(value) > 0 and (check_fn is None or check_fn(value))
 
-        return self.ask_valid_string(label, default_value, __check_graphic_str).strip()
+        return self.ask_valid_string(label, default_value, __check_graphic_str)
 
     def ask_valid_int(self, label: str, default_value="0", check_fn=None):
         def __check_int(value):
