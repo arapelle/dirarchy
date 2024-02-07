@@ -219,7 +219,7 @@ class Dirarchy:
         template_fname = template_fpath.name
         rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, template_fname)
         if not rmatch:
-            raise Exception(f"The path '{template_fpath}' is not a valid path.")
+            raise RuntimeError(f"The path '{template_fpath}' is not a valid path.")
         version_attr = node.attrib.get('template-version', None)
         if version_attr:
             version_attr = self.__format_str(version_attr)
@@ -233,10 +233,10 @@ class Dirarchy:
                 xml_path = template_root_dpath / template_fpath
                 if xml_path.exists():
                     return xml_path
-            raise Exception(f"Template not found: '{template_fpath}'.")
+            raise RuntimeError(f"Template not found: '{template_fpath}'.")
         template_version = rmatch.group(self.TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID)
         if template_version:
-            raise Exception(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
+            raise RuntimeError(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
         if not version_attr:
             for template_root_dpath in self.__template_root_dpaths:
                 xml_path = template_root_dpath / f"{template_fpath}.xml"
@@ -249,7 +249,7 @@ class Dirarchy:
         else:
             rmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
             if not rmatch:
-                raise Exception(f"Template version is not a valid version: '{version_attr}'.")
+                raise RuntimeError(f"Template version is not a valid version: '{version_attr}'.")
             expected_major = int(rmatch.group(self.TRI_VERSION_REGEX_MAJOR_GROUP_ID))
             name_pattern = f"{template_name}-{expected_major}"
             expected_minor = rmatch.group(self.TRI_VERSION_REGEX_MINOR_GROUP_ID)
@@ -287,7 +287,7 @@ class Dirarchy:
             if template_fpath is not None:
                 break
         if template_fpath is None:
-            raise Exception(f"No template '{template_fname}' compatible with version {version_attr} found "
+            raise RuntimeError(f"No template '{template_fname}' compatible with version {version_attr} found "
                             f"in {template_dpath}.")
         return template_fpath
 

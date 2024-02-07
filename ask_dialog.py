@@ -67,4 +67,4 @@ class AskDialog(ABC):
             case 'gstr':
                 return self.ask_valid_graphic_string(label, default_value, check_fn)
             case _:
-                raise Exception(f"Bad var_type: '{var_type}'")
+                raise RuntimeError(f"Bad var_type: '{var_type}'")
