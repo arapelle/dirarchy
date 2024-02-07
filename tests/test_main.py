@@ -11,6 +11,13 @@ from main import Dirarchy
 
 
 class TestDirarchy(TestDirarchyBase):
+    def test__bad_dirtree__bad_root_node_name__err(self):
+        try:
+            self._test_dirarchy_file("bad_root_node_name")
+            self.fail()
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Root node must be '{Dirarchy.ROOT_NODE_NAME}'!")
+
     def test__simple_dirtree__valid__ok(self):
         self._test_dirarchy_file("simple_dirtree")
 
