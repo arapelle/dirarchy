@@ -454,6 +454,13 @@ class TestDirarchy(TestDirarchyBase):
             self.assertTrue(str(err).startswith("Bad var_type: '"))
             self.assertTrue(str(err).find(f"{var_type}") != -1)
 
+    def test__vars_default__empty_str__ok(self):
+        output_root_dir = "vars_default__empty_str"
+        var_defs = '<var name="first" type="gstr" default="dummy" />'
+        in_str = "\n"
+        self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                   file_contents="'{first}'\n")
+
 
 if __name__ == '__main__':
     unittest.main()
