@@ -415,6 +415,16 @@ class TestDirarchy(TestDirarchyBase):
                                                    file_contents="{first}\n{second}\n{third}\n{fourth}\n{fifth}\n"
                                                                  "{sixth}\n")
 
+    def test__vars_str__strs__ok(self):
+        output_root_dir = "vars_str__strs"
+        var_defs = '<var name="first" type="str" />'
+        var_defs += '<var name="second" type="str" />'
+        var_defs += '<var name="third" type="str" />'
+        var_defs += '<var name="fourth" type="str" />'
+        in_str = "\n  \ninfo\n  info  \n"
+        self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                   file_contents="'{first}'\n'{second}'\n'{third}'\n'{fourth}'\n")
+
 
 if __name__ == '__main__':
     unittest.main()
