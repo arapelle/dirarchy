@@ -387,6 +387,14 @@ class TestDirarchy(TestDirarchyBase):
         self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
                                                    file_contents="{first}\n{second}\n{third}\n")
 
+    def test__vars_int__ints__ok(self):
+        output_root_dir = "vars_int__ints"
+        var_defs = '<var name="first" type="int" />'
+        var_defs += '<var name="second" type="int" />'
+        in_str = "7t\n42.5\n36\n-42.5\n-37"
+        self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                   file_contents="{first}\n{second}\n")
+
 
 if __name__ == '__main__':
     unittest.main()
