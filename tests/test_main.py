@@ -402,6 +402,19 @@ class TestDirarchy(TestDirarchyBase):
         self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
                                                    file_contents="{first}\n")
 
+    def test__vars_float__ints_floats__ok(self):
+        output_root_dir = "vars_float__ints_floats"
+        var_defs = '<var name="first" type="float" />'
+        var_defs += '<var name="second" type="float" />'
+        var_defs += '<var name="third" type="float" />'
+        var_defs += '<var name="fourth" type="float" />'
+        var_defs += '<var name="fifth" type="float" />'
+        var_defs += '<var name="sixth" type="float" />'
+        in_str = "7t\n52\n-32\n65.0\n67.2\n-72.0\n-74.3"
+        self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                   file_contents="{first}\n{second}\n{third}\n{fourth}\n{fifth}\n"
+                                                                 "{sixth}\n")
+
 
 if __name__ == '__main__':
     unittest.main()
