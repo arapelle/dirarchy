@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<dirarchy>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="rand_i" rand_value="int, 45, 100" />
+        <var name="rand_f" rand_value="float, -4.1, 12.354" />
+        <var name="rand_digit" rand_value="digit, 7, 13" />
+        <var name="rand_alpha" rand_value="alpha, 4, 9" />
+        <var name="rand_lower" rand_value="lower, 4, 9" />
+        <var name="rand_upper" rand_value="upper, 4, 9" />
+        <var name="rand_alnum" rand_value="alnum, 15, 26" />
+        <var name="rand_lower_sisy" rand_value="lower_sisy, 2, 10" />
+        <var name="rand_upper_sisy" rand_value="upper_sisy, 2, 10" />
+        <var name="rand_snake" rand_value="snake_case, 2, 10" />
+        <var name="rand_format_cvqd" rand_value="format_cvqd, 'Cvcvq_cvcvq_cv_dd'" />
+    </vars>
+    <dir path="{output_root_dir}" >
+        <file path="data.txt" >
+rand_i = {rand_i}
+rand_f = {rand_f}
+rand_digit = {rand_digit}
+rand_alpha = {rand_alpha}
+rand_lower = {rand_lower}
+rand_upper = {rand_upper}
+rand_alnum = {rand_alnum}
+rand_lower_sisy = {rand_lower_sisy}
+rand_upper_sisy = {rand_upper_sisy}
+rand_snake = {rand_snake}
+rand_format_cvqd = {rand_format_cvqd}
+        </file>
+    </dir>
+</dirarchy>

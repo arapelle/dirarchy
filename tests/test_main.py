@@ -1,4 +1,5 @@
 import datetime
+import random
 import shutil
 import sys
 import unittest
@@ -467,6 +468,12 @@ class TestDirarchy(TestDirarchyBase):
         in_str = "\nbale_26\nBANA23\nAZER_58"
         self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
                                                    file_contents="'{first}'\n")
+
+    def test__vars_rand_value__all__ok(self):
+        random.seed(42)
+        output_root_dir = "vars_rand_value__all"
+        in_str = f"{output_root_dir}"
+        self._test_dirarchy_file("vars_rand_value", project_root_dir=output_root_dir, stdin_str=in_str)
 
 
 if __name__ == '__main__':
