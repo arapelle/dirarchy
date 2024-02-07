@@ -369,6 +369,14 @@ class TestDirarchy(TestDirarchyBase):
             self.assertTrue(str(err).startswith("Template not found: "))
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
+    def test__vars_bool__y_Y_True__ok(self):
+        output_root_dir = "vars_bool__y_Y_True"
+        var_defs = '<var name="first" type="bool" />'
+        var_defs += '<var name="second" type="bool" />'
+        var_defs += '<var name="third" type="bool" />'
+        in_str = "f\nfalse\nno\ny\nY\nTrue"
+        self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                   file_contents="{first}\n{second}\n{third}\n")
 
 if __name__ == '__main__':
     unittest.main()
