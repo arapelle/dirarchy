@@ -442,6 +442,18 @@ class TestDirarchy(TestDirarchyBase):
         self._test_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
                                                    file_contents="'{first}'\n'{second}'\n")
 
+    def test__vars_invalid_type__invalid__err(self):
+        var_type = "conaipa"
+        try:
+            output_root_dir = "vars_invalid_type__invalid"
+            var_defs = f'<var name="first" type="{var_type}" />'
+            in_str = "\n  \ninfo\n  info  \n"
+            self._run_generated_trivial_dirarchy_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
+                                                      file_contents="{first}\n")
+        except RuntimeError as err:
+            self.assertTrue(str(err).startswith("Bad var_type: '"))
+            self.assertTrue(str(err).find(f"{var_type}") != -1)
+
 
 if __name__ == '__main__':
     unittest.main()
