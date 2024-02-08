@@ -42,13 +42,7 @@ class Dirarchy:
         self.__template_roots = template_roots.TemplateRoots()
         self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
-        match self.args.ui:
-            case Dirarchy.UiType.TERMINAL:
-                self.__ui = TerminalAskDialog()
-            case Dirarchy.UiType.TKINTER:
-                self.__ui = TkinterAskDialog()
-            case _:
-                raise Exception(f"Unknown I/O: '{self.args.io}'")
+        self.__set_ui_from_args()
         self.__set_variables_from_args()
 
     @property
@@ -60,6 +54,15 @@ class Dirarchy:
             self.treat_xml_file(self.args.dirarchy_xml_file, self.args.output_dir)
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
+
+    def __set_ui_from_args(self):
+        match self.args.ui:
+            case Dirarchy.UiType.TERMINAL:
+                self.__ui = TerminalAskDialog()
+            case Dirarchy.UiType.TKINTER:
+                self.__ui = TkinterAskDialog()
+            case _:
+                raise Exception(f"Unknown I/O: '{self.args.io}'")
 
     def __set_variables_from_args(self):
         if self.args.var:
