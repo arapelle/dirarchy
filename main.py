@@ -309,8 +309,14 @@ class Dirarchy:
                 raise Exception("Directory template was expected!")
             file_nodes = dirarchy_node.findall("file")
             fsys_node = file_nodes[0] if len(file_nodes) > 0 else None
-            if fsys_node is None and tree_info.expected_root_node_type == TemplateTreeInfo.RootNodeType.FILE:
-                raise Exception("File template was expected!")
+            if tree_info.expected_root_node_type == TemplateTreeInfo.RootNodeType.FILE:
+                if fsys_node is None:
+                    raise Exception("File template was expected!")
+                elif len(file_nodes) > 1:
+                    raise Exception("Only one 'file' node is expected at root.")
+        elif len(dir_nodes) > 1 and tree_info.expected_root_node_type == TemplateTreeInfo.RootNodeType.DIRECTORY:
+            raise Exception("Only one 'dir' node is expected at root.")
+
         return self.__treat_action_node(fsys_node, tree_info)
 
     def __treat_vars_node(self, vars_node: XMLTree.Element):
