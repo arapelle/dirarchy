@@ -6,6 +6,7 @@ import unittest
 from json import JSONDecodeError
 from pathlib import Path
 
+import constants
 from tests.test_dirarchy_base import TestDirarchyBase
 from main import Dirarchy
 
@@ -16,7 +17,7 @@ class TestDirarchy(TestDirarchyBase):
             self._test_dirarchy_file("bad_root_node_name")
             self.fail()
         except RuntimeError as err:
-            self.assertEqual(str(err), f"Root node must be '{Dirarchy.ROOT_NODE_NAME}'!")
+            self.assertEqual(str(err), f"Root node must be '{constants.ROOT_NODE_NAME}'!")
 
     def test__simple_dirtree__valid__ok(self):
         self._test_dirarchy_file("simple_dirtree")

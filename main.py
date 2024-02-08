@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 import io
 
+import constants
 import random_string
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
@@ -33,11 +34,6 @@ class Dirarchy:
     class UiType(StrEnum):
         TKINTER = auto()
         TERMINAL = auto()
-
-    PROGRAM_NAME = "dirarchy"
-    LOWER_PROGRAM_NAME = PROGRAM_NAME.lower()
-    UPPER_PROGRAM_NAME = PROGRAM_NAME.upper()
-    ROOT_NODE_NAME = LOWER_PROGRAM_NAME
 
     # classic_name (like hello_world_01)
     CLASSIC_NAME_RESTR = r'[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*'
@@ -274,7 +270,7 @@ class Dirarchy:
                 break
         if template_fpath is None:
             raise RuntimeError(f"No template '{template_fname}' compatible with version {version_attr} found "
-                            f"in {template_dpath}.")
+                               f"in {template_dpath}.")
         return template_fpath
 
     @staticmethod
@@ -287,7 +283,7 @@ class Dirarchy:
     @staticmethod
     def environment_template_roots():
         roots = []
-        dirarchy_templates_path = os.environ.get(f'{Dirarchy.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
+        dirarchy_templates_path = os.environ.get(f'{constants.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
         for path in dirarchy_templates_path.split(':'):
             if path:
                 roots.append(Path(path))
@@ -300,18 +296,18 @@ class Dirarchy:
         match platform_system:
             case "windows":
                 local_app_data_dpath = Path(os.environ['LOCALAPPDATA'])
-                templates_dpath = local_app_data_dpath / f"{Dirarchy.LOWER_PROGRAM_NAME}/templates"
+                templates_dpath = local_app_data_dpath / f"{constants.LOWER_PROGRAM_NAME}/templates"
                 templates_dpath.mkdir(parents=True, exist_ok=True)
                 roots.append(templates_dpath)
                 msystem_env_var = os.environ.get('MSYSTEM', None)
                 if msystem_env_var == 'MINGW64' or msystem_env_var == 'MINGW32':
                     home_dpath = os.environ['HOME']
-                    templates_dpath = Path(f"{home_dpath}/.local/share/{Dirarchy.LOWER_PROGRAM_NAME}/templates")
+                    templates_dpath = Path(f"{home_dpath}/.local/share/{constants.LOWER_PROGRAM_NAME}/templates")
                     templates_dpath.mkdir(parents=True, exist_ok=True)
                     roots.append(templates_dpath)
             case "linux":
                 home_dpath = os.environ['HOME']
-                templates_dpath = Path(f"{home_dpath}/.local/share/{Dirarchy.LOWER_PROGRAM_NAME}/templates")
+                templates_dpath = Path(f"{home_dpath}/.local/share/{constants.LOWER_PROGRAM_NAME}/templates")
                 templates_dpath.mkdir(parents=True, exist_ok=True)
                 roots.append(templates_dpath)
             case _:
@@ -460,8 +456,8 @@ class Dirarchy:
         return dir_path
 
     def __treat_root_node(self, dirarchy_node: XMLTree.Element, working_dir, expect):
-        if dirarchy_node.tag != self.ROOT_NODE_NAME:
-            raise RuntimeError(f"Root node must be '{self.ROOT_NODE_NAME}'!")
+        if dirarchy_node.tag != constants.ROOT_NODE_NAME:
+            raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
         self.__treat_vars_node(dirarchy_node.find("vars"))
         dir_nodes = dirarchy_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
