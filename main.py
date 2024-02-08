@@ -12,8 +12,8 @@ import re
 import io
 
 import constants
-import random_string
 import random_var_value
+import regex
 import template_roots
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
@@ -22,11 +22,11 @@ from variables_dict import VariablesDict
 
 
 class RegexFullMatch:
-    def __init__(self, regex):
-        if isinstance(regex, re.Pattern):
-            self.__regex = regex
+    def __init__(self, regex_pattern):
+        if isinstance(regex_pattern, re.Pattern):
+            self.__regex = regex_pattern
         else:
-            self.__regex = re.compile(regex)
+            self.__regex = re.compile(regex_pattern)
 
     def __call__(self, value_to_check: str):
         return re.fullmatch(self.__regex, value_to_check)
@@ -37,53 +37,9 @@ class Dirarchy:
         TKINTER = auto()
         TERMINAL = auto()
 
-    # classic_name (like hello_world_01)
-    CLASSIC_NAME_RESTR = r'[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*'
-
-    # tri_version (like 0.1.0)
-    TRI_VERSION_RESTR = r'(0|[1-9]\d*)(\.(0|[1-9]\d*))?(\.(0|[1-9]\d*))?'
-    TRI_VERSION_REGEX = re.compile(TRI_VERSION_RESTR)
-    TRI_VERSION_REGEX_MAJOR_GROUP_ID = 1
-    TRI_VERSION_REGEX_MINOR_GROUP_ID = 3
-    TRI_VERSION_REGEX_PATCH_GROUP_ID = 5
-
-    # full_tri_version (like 0.1.0, or 0.1 or 0)
-    FULL_TRI_VERSION_RESTR = r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
-    FULL_TRI_VERSION_REGEX = re.compile(FULL_TRI_VERSION_RESTR)
-    FULL_TRI_VERSION_REGEX_MAJOR_GROUP_ID = 1
-    FULL_TRI_VERSION_REGEX_MINOR_GROUP_ID = 2
-    FULL_TRI_VERSION_REGEX_PATCH_GROUP_ID = 3
-
-    # template_filename := (classic_name)-(tri_version)\.xml
-    TEMPLATE_FILENAME_RESTR = f"({CLASSIC_NAME_RESTR})(-({FULL_TRI_VERSION_RESTR}))?(\.xml)?"
-    TEMPLATE_FILENAME_REGEX = re.compile(f"({CLASSIC_NAME_RESTR})(-({FULL_TRI_VERSION_RESTR}))?(\.xml)?")
-    TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID = 1
-    TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID = 3
-    TEMPLATE_FILENAME_REGEX_MAJOR_GROUP_ID = 5
-    TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID = 6
-    TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID = 7
-    TEMPLATE_FILENAME_REGEX_EXT_GROUP_ID = 8
-    # namespace_path := namespace_name(/+namespace_name)*/*
-    NAMESPACE_NAME_RESTR = CLASSIC_NAME_RESTR
-    NAMESPACE_PATH_RESTR = fr"({NAMESPACE_NAME_RESTR})(/+{NAMESPACE_NAME_RESTR})*/*"
-    # template_path := (namespace_path/)?template_name
-    TEMPLATE_PATH_REGEX = re.compile(f"({NAMESPACE_PATH_RESTR}/)?({TEMPLATE_FILENAME_RESTR})")
-    TEMPLATE_PATH_REGEX_DIR_GROUP_ID = 1
-    TEMPLATE_PATH_REGEX_FILENAME_GROUP_ID = 6
-    TEMPLATE_PATH_REGEX_NAME_GROUP_ID = 7
-    TEMPLATE_PATH_REGEX_VERSION_GROUP_ID = 10
-    TEMPLATE_PATH_REGEX_MAJOR_GROUP_ID = 11
-    TEMPLATE_PATH_REGEX_MINOR_GROUP_ID = 12
-    TEMPLATE_PATH_REGEX_PATCH_GROUP_ID = 13
-
-    VAR_NAME_REGEX = re.compile(r'\A[a-zA-Z][a-zA-Z0-9_]*\Z')
-    VAR_REGEX = re.compile(r"\{([a-zA-Z][a-zA-Z0-9_]*)\}|(\{\{|\}\})")
-    VAR_NAME_GROUP_ID = 1
-    SKIP_GROUP_ID = VAR_NAME_GROUP_ID + 1
-
     def __init__(self, argv=None):
         self.__source_file_stack = []
-        self.__template_root_dpaths = template_roots.template_roots()
+        self.__template_roots = template_roots.TemplateRoots()
         self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
         match self._args.ui:
@@ -162,7 +118,7 @@ class Dirarchy:
     @classmethod
     def var_from_key_value_str(cls, key_value_str: str):
         key, value = key_value_str.split('=')
-        if re.match(Dirarchy.VAR_NAME_REGEX, key):
+        if re.match(regex.VAR_NAME_REGEX, key):
             return key, value
         raise RuntimeError(key_value_str)
 
@@ -184,7 +140,12 @@ class Dirarchy:
         template_fpath = dir_node.attrib.get('template', None)
         if template_fpath is not None:
             print(f"<dir  {template_fpath}>")
-            template_fpath = self.__find_template(dir_node, template_fpath)
+            assert 'path' not in dir_node.attrib
+            template_fpath = Path(self.__format_str(template_fpath))
+            version_attr = dir_node.attrib.get('template-version', None)
+            if version_attr:
+                version_attr = self.__format_str(version_attr)
+            template_fpath = self.__template_roots.find_template(template_fpath, version_attr)
             working_dir = self.__treat_xml_file(template_fpath, working_dir, "dir")
         else:
             dir_path = self.__fsys_node_path(dir_node)
@@ -195,90 +156,16 @@ class Dirarchy:
         self.__treat_action_children_nodes_of(dir_node, working_dir)
         return working_dir
 
-    def __find_template(self, node, template_fpath):
-        assert 'path' not in node.attrib
-        template_fpath = Path(self.__format_str(template_fpath))
-        template_dpath = template_fpath.parent
-        template_fname = template_fpath.name
-        rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, template_fname)
-        if not rmatch:
-            raise RuntimeError(f"The path '{template_fpath}' is not a valid path.")
-        version_attr = node.attrib.get('template-version', None)
-        if version_attr:
-            version_attr = self.__format_str(version_attr)
-        template_name = rmatch.group(self.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
-        template_ext = rmatch.group(self.TEMPLATE_FILENAME_REGEX_EXT_GROUP_ID)
-        if template_ext is not None:
-            if version_attr:
-                print("WARNING: The attribute version is ignored as the provided template is a file path "
-                      f"(version or extension is contained in the path): '{template_fpath}'.")
-            for template_root_dpath in self.__template_root_dpaths:
-                xml_path = template_root_dpath / template_fpath
-                if xml_path.exists():
-                    return xml_path
-            raise RuntimeError(f"Template not found: '{template_fpath}'.")
-        template_version = rmatch.group(self.TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID)
-        if template_version:
-            raise RuntimeError(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
-        if not version_attr:
-            for template_root_dpath in self.__template_root_dpaths:
-                xml_path = template_root_dpath / f"{template_fpath}.xml"
-                if xml_path.exists():
-                    return xml_path
-            name_pattern = f"{template_name}-*.*.*.xml"
-            expected_major = 0
-            expected_minor = 0
-            expected_patch = 0
-        else:
-            rmatch = re.fullmatch(self.TRI_VERSION_REGEX, version_attr)
-            if not rmatch:
-                raise RuntimeError(f"Template version is not a valid version: '{version_attr}'.")
-            expected_major = int(rmatch.group(self.TRI_VERSION_REGEX_MAJOR_GROUP_ID))
-            name_pattern = f"{template_name}-{expected_major}"
-            expected_minor = rmatch.group(self.TRI_VERSION_REGEX_MINOR_GROUP_ID)
-            if expected_minor:
-                name_pattern = f"{name_pattern}.{expected_minor}"
-                expected_minor = int(expected_minor)
-            else:
-                name_pattern = f"{name_pattern}.*"
-                expected_minor = 0
-            expected_patch = rmatch.group(self.TRI_VERSION_REGEX_PATCH_GROUP_ID)
-            if expected_patch:
-                name_pattern = f"{name_pattern}.{expected_patch}"
-                expected_patch = int(expected_patch)
-            else:
-                name_pattern = f"{name_pattern}.*"
-                expected_patch = 0
-            name_pattern = f"{name_pattern}.xml"
-        for template_root_dpath in self.__template_root_dpaths:
-            t_dir = template_root_dpath / template_dpath
-            template_file_list = glob.glob(name_pattern, root_dir=t_dir)
-            template_file_list.sort(reverse=True)
-            template_fpath = None
-            for template_file in template_file_list:
-                rmatch = re.fullmatch(self.TEMPLATE_FILENAME_REGEX, Path(template_file).name)
-                if rmatch:
-                    if not version_attr:
-                        template_fpath = f"{t_dir}/{template_file}"
-                        break
-                    template_file_minor = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_MINOR_GROUP_ID))
-                    template_file_patch = int(rmatch.group(self.TEMPLATE_FILENAME_REGEX_PATCH_GROUP_ID))
-                    if template_file_minor > expected_minor \
-                            or template_file_minor == expected_minor and template_file_patch >= expected_patch:
-                        template_fpath = f"{t_dir}/{template_file}"
-                        break
-            if template_fpath is not None:
-                break
-        if template_fpath is None:
-            raise RuntimeError(f"No template '{template_fname}' compatible with version {version_attr} found "
-                               f"in {template_dpath}.")
-        return template_fpath
-
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
         template_fpath = file_node.attrib.get('template', None)
         if template_fpath is not None:
             print(f"<file  {template_fpath}>")
-            template_fpath = self.__find_template(file_node, template_fpath)
+            assert 'path' not in file_node.attrib
+            template_fpath = Path(self.__format_str(template_fpath))
+            version_attr = file_node.attrib.get('template-version', None)
+            if version_attr:
+                version_attr = self.__format_str(version_attr)
+            template_fpath = self.__template_roots.find_template(template_fpath, version_attr)
             working_dir = self.__treat_xml_file(template_fpath, working_dir, "file")
         else:
             filepath = self.__fsys_node_path(file_node)
@@ -383,12 +270,12 @@ class Dirarchy:
         for line in io.StringIO(text):
             index = 0
             neo_line = ""
-            for mre in re.finditer(self.VAR_REGEX, line):
-                if mre.group(self.SKIP_GROUP_ID):
-                    neo_line += line[index:mre.start(self.SKIP_GROUP_ID)] + mre.group(self.SKIP_GROUP_ID)[0]
-                    index = mre.end(self.SKIP_GROUP_ID)
+            for mre in re.finditer(regex.VAR_REGEX, line):
+                if mre.group(regex.SKIP_GROUP_ID):
+                    neo_line += line[index:mre.start(regex.SKIP_GROUP_ID)] + mre.group(regex.SKIP_GROUP_ID)[0]
+                    index = mre.end(regex.SKIP_GROUP_ID)
                     continue
-                var_name = mre.group(self.VAR_NAME_GROUP_ID)
+                var_name = mre.group(regex.VAR_NAME_GROUP_ID)
                 neo_line += line[index:mre.start(0)]
                 index = mre.end(0)
                 if var_name not in self.__variables:
@@ -438,7 +325,7 @@ class Dirarchy:
 
     def __treat_var_node(self, var_node: XMLTree.Element):
         var_name = var_node.attrib.get('name')
-        if not re.match(self.VAR_NAME_REGEX, var_name):
+        if not re.match(regex.VAR_NAME_REGEX, var_name):
             raise Exception(f"Variable name is not a valid name: '{var_name}'.")
         if var_name not in self.__variables:
             var_value = var_node.attrib.get('value', None)
