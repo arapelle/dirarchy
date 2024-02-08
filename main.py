@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import glob
 import json
 import os
@@ -16,6 +15,7 @@ import random_string
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
 import version
+from variables_dict import VariablesDict
 
 
 class RegexFullMatch:
@@ -27,25 +27,6 @@ class RegexFullMatch:
 
     def __call__(self, value_to_check: str):
         return re.fullmatch(self.__regex, value_to_check)
-
-
-class SpecialDict(dict):
-    def __missing__(self, key):
-        match key:
-            case "$YEAR":
-                return f"{datetime.date.today().year}"
-            case "$MONTH":
-                return f"{datetime.date.today().month:02}"
-            case "$DAY":
-                return f"{datetime.date.today().day:02}"
-            case "$DATE_YMD":
-                today = datetime.date.today()
-                return f"{today.year}{today.month:02}{today.day:02}"
-            case "$DATE_Y_M_D":
-                today = datetime.date.today()
-                return f"{today.year}-{today.month:02}-{today.day:02}"
-            case _:
-                raise KeyError(key)
 
 
 class Dirarchy:
@@ -106,7 +87,7 @@ class Dirarchy:
         self.__source_file_stack = []
         self.__template_root_dpaths = self.__global_template_roots()
         self.__template_root_dpaths.append(Path("."))
-        self.__variables = SpecialDict()
+        self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
         match self._args.ui:
             case Dirarchy.UiType.TERMINAL:
@@ -150,7 +131,7 @@ class Dirarchy:
             raise RuntimeError(f"Execution of custom ui did not work well (returned {cmd_res}). "
                                f"command: {cmd_with_args}")
         with open(var_file_fpath) as vars_file:
-            self.__variables = SpecialDict(json.load(vars_file))
+            self.__variables = VariablesDict(json.load(vars_file))
         var_file_fpath.unlink(missing_ok=True)
 
     def _parse_args(self, argv=None):
