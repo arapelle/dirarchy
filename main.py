@@ -42,28 +42,32 @@ class Dirarchy:
         self.__template_roots = template_roots.TemplateRoots()
         self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
-        match self._args.ui:
+        match self.args.ui:
             case Dirarchy.UiType.TERMINAL:
                 self.__ui = TerminalAskDialog()
             case Dirarchy.UiType.TKINTER:
                 self.__ui = TkinterAskDialog()
             case _:
-                raise Exception(f"Unknown I/O: '{self._args.io}'")
+                raise Exception(f"Unknown I/O: '{self.args.io}'")
         self.__set_variables_from_args()
 
+    @property
+    def args(self):
+        return self._args
+
     def run(self):
-        if Path(self._args.output_dir).exists():
-            self.treat_xml_file(self._args.dirarchy_xml_file, self._args.output_dir)
+        if Path(self.args.output_dir).exists():
+            self.treat_xml_file(self.args.dirarchy_xml_file, self.args.output_dir)
         else:
-            raise Exception(f"The provided output directory does not exist: '{self._args.output_dir}'.")
+            raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
 
     def __set_variables_from_args(self):
-        if self._args.var:
-            for key, value in self._args.var:
+        if self.args.var:
+            for key, value in self.args.var:
                 self.__variables[key] = value
                 print(f"Set variable {key}={value}")
-        if self._args.var_file:
-            for var_file in self._args.var_file:
+        if self.args.var_file:
+            for var_file in self.args.var_file:
                 with open(var_file) as vars_file:
                     var_dict = json.load(vars_file)
                     if not isinstance(var_dict, dict):
@@ -71,8 +75,8 @@ class Dirarchy:
                     for key, value in var_dict.items():
                         self.__variables[key] = value
                         print(f"Set variable {key}={value}")
-        if self._args.custom_ui:
-            self.__set_variables_from_custom_ui(self._args.custom_ui)
+        if self.args.custom_ui:
+            self.__set_variables_from_custom_ui(self.args.custom_ui)
 
     def __set_variables_from_custom_ui(self, cmd: str):
         with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
