@@ -45,11 +45,13 @@ class TemplateTreeInfo:
             self.current_dirpath = kwargs[self.CURRENT_DIRPATH]
         else:
             self.current_dirpath = self.parent.current_dirpath if self.parent else Path.cwd()
+        assert isinstance(self.current_dirpath, Path)
         # current_filepath
         if self.CURRENT_FILEPATH in kwargs:
             self.current_filepath = kwargs[self.CURRENT_FILEPATH]
         else:
             self.current_filepath = self.parent.current_filepath if self.parent else None
+        assert self.current_filepath is None or isinstance(self.current_filepath, Path)
         # current_file
         if self.CURRENT_FILE in kwargs:
             self.current_file = kwargs[self.CURRENT_FILE]

@@ -51,7 +51,7 @@ class Dirarchy:
         return self._args
 
     def run(self):
-        if Path(self.args.output_dir).exists():
+        if self.args.output_dir.exists():
             self.treat_xml_file(self.args.dirarchy_xml_file, self.args.output_dir)
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
@@ -99,6 +99,7 @@ class Dirarchy:
         args = argparser.parse_args(argv)
         if args.ui is None:
             args.ui = Dirarchy.UiType.TKINTER
+        args.output_dir = Path(args.output_dir)
         return args
 
     @classmethod
