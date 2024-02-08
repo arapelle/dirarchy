@@ -87,9 +87,9 @@ class Dirarchy:
         self._args = self._parse_args(argv)
         match self._args.ui:
             case Dirarchy.UiType.TERMINAL:
-                self.__dialog = TerminalAskDialog()
+                self.__ui = TerminalAskDialog()
             case Dirarchy.UiType.TKINTER:
-                self.__dialog = TkinterAskDialog()
+                self.__ui = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self._args.io}'")
         self.__set_variables_from_args()
@@ -493,7 +493,7 @@ class Dirarchy:
                     var_default = var_node.attrib.get('default', None)
                     var_restr = var_node.attrib.get('regex', None)
                     regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
-                    var_value = self.__dialog.ask_valid_var(var_type, var_name, var_default, regex_full_match)
+                    var_value = self.__ui.ask_valid_var(var_type, var_name, var_default, regex_full_match)
             self.__variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
