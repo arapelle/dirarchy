@@ -66,33 +66,11 @@ class Dirarchy:
 
     def __set_variables_from_args(self):
         if self.args.var:
-            for key, value in self.args.var:
-                self.__variables[key] = value
-                print(f"Set variable {key}={value}")
+            self.__variables.update_vars_from_dict(self.args.var)
         if self.args.var_file:
-            for var_file in self.args.var_file:
-                with open(var_file) as vars_file:
-                    var_dict = json.load(vars_file)
-                    if not isinstance(var_dict, dict):
-                        raise Exception(f"The variables file '{var_file}' does not contain a valid JSON dict.")
-                    for key, value in var_dict.items():
-                        self.__variables[key] = value
-                        print(f"Set variable {key}={value}")
+            self.__variables.update_vars_from_files(self.args.var_file)
         if self.args.custom_ui:
-            self.__set_variables_from_custom_ui(self.args.custom_ui)
-
-    def __set_variables_from_custom_ui(self, cmd: str):
-        with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
-            var_file_fpath = Path(vars_file.name)
-            json.dump(self.__variables, vars_file)
-        cmd_with_args = f"{cmd} {var_file_fpath}"
-        cmd_res = os.system(cmd_with_args)
-        if cmd_res != 0:
-            raise RuntimeError(f"Execution of custom ui did not work well (returned {cmd_res}). "
-                               f"command: {cmd_with_args}")
-        with open(var_file_fpath) as vars_file:
-            self.__variables = VariablesDict(json.load(vars_file))
-        var_file_fpath.unlink(missing_ok=True)
+            self.__variables.update_vars_from_custom_ui(self.args.custom_ui)
 
     def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
