@@ -1,10 +1,4 @@
 import argparse
-import glob
-import json
-import os
-import platform
-import random
-import tempfile
 import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
@@ -113,13 +107,13 @@ class Dirarchy:
         assert node is not None
         match node.tag:
             case "dir":
-                return self.__treat_dir_node(node, tree_info)
+                self.__treat_dir_node(node, tree_info)
             case "file":
-                return self.__treat_file_node(node, tree_info)
+                self.__treat_file_node(node, tree_info)
             case "if":
-                return self.__treat_if_node(node, tree_info)
+                self.__treat_if_node(node, tree_info)
             case "match":
-                return self.__treat_match_node(node, tree_info)
+                self.__treat_match_node(node, tree_info)
             case _:
                 raise Exception(f"Unknown node type: {node.tag}.")
 
@@ -219,7 +213,6 @@ class Dirarchy:
                 self.__treat_action_children_nodes_of(then_nodes[0], tree_info)
         elif else_count > 0:
             self.__treat_action_children_nodes_of(else_nodes[0], tree_info)
-        return tree_info.current_dirpath
 
     def __treat_action_children_nodes_of(self, node, tree_info: TemplateTreeInfo):
         for child_node in node:
@@ -254,7 +247,6 @@ class Dirarchy:
             self.__treat_action_children_nodes_of(found_case_node, tree_info)
         elif default_case_node:
             self.__treat_action_children_nodes_of(default_case_node, tree_info)
-        return tree_info.current_dirpath
 
     def __format_str(self, text: str):
         neo_text: str = ""
@@ -317,8 +309,13 @@ class Dirarchy:
                     raise Exception("Only one 'file' node is expected at root.")
         elif len(dir_nodes) > 1 and tree_info.expected_root_node_type == TemplateTreeInfo.RootNodeType.DIRECTORY:
             raise Exception("Only one 'dir' node is expected at root.")
-
-        return self.__treat_action_node(fsys_node, tree_info)
+        match fsys_node.tag:
+            case "dir":
+                return self.__treat_dir_node(fsys_node, tree_info)
+            case "file":
+                return self.__treat_file_node(fsys_node, tree_info)
+            case _:
+                assert False
 
     def __treat_vars_node(self, vars_node: XMLTree.Element):
         if vars_node is None:
