@@ -1,6 +1,9 @@
+import io
+import re
 from enum import StrEnum
 from pathlib import Path
 
+import regex
 from variables_dict import VariablesDict
 
 
@@ -16,6 +19,8 @@ class TemplateTreeInfo:
     CURRENT_FILEPATH = "current_filepath"
     CURRENT_FILE = "current_file"
     VARIABLES = "variables"
+
+    CURRENT_SOURCE_DIR_VARNAME = '$CURRENT_SOURCE_DIR'
 
     def __init__(self, **kwargs):
         # parent
@@ -57,6 +62,38 @@ class TemplateTreeInfo:
             self.current_file = kwargs[self.CURRENT_FILE]
         else:
             self.current_file = self.parent.current_file if self.parent else None
+        # set built in variables
+        self.__set_builtin_variables()
+
+    def __set_builtin_variables(self):
+        self.variables[self.CURRENT_SOURCE_DIR_VARNAME] = self.current_temgen_dirpath()
 
     def current_temgen_dirpath(self):
         return self.current_temgen_filepath.absolute().parent
+
+    def format_str(self, value: str):
+        formatted_value: str = ""
+        for line in io.StringIO(value):
+            formatted_value += line.format_map(self.variables)
+        return formatted_value
+
+    def super_format_str(self, value: str):
+        formatted_value: str = ""
+        for line in io.StringIO(value):
+            index = 0
+            formatted_line = ""
+            for mre in re.finditer(regex.VAR_REGEX, line):
+                if mre.group(regex.SKIP_GROUP_ID):
+                    formatted_line += line[index:mre.start(regex.SKIP_GROUP_ID)] + mre.group(regex.SKIP_GROUP_ID)[0]
+                    index = mre.end(regex.SKIP_GROUP_ID)
+                    continue
+                var_name = mre.group(regex.VAR_NAME_GROUP_ID)
+                formatted_line += line[index:mre.start(0)]
+                index = mre.end(0)
+                if var_name not in self.variables:
+                    raise Exception(f"Variable not set: '{var_name}'!")
+                formatted_line += self.variables[var_name]
+                # print(f"Var: {var_name} = '{self.__variables[var_name]}'")
+            formatted_line += line[index:]
+            formatted_value += formatted_line
+        return formatted_value
