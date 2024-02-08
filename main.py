@@ -13,6 +13,7 @@ import io
 
 import constants
 import random_string
+import template_roots
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
 import version
@@ -81,8 +82,7 @@ class Dirarchy:
 
     def __init__(self, argv=None):
         self.__source_file_stack = []
-        self.__template_root_dpaths = self.__global_template_roots()
-        self.__template_root_dpaths.append(Path("."))
+        self.__template_root_dpaths = template_roots.template_roots()
         self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
         match self._args.ui:
@@ -272,47 +272,6 @@ class Dirarchy:
             raise RuntimeError(f"No template '{template_fname}' compatible with version {version_attr} found "
                                f"in {template_dpath}.")
         return template_fpath
-
-    @staticmethod
-    def __global_template_roots():
-        roots = []
-        roots.extend(Dirarchy.system_template_roots())
-        roots.extend(Dirarchy.environment_template_roots())
-        return roots
-
-    @staticmethod
-    def environment_template_roots():
-        roots = []
-        dirarchy_templates_path = os.environ.get(f'{constants.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
-        for path in dirarchy_templates_path.split(':'):
-            if path:
-                roots.append(Path(path))
-        return roots
-
-    @staticmethod
-    def system_template_roots():
-        roots = []
-        platform_system = platform.system().strip().lower()
-        match platform_system:
-            case "windows":
-                local_app_data_dpath = Path(os.environ['LOCALAPPDATA'])
-                templates_dpath = local_app_data_dpath / f"{constants.LOWER_PROGRAM_NAME}/templates"
-                templates_dpath.mkdir(parents=True, exist_ok=True)
-                roots.append(templates_dpath)
-                msystem_env_var = os.environ.get('MSYSTEM', None)
-                if msystem_env_var == 'MINGW64' or msystem_env_var == 'MINGW32':
-                    home_dpath = os.environ['HOME']
-                    templates_dpath = Path(f"{home_dpath}/.local/share/{constants.LOWER_PROGRAM_NAME}/templates")
-                    templates_dpath.mkdir(parents=True, exist_ok=True)
-                    roots.append(templates_dpath)
-            case "linux":
-                home_dpath = os.environ['HOME']
-                templates_dpath = Path(f"{home_dpath}/.local/share/{constants.LOWER_PROGRAM_NAME}/templates")
-                templates_dpath.mkdir(parents=True, exist_ok=True)
-                roots.append(templates_dpath)
-            case _:
-                raise Exception(f"System not handled: '{platform_system}'")
-        return roots
 
     def __treat_file_node(self, file_node: XMLTree.Element, working_dir: Path):
         template_fpath = file_node.attrib.get('template', None)

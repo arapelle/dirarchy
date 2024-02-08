@@ -7,6 +7,7 @@ from json import JSONDecodeError
 from pathlib import Path
 
 import constants
+import template_roots
 from tests.test_dirarchy_base import TestDirarchyBase
 from main import Dirarchy
 
@@ -257,7 +258,7 @@ class TestDirarchy(TestDirarchyBase):
     def setUpClass(cls) -> None:
         TestDirarchyBase.setUpClass()
         template_local_root = "temfile"
-        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
+        template_root = Path(f"{template_roots.system_template_roots()[-1]}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temfile-1.0.0.xml", f"{template_root}/temfile-1.0.0.xml")
         shutil.copyfile("input/templates/temfile-1.1.0.xml", f"{template_root}/temfile-1.1.0.xml")
@@ -265,7 +266,7 @@ class TestDirarchy(TestDirarchyBase):
         shutil.copyfile("input/templates/temfile-1.2.0.xml", f"{template_root}/temfile-1.2.0.xml")
         shutil.copyfile("input/templates/temfile-2.0.0.xml", f"{template_root}/temfile-2.0.0.xml")
         template_local_root = "temdir"
-        template_root = Path(f"{Dirarchy.system_template_roots()[-1]}/{template_local_root}")
+        template_root = Path(f"{template_roots.system_template_roots()[-1]}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temdir-1.0.0.xml", f"{template_root}/temdir-1.0.0.xml")
         shutil.copyfile("input/templates/temdir.xml", f"{template_root}/temdir.xml")
