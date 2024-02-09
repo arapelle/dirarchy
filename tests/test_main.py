@@ -239,18 +239,20 @@ class TestDirarchy(TestDirarchyBase):
         except FileNotFoundError as err:
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
-    def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__exception(self):
+    def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__ok(self):
         project_root_dir = "builtin_CURRENT_SOURCE_DIR"
         f_contents = "{$CURRENT_SOURCE_DIR}"
-        extracted_value = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
+        file_contents_dict = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
+        extracted_value = file_contents_dict["data.txt"]
         extracted_value = Path(extracted_value).resolve()
         expected_value = (Path.cwd() / self._generated_input_dirname).resolve()
         self.assertEqual(extracted_value, expected_value)
 
-    def test__trivial_fdirtree__builtin_date_vars__exception(self):
+    def test__trivial_fdirtree__builtin_date_vars__ok(self):
         project_root_dir = "builtin_date_vars"
         f_contents = "{$YEAR},{$MONTH},{$DAY},{$DATE_YMD},{$DATE_Y_M_D}"
-        extracted_value = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
+        file_contents_dict = self._run_generated_trivial_dirarchy_file(project_root_dir, file_contents=f_contents)
+        extracted_value = file_contents_dict["data.txt"]
         expected_value = datetime.date.today().strftime("%Y,%m,%d,%Y%m%d,%Y-%m-%d")
         self.assertEqual(extracted_value, expected_value)
 

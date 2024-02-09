@@ -1,4 +1,5 @@
 import filecmp
+import glob
 import io
 import sys
 import unittest
@@ -66,8 +67,16 @@ class TestDirarchyBase(TestCase):
         else:
             sys.stdin = TestDirarchyBase.__STDIN
         dirarchy.run()
-        with open(f"{self._output_dirname}/{project_root_dir}/data.txt") as data_file:
-            return data_file.read()
+        return self._extract_files_contents(project_root_dir)
+
+    def _extract_files_contents(self, project_root_dir):
+        root_dir = f"{self._output_dirname}/{project_root_dir}"
+        file_list = glob.glob("**/*.txt", root_dir=root_dir, recursive=True)
+        file_contents_dict = {}
+        for txt_file in file_list:
+            with open(f"{root_dir}/{txt_file}") as data_file:
+                file_contents_dict[Path(txt_file).as_posix()] = data_file.read()
+        return file_contents_dict
 
     def _test_generated_trivial_dirarchy_file(self, project_root_dir, argv=None, stdin_str=None, **kargs):
         if argv is None:
@@ -81,7 +90,12 @@ class TestDirarchyBase(TestCase):
         generated_input_dir_path = Path(f"{self._generated_input_dirname}")
         generated_dirarchy_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
         dirarchy = Dirarchy(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
-        self.__run_dirarchy_and_check_output(dirarchy, project_root_dir, stdin_str)
+        if stdin_str:
+            sys.stdin = io.StringIO(stdin_str)
+        else:
+            sys.stdin = TestDirarchyBase.__STDIN
+        dirarchy.run()
+        self._compare_output_and_expected(project_root_dir)
 
     def _generate_trivial_dirarchy_file(self, project_root_dir, **kargs):
         keys = ["var_definitions", "dir_attrs", "file_attrs", "file_contents"]
@@ -95,24 +109,24 @@ class TestDirarchyBase(TestCase):
             generated_dirarchy_file.write(dirarchy_contents)
         return generated_dirarchy_file_path
 
-    def __run_dirarchy_and_check_output(self, dirarchy: Dirarchy, project_root_dir, stdin_str):
-        if stdin_str:
-            sys.stdin = io.StringIO(stdin_str)
-        else:
-            sys.stdin = TestDirarchyBase.__STDIN
-        dirarchy.run()
-        self._compare_output_and_expected(project_root_dir)
-
-    def _test_dirarchy_file(self, dirarchy_filestem, project_root_dir=None, argv=None, stdin_str=None,
-                            context_argv=None):
-        if project_root_dir is None:
-            project_root_dir = dirarchy_filestem
+    def _run_dirarchy_file(self, dirarchy_filestem, argv=None, stdin_str=None, context_argv=None):
         if argv is None:
             argv = ['--', f'input/{dirarchy_filestem}.xml']
         if context_argv is None:
             context_argv = self._ut_context_argv
         dirarchy = Dirarchy(context_argv + argv)
-        self.__run_dirarchy_and_check_output(dirarchy, project_root_dir, stdin_str)
+        if stdin_str:
+            sys.stdin = io.StringIO(stdin_str)
+        else:
+            sys.stdin = TestDirarchyBase.__STDIN
+        dirarchy.run()
+
+    def _test_dirarchy_file(self, dirarchy_filestem, project_root_dir=None, argv=None, stdin_str=None,
+                            context_argv=None):
+        if project_root_dir is None:
+            project_root_dir = dirarchy_filestem
+        self._run_dirarchy_file(dirarchy_filestem, argv, stdin_str, context_argv)
+        self._compare_output_and_expected(project_root_dir)
 
     def _compare_output_and_expected(self, project_root_dir):
         left_dir = f"{self._output_dirname}/{project_root_dir}"
