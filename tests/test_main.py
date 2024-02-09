@@ -486,6 +486,19 @@ class TestDirarchy(TestDirarchyBase):
         in_str = f"{output_root_dir}"
         self._test_dirarchy_file("vars_rand_value", project_root_dir=output_root_dir, stdin_str=in_str)
 
+    def test__builtins__template__ok(self):
+        project_root_dir = "builtins__template"
+        in_str = f"input/templates/template_builtins.xml\n{project_root_dir}"
+        self._run_dirarchy_file("dir_template__builtins", stdin_str=in_str)
+        file_contents_dict = self._extract_files_contents(project_root_dir)
+        template_data = file_contents_dict["subdir/template_data.txt"].strip().split()
+        caller_data = file_contents_dict["caller_data.txt"].strip().split()
+        cwd = Path.cwd()
+        self.assertEqual(Path(template_data[0]).as_posix(), Path(f"{cwd}/input/templates").as_posix())
+        self.assertEqual(Path(caller_data[0]).as_posix(), Path(f"{cwd}/input").as_posix())
+        self.assertEqual(caller_data[1], project_root_dir)
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
