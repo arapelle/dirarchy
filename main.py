@@ -79,7 +79,7 @@ class Dirarchy:
                                default=Path.cwd(),
                                help='The directory where to generate the desired hierarchy (dir or file).')
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
-                               type=Dirarchy.var_from_key_value_str,
+                               type=Dirarchy.__var_from_key_value_str,
                                help='Set variables.')
         argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
@@ -92,7 +92,7 @@ class Dirarchy:
         return args
 
     @classmethod
-    def var_from_key_value_str(cls, key_value_str: str):
+    def __var_from_key_value_str(cls, key_value_str: str):
         key, value = key_value_str.split('=')
         if re.match(regex.VAR_NAME_REGEX, key):
             return key, value
