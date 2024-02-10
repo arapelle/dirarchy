@@ -3,7 +3,6 @@ import xml.etree.ElementTree as XMLTree
 from enum import StrEnum, auto
 from pathlib import Path
 import re
-import io
 
 import constants
 import random_var_value
@@ -162,12 +161,15 @@ class Dirarchy:
             filepath = self.__fsys_node_path(file_node, tree_info)
             print(f"<file {tree_info.current_dirpath}/ {filepath}>")
             assert 'template' not in file_node.attrib
-            file_dir = Path(filepath).parent
-            working_dir = tree_info.current_dirpath / file_dir
-            working_dir.mkdir(parents=True, exist_ok=True)
-            file_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
-            with open(f"{file_tree_info.current_dirpath}/{filepath.name}", "w") as file:
-                file.write(f"{self.__file_text(file_node, tree_info)}")
+            current_filepath = tree_info.current_dirpath / filepath
+            current_dirpath = current_filepath.parent
+            current_dirpath.mkdir(parents=True, exist_ok=True)
+            with open(current_filepath, "w") as file:
+                file_tree_info = TemplateTreeInfo(parent=tree_info,
+                                                  current_dirpath=current_dirpath,
+                                                  current_filepath=current_filepath,
+                                                  current_file=file)
+                file.write(f"{self.__file_text(file_node, file_tree_info)}")
         return file_tree_info.current_dirpath
 
     def __file_text(self, file_node: XMLTree.Element, tree_info: TemplateTreeInfo):
@@ -178,18 +180,14 @@ class Dirarchy:
             copy_attr = tree_info.format_str(copy_attr)
             with open(copy_attr) as copied_file:
                 text: str = copied_file.read()
-        format_attr = file_node.attrib.get('format')
-        if format_attr is None:
-            format_attr = "format"
-        else:
-            format_attr = tree_info.format_str(format_attr)
-        format_attr_list: list = format_attr.split('|')
-        if not format_attr_list or "raw" in format_attr_list:
-            return text
-        if "format" in format_attr_list:
+        format_attr = file_node.attrib.get('format', "format")
+        format_attr_list: list = [tree_info.format_str(fstr) for fstr in format_attr.split('|')]
+        if len(format_attr_list) == 0 or "format" in format_attr_list:
             text = tree_info.format_str(text)
         elif "super_format" in format_attr_list:
             text = tree_info.super_format_str(text)
+        elif "raw" in format_attr_list:
+            pass
         return text
 
     def __treat_if_node(self, if_node: XMLTree.Element, tree_info: TemplateTreeInfo):
