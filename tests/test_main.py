@@ -9,7 +9,6 @@ from pathlib import Path
 import constants
 import execution_context
 from tests.test_dirarchy_base import TestDirarchyBase
-from main import Dirarchy
 
 
 class TestDirarchy(TestDirarchyBase):

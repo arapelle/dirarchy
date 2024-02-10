@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import TestCase
 
-from main import Dirarchy
+from main import DirarchyProgram
 
 
 class TestDirarchyBase(TestCase):
@@ -61,7 +61,7 @@ class TestDirarchyBase(TestCase):
         if argv is None:
             argv = []
         generated_dirarchy_file_path = self._generate_trivial_dirarchy_file(project_root_dir, **kargs)
-        dirarchy = Dirarchy(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
+        dirarchy = DirarchyProgram(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
@@ -89,7 +89,7 @@ class TestDirarchyBase(TestCase):
             argv = []
         generated_input_dir_path = Path(f"{self._generated_input_dirname}")
         generated_dirarchy_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
-        dirarchy = Dirarchy(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
+        dirarchy = DirarchyProgram(self._ut_context_argv + argv + ['--', generated_dirarchy_file_path])
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
@@ -114,7 +114,7 @@ class TestDirarchyBase(TestCase):
             argv = ['--', f'input/{dirarchy_filestem}.xml']
         if context_argv is None:
             context_argv = self._ut_context_argv
-        dirarchy = Dirarchy(context_argv + argv)
+        dirarchy = DirarchyProgram(context_argv + argv)
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
