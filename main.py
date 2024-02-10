@@ -41,7 +41,10 @@ class Dirarchy:
 
     def run(self):
         if self.args.output_dir.exists():
-            self.treat_xml_file(self.args.dirarchy_xml_file, self.__execution_context, self.args.output_dir)
+            tree_info = TemplateTreeInfo(current_temgen_filepath=Path(self.args.dirarchy_xml_file),
+                                         current_dirpath=self.args.output_dir)
+            tree_info.variables = self.__execution_context.init_variables
+            self.__treat_xml_file(self.__execution_context, tree_info)
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
 
@@ -327,12 +330,6 @@ class Dirarchy:
         with open(tree_info.current_temgen_filepath, 'r') as dirarchy_file:
             tree = XMLTree.parse(dirarchy_file)
             return self.__treat_root_node(tree.getroot(), execution_context, tree_info)
-
-    def treat_xml_file(self, dirarchy_fpath, execution_context: ExecutionContext, working_dir=Path.cwd()):
-        tree_info = TemplateTreeInfo(current_temgen_filepath=Path(dirarchy_fpath),
-                                     current_dirpath=working_dir)
-        tree_info.variables = execution_context.init_variables
-        self.__treat_xml_file(execution_context, tree_info)
 
 
 if __name__ == '__main__':
