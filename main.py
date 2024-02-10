@@ -33,7 +33,6 @@ class Dirarchy:
         TERMINAL = auto()
 
     def __init__(self, argv=None):
-        self.__source_file_stack = []
         self.__template_roots = template_roots.TemplateRoots()
         self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
@@ -122,18 +121,19 @@ class Dirarchy:
         if template_fpath is not None:
             print(f"<dir  {template_fpath}>")
             assert 'path' not in dir_node.attrib
-            template_fpath = Path(self.__format_str(template_fpath))
+            template_fpath = Path(tree_info.format_str(template_fpath))
             version_attr = dir_node.attrib.get('template-version', None)
             if version_attr:
-                version_attr = self.__format_str(version_attr)
+                version_attr = tree_info.format_str(version_attr)
             template_fpath = self.__template_roots.find_template(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.DIRECTORY,
                                                   current_temgen_filepath=Path(template_fpath))
             working_dir = self.__treat_xml_file(template_tree_info)
             dir_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
+            dir_tree_info.variables = template_tree_info.variables
         else:
-            dir_path = self.__fsys_node_path(dir_node)
+            dir_path = self.__fsys_node_path(dir_node, tree_info)
             print(f"<dir  {tree_info.current_dirpath}/ {dir_path}>")
             assert 'template' not in dir_node.attrib
             working_dir = tree_info.current_dirpath / dir_path
@@ -147,18 +147,19 @@ class Dirarchy:
         if template_fpath is not None:
             print(f"<file  {template_fpath}>")
             assert 'path' not in file_node.attrib
-            template_fpath = Path(self.__format_str(template_fpath))
+            template_fpath = Path(tree_info.format_str(template_fpath))
             version_attr = file_node.attrib.get('template-version', None)
             if version_attr:
-                version_attr = self.__format_str(version_attr)
+                version_attr = tree_info.format_str(version_attr)
             template_fpath = self.__template_roots.find_template(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.FILE,
                                                   current_temgen_filepath=Path(template_fpath))
             working_dir = self.__treat_xml_file(template_tree_info)
             file_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
+            file_tree_info.variables = template_tree_info.variables
         else:
-            filepath = self.__fsys_node_path(file_node)
+            filepath = self.__fsys_node_path(file_node, tree_info)
             print(f"<file {tree_info.current_dirpath}/ {filepath}>")
             assert 'template' not in file_node.attrib
             file_dir = Path(filepath).parent
@@ -166,29 +167,29 @@ class Dirarchy:
             working_dir.mkdir(parents=True, exist_ok=True)
             file_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             with open(f"{file_tree_info.current_dirpath}/{filepath.name}", "w") as file:
-                file.write(f"{self.__file_text(file_node)}")
+                file.write(f"{self.__file_text(file_node, tree_info)}")
         return file_tree_info.current_dirpath
 
-    def __file_text(self, file_node: XMLTree.Element):
+    def __file_text(self, file_node: XMLTree.Element, tree_info: TemplateTreeInfo):
         copy_attr = file_node.attrib.get('copy')
         if copy_attr is None:
             text: str = "" if file_node.text is None else self.__strip_text(file_node.text)
         else:
-            copy_attr = self.__format_str(copy_attr)
+            copy_attr = tree_info.format_str(copy_attr)
             with open(copy_attr) as copied_file:
                 text: str = copied_file.read()
         format_attr = file_node.attrib.get('format')
         if format_attr is None:
             format_attr = "format"
         else:
-            format_attr = self.__format_str(format_attr)
+            format_attr = tree_info.format_str(format_attr)
         format_attr_list: list = format_attr.split('|')
         if not format_attr_list or "raw" in format_attr_list:
             return text
         if "format" in format_attr_list:
-            text = self.__format_str(text)
+            text = tree_info.format_str(text)
         elif "super_format" in format_attr_list:
-            text = self.__super_format_str(text)
+            text = tree_info.super_format_str(text)
         return text
 
     def __treat_if_node(self, if_node: XMLTree.Element, tree_info: TemplateTreeInfo):
@@ -204,7 +205,7 @@ class Dirarchy:
         if else_count and then_count == 0:
             raise Exception("A 'else' node is provided for a 'if' node but a 'then' node is missing.")
         expr_attr = if_node.attrib['expr']
-        expr_attr = self.__format_str(expr_attr)
+        expr_attr = tree_info.format_str(expr_attr)
         b_expr = eval(expr_attr)
         if b_expr:
             if then_count == 0:
@@ -220,7 +221,7 @@ class Dirarchy:
 
     def __treat_match_node(self, match_node: XMLTree.Element, tree_info: TemplateTreeInfo):
         expr_attr = match_node.attrib['expr']
-        expr_attr = self.__format_str(expr_attr)
+        expr_attr = tree_info.format_str(expr_attr)
         assert match_node.text is None or len(match_node.text.strip()) == 0
         found_case_node = None
         default_case_node = None
@@ -230,13 +231,13 @@ class Dirarchy:
             assert case_node.tag == "case"
             case_value = case_node.attrib.get('value', None)
             if case_value is not None:
-                if expr_attr == self.__format_str(case_value):
+                if expr_attr == tree_info.format_str(case_value):
                     found_case_node = case_node
                     break
                 continue
             case_expr = case_node.attrib.get('expr', None)
             if case_expr is not None:
-                if re.fullmatch(self.__format_str(case_expr), expr_attr):
+                if re.fullmatch(tree_info.format_str(case_expr), expr_attr):
                     found_case_node = case_node
                     break
                 continue
@@ -248,33 +249,6 @@ class Dirarchy:
         elif default_case_node:
             self.__treat_action_children_nodes_of(default_case_node, tree_info)
 
-    def __format_str(self, text: str):
-        neo_text: str = ""
-        for line in io.StringIO(text):
-            neo_text += line.format_map(self.__variables)
-        return neo_text
-
-    def __super_format_str(self, text: str):
-        neo_text: str = ""
-        for line in io.StringIO(text):
-            index = 0
-            neo_line = ""
-            for mre in re.finditer(regex.VAR_REGEX, line):
-                if mre.group(regex.SKIP_GROUP_ID):
-                    neo_line += line[index:mre.start(regex.SKIP_GROUP_ID)] + mre.group(regex.SKIP_GROUP_ID)[0]
-                    index = mre.end(regex.SKIP_GROUP_ID)
-                    continue
-                var_name = mre.group(regex.VAR_NAME_GROUP_ID)
-                neo_line += line[index:mre.start(0)]
-                index = mre.end(0)
-                if var_name not in self.__variables:
-                    raise Exception(f"Variable not set: '{var_name}'!")
-                neo_line += self.__variables[var_name]
-                # print(f"Var: {var_name} = '{self.__variables[var_name]}'")
-            neo_line += line[index:]
-            neo_text += neo_line
-        return neo_text
-
     def __strip_text(self, text):
         text = text.lstrip()
         if len(text) > 0:
@@ -285,16 +259,16 @@ class Dirarchy:
                 text = text[:-idx + 1]
         return text
 
-    def __fsys_node_path(self, fsys_node):
+    def __fsys_node_path(self, fsys_node, tree_info: TemplateTreeInfo):
         dir_path_str = fsys_node.attrib['path']
-        dir_path_str = self.__format_str(dir_path_str)
+        dir_path_str = tree_info.format_str(dir_path_str)
         dir_path = Path(dir_path_str)
         return dir_path
 
     def __treat_root_node(self, dirarchy_node: XMLTree.Element, tree_info: TemplateTreeInfo):
         if dirarchy_node.tag != constants.ROOT_NODE_NAME:
             raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
-        self.__treat_vars_node(dirarchy_node.find("vars"))
+        self.__treat_vars_node(dirarchy_node.find("vars"), tree_info)
         dir_nodes = dirarchy_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
@@ -317,20 +291,20 @@ class Dirarchy:
             case _:
                 assert False
 
-    def __treat_vars_node(self, vars_node: XMLTree.Element):
+    def __treat_vars_node(self, vars_node: XMLTree.Element, tree_info: TemplateTreeInfo):
         if vars_node is None:
             return
         for var_node in vars_node.iterfind("var"):
-            self.__treat_var_node(var_node)
+            self.__treat_var_node(var_node, tree_info)
 
-    def __treat_var_node(self, var_node: XMLTree.Element):
+    def __treat_var_node(self, var_node: XMLTree.Element, tree_info: TemplateTreeInfo):
         var_name = var_node.attrib.get('name')
         if not re.match(regex.VAR_NAME_REGEX, var_name):
             raise Exception(f"Variable name is not a valid name: '{var_name}'.")
-        if var_name not in self.__variables:
+        if var_name not in tree_info.variables:
             var_value = var_node.attrib.get('value', None)
             if var_value is not None:
-                var_value = self.__format_str(var_value)
+                var_value = tree_info.format_str(var_value)
             else:
                 var_rand_value = var_node.attrib.get('rand_value', None)
                 if var_rand_value is not None:
@@ -341,29 +315,20 @@ class Dirarchy:
                     var_restr = var_node.attrib.get('regex', None)
                     regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
                     var_value = self.__ui.ask_valid_var(var_type, var_name, var_default, regex_full_match)
-            self.__variables[var_name] = var_value
+            tree_info.variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
-
-    def __current_source_dir(self):
-        return self.__source_file_stack[-1]
 
     def __treat_xml_file(self, tree_info: TemplateTreeInfo):
         print('#' * 80)
         print(f"Input file: {tree_info.current_temgen_filepath}")
         with open(tree_info.current_temgen_filepath, 'r') as dirarchy_file:
             tree = XMLTree.parse(dirarchy_file)
-            self.__source_file_stack.append(tree_info.current_temgen_dirpath())
-            self.__variables['$CURRENT_SOURCE_DIR'] = self.__current_source_dir()
-            try:
-                return self.__treat_root_node(tree.getroot(), tree_info)
-            finally:
-                self.__source_file_stack.pop(-1)
-                if len(self.__source_file_stack) > 0:
-                    self.__variables['$CURRENT_SOURCE_DIR'] = self.__current_source_dir()
+            return self.__treat_root_node(tree.getroot(), tree_info)
 
     def treat_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
         tree_info = TemplateTreeInfo(current_temgen_filepath=Path(dirarchy_fpath),
                                      current_dirpath=working_dir)
+        tree_info.variables = self.__variables
         self.__treat_xml_file(tree_info)
 
 
