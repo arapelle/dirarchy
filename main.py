@@ -7,7 +7,7 @@ import re
 import constants
 import random_var_value
 import regex
-import execution_context
+from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
@@ -41,7 +41,7 @@ class Dirarchy:
 
     def run(self):
         if self.args.output_dir.exists():
-            self.treat_xml_file(self.args.dirarchy_xml_file, self.args.output_dir)
+            self.treat_xml_file(self.args.dirarchy_xml_file, self.__execution_context, self.args.output_dir)
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
 
@@ -60,7 +60,7 @@ class Dirarchy:
             variables.update_vars_from_files(self.args.var_file)
         if self.args.custom_ui:
             variables.update_vars_from_custom_ui(self.args.custom_ui)
-        self.__execution_context = execution_context.ExecutionContext(ui, variables)
+        self.__execution_context = ExecutionContext(ui, variables)
 
     def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
@@ -98,21 +98,23 @@ class Dirarchy:
             return key, value
         raise RuntimeError(key_value_str)
 
-    def __treat_action_node(self, node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_action_node(self, node: XMLTree.Element, execution_context: ExecutionContext,
+                            tree_info: TemplateTreeInfo):
         assert node is not None
         match node.tag:
             case "dir":
-                self.__treat_dir_node(node, tree_info)
+                self.__treat_dir_node(node, execution_context, tree_info)
             case "file":
-                self.__treat_file_node(node, tree_info)
+                self.__treat_file_node(node, execution_context, tree_info)
             case "if":
-                self.__treat_if_node(node, tree_info)
+                self.__treat_if_node(node, execution_context, tree_info)
             case "match":
-                self.__treat_match_node(node, tree_info)
+                self.__treat_match_node(node, execution_context, tree_info)
             case _:
                 raise Exception(f"Unknown node type: {node.tag}.")
 
-    def __treat_dir_node(self, dir_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_dir_node(self, dir_node: XMLTree.Element, execution_context: ExecutionContext,
+                         tree_info: TemplateTreeInfo):
         template_fpath = dir_node.attrib.get('template', None)
         if template_fpath is not None:
             print(f"<dir  {template_fpath}>")
@@ -121,11 +123,11 @@ class Dirarchy:
             version_attr = dir_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_fpath = self.__execution_context.find_template(template_fpath, version_attr)
+            template_fpath = execution_context.find_template(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.DIRECTORY,
                                                   current_temgen_filepath=Path(template_fpath))
-            working_dir = self.__treat_xml_file(template_tree_info)
+            working_dir = self.__treat_xml_file(execution_context, template_tree_info)
             dir_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             dir_tree_info.variables = template_tree_info.variables
         else:
@@ -135,10 +137,11 @@ class Dirarchy:
             working_dir = tree_info.current_dirpath / dir_path
             working_dir.mkdir(parents=True, exist_ok=True)
             dir_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
-        self.__treat_action_children_nodes_of(dir_node, dir_tree_info)
+        self.__treat_action_children_nodes_of(dir_node, execution_context, dir_tree_info)
         return dir_tree_info.current_dirpath
 
-    def __treat_file_node(self, file_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_file_node(self, file_node: XMLTree.Element, execution_context: ExecutionContext,
+                          tree_info: TemplateTreeInfo):
         template_fpath = file_node.attrib.get('template', None)
         if template_fpath is not None:
             print(f"<file  {template_fpath}>")
@@ -147,11 +150,11 @@ class Dirarchy:
             version_attr = file_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_fpath = self.__execution_context.find_template(template_fpath, version_attr)
+            template_fpath = execution_context.find_template(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.FILE,
                                                   current_temgen_filepath=Path(template_fpath))
-            working_dir = self.__treat_xml_file(template_tree_info)
+            working_dir = self.__treat_xml_file(execution_context, template_tree_info)
             file_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             file_tree_info.variables = template_tree_info.variables
         else:
@@ -187,7 +190,8 @@ class Dirarchy:
             pass
         return text
 
-    def __treat_if_node(self, if_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_if_node(self, if_node: XMLTree.Element, execution_context: ExecutionContext,
+                        tree_info: TemplateTreeInfo):
         from re import match, fullmatch
         then_nodes = if_node.findall('then')
         else_nodes = if_node.findall('else')
@@ -204,17 +208,18 @@ class Dirarchy:
         b_expr = eval(expr_attr)
         if b_expr:
             if then_count == 0:
-                self.__treat_action_children_nodes_of(if_node, tree_info)
+                self.__treat_action_children_nodes_of(if_node, execution_context, tree_info)
             else:
-                self.__treat_action_children_nodes_of(then_nodes[0], tree_info)
+                self.__treat_action_children_nodes_of(then_nodes[0], execution_context, tree_info)
         elif else_count > 0:
-            self.__treat_action_children_nodes_of(else_nodes[0], tree_info)
+            self.__treat_action_children_nodes_of(else_nodes[0], execution_context, tree_info)
 
-    def __treat_action_children_nodes_of(self, node, tree_info: TemplateTreeInfo):
+    def __treat_action_children_nodes_of(self, node, execution_context: ExecutionContext, tree_info: TemplateTreeInfo):
         for child_node in node:
-            self.__treat_action_node(child_node, tree_info)
+            self.__treat_action_node(child_node, execution_context, tree_info)
 
-    def __treat_match_node(self, match_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_match_node(self, match_node: XMLTree.Element, execution_context: ExecutionContext,
+                           tree_info: TemplateTreeInfo):
         expr_attr = match_node.attrib['expr']
         expr_attr = tree_info.format_str(expr_attr)
         assert match_node.text is None or len(match_node.text.strip()) == 0
@@ -240,9 +245,9 @@ class Dirarchy:
                 raise Exception(f"A match node cannot have two default case nodes.")
             default_case_node = case_node
         if found_case_node:
-            self.__treat_action_children_nodes_of(found_case_node, tree_info)
+            self.__treat_action_children_nodes_of(found_case_node, execution_context, tree_info)
         elif default_case_node:
-            self.__treat_action_children_nodes_of(default_case_node, tree_info)
+            self.__treat_action_children_nodes_of(default_case_node, execution_context, tree_info)
 
     def __strip_text(self, text):
         text = text.lstrip()
@@ -260,10 +265,11 @@ class Dirarchy:
         dir_path = Path(dir_path_str)
         return dir_path
 
-    def __treat_root_node(self, dirarchy_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_root_node(self, dirarchy_node: XMLTree.Element, execution_context: ExecutionContext,
+                          tree_info: TemplateTreeInfo):
         if dirarchy_node.tag != constants.ROOT_NODE_NAME:
             raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
-        self.__treat_vars_node(dirarchy_node.find("vars"), tree_info)
+        self.__treat_vars_node(dirarchy_node.find("vars"), execution_context, tree_info)
         dir_nodes = dirarchy_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
@@ -280,19 +286,21 @@ class Dirarchy:
             raise Exception("Only one 'dir' node is expected at root.")
         match fsys_node.tag:
             case "dir":
-                return self.__treat_dir_node(fsys_node, tree_info)
+                return self.__treat_dir_node(fsys_node, execution_context, tree_info)
             case "file":
-                return self.__treat_file_node(fsys_node, tree_info)
+                return self.__treat_file_node(fsys_node, execution_context, tree_info)
             case _:
                 assert False
 
-    def __treat_vars_node(self, vars_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_vars_node(self, vars_node: XMLTree.Element, execution_context: ExecutionContext,
+                          tree_info: TemplateTreeInfo):
         if vars_node is None:
             return
         for var_node in vars_node.iterfind("var"):
-            self.__treat_var_node(var_node, tree_info)
+            self.__treat_var_node(var_node, execution_context, tree_info)
 
-    def __treat_var_node(self, var_node: XMLTree.Element, tree_info: TemplateTreeInfo):
+    def __treat_var_node(self, var_node: XMLTree.Element, execution_context: ExecutionContext,
+                         tree_info: TemplateTreeInfo):
         var_name = var_node.attrib.get('name')
         if not re.match(regex.VAR_NAME_REGEX, var_name):
             raise Exception(f"Variable name is not a valid name: '{var_name}'.")
@@ -309,23 +317,22 @@ class Dirarchy:
                     var_default = var_node.attrib.get('default', None)
                     var_restr = var_node.attrib.get('regex', None)
                     regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
-                    var_value = self.__execution_context.ui.ask_valid_var(var_type, var_name, var_default,
-                                                                          regex_full_match)
+                    var_value = execution_context.ui.ask_valid_var(var_type, var_name, var_default, regex_full_match)
             tree_info.variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
-    def __treat_xml_file(self, tree_info: TemplateTreeInfo):
+    def __treat_xml_file(self, execution_context: ExecutionContext, tree_info: TemplateTreeInfo):
         print('#' * 80)
         print(f"Input file: {tree_info.current_temgen_filepath}")
         with open(tree_info.current_temgen_filepath, 'r') as dirarchy_file:
             tree = XMLTree.parse(dirarchy_file)
-            return self.__treat_root_node(tree.getroot(), tree_info)
+            return self.__treat_root_node(tree.getroot(), execution_context, tree_info)
 
-    def treat_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
+    def treat_xml_file(self, dirarchy_fpath, execution_context: ExecutionContext, working_dir=Path.cwd()):
         tree_info = TemplateTreeInfo(current_temgen_filepath=Path(dirarchy_fpath),
                                      current_dirpath=working_dir)
-        tree_info.variables = self.__execution_context.init_variables
-        self.__treat_xml_file(tree_info)
+        tree_info.variables = execution_context.init_variables
+        self.__treat_xml_file(execution_context, tree_info)
 
 
 if __name__ == '__main__':
