@@ -37,12 +37,3 @@ class DirarchyNode:
                 return file_node.FileNode.treat_file_node(fsys_node, execution_context, tree_info)
             case _:
                 assert False
-
-    @staticmethod
-    def treat_xml_file(execution_context: ExecutionContext,
-                       tree_info: TemplateTreeInfo):
-        print('#' * 80)
-        print(f"Input file: {tree_info.current_temgen_filepath}")
-        with open(tree_info.current_temgen_filepath, 'r') as dirarchy_file:
-            tree = XMLTree.parse(dirarchy_file)
-            return DirarchyNode.treat_dirarchy_node(tree.getroot(), execution_context, tree_info)
