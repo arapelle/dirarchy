@@ -65,6 +65,11 @@ class TemgenProgram:
         raise RuntimeError(key_value_str)
 
     def __set_execution_context_from_args(self):
+        ui = self.__build_ui_from_args()
+        variables = self.__build_variables_from_args()
+        self.__execution_context = ExecutionContext(ui, variables)
+
+    def __build_ui_from_args(self):
         match self.args.ui:
             case TemgenProgram.UiType.TERMINAL:
                 ui = TerminalAskDialog()
@@ -72,6 +77,9 @@ class TemgenProgram:
                 ui = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self.args.io}'")
+        return ui
+
+    def __build_variables_from_args(self):
         variables = VariablesDict()
         if self.args.var:
             variables.update_vars_from_dict(self.args.var)
@@ -79,7 +87,7 @@ class TemgenProgram:
             variables.update_vars_from_files(self.args.var_file)
         if self.args.custom_ui:
             variables.update_vars_from_custom_ui(self.args.custom_ui)
-        self.__execution_context = ExecutionContext(ui, variables)
+        return variables
 
     def run(self):
         if self.args.output_dir.exists():
