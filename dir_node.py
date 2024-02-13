@@ -24,7 +24,7 @@ class DirNode:
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.DIRECTORY,
                                                   current_temgen_filepath=Path(template_fpath))
-            working_dir = dirarchy.Dirarchy.treat_xml_file(execution_context, template_tree_info)
+            working_dir = dirarchy.Dirarchy.treat_tree(execution_context, template_tree_info)
             dir_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             dir_tree_info.variables = template_tree_info.variables
         else:

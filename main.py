@@ -86,7 +86,7 @@ class DirarchyProgram:
             tree_info = TemplateTreeInfo(current_temgen_filepath=Path(self.args.dirarchy_xml_file),
                                          current_dirpath=self.args.output_dir)
             tree_info.variables = self.__execution_context.init_variables
-            dirarchy.Dirarchy.treat_xml_file(self.__execution_context, tree_info)
+            dirarchy.Dirarchy.treat_tree(self.__execution_context, tree_info)
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
 
