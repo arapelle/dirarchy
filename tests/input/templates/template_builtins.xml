@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<dirarchy>
+<temgen>
     <vars>
         <var name="dirname" type="gstr" regex="[a-zA-Z0-9_]+" />
     </vars>
@@ -10,4 +10,4 @@
             </file>
         </dir>
     </dir>
-</dirarchy>
+</temgen>

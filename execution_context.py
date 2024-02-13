@@ -12,8 +12,8 @@ from variables_dict import VariablesDict
 
 def environment_template_roots():
     roots = []
-    dirarchy_templates_path = os.environ.get(f'{constants.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
-    for path in dirarchy_templates_path.split(':'):
+    temgen_templates_path = os.environ.get(f'{constants.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
+    for path in temgen_templates_path.split(':'):
         if path:
             roots.append(Path(path))
     return roots

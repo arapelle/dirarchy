@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<dirarchy>
+<temgen>
     <vars>
         <var name="output_root_dir" type="gstr" />
         <var name="rand_i" rand_value="int, 45, 100" />
@@ -29,4 +29,4 @@ rand_snake = {rand_snake}
 rand_format_cvqd = {rand_format_cvqd}
         </file>
     </dir>
-</dirarchy>
+</temgen>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<dirarchy>
+<temgen>
     <vars>
         <var name="filename" type="gstr" regex="[a-z_\\.]+" />
         <var name="first_object" type="gstr" default="ball" />
@@ -9,4 +9,4 @@
 - FIRST OBJECT: {first_object}.
 - SECOND OBJECT: {second_object}.
     </file>
-</dirarchy>
+</temgen>

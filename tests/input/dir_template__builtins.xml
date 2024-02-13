@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<dirarchy>
+<temgen>
     <vars>
         <var name="template_path" type="gstr" />
     </vars>
@@ -9,4 +9,4 @@
 {dirname}
         </file>
     </dir>
-</dirarchy>
+</temgen>

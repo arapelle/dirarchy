@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 import constants
-import dirarchy
+import temgen
 import regex
 from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
@@ -14,7 +14,7 @@ import version
 from variables_dict import VariablesDict
 
 
-class DirarchyProgram:
+class TemgenProgram:
     class UiType(StrEnum):
         TKINTER = auto()
         TERMINAL = auto()
@@ -32,28 +32,28 @@ class DirarchyProgram:
         prog_desc = 'A tool generating a directory architecture based on a template.'
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
         argparser.add_argument('--version', action='version', version=f'{prog_name} {version.VERSION}')
-        argparser.add_argument('-K', f'--{DirarchyProgram.UiType.TKINTER}'.lower(), action='store_const',
-                               dest='ui', const=DirarchyProgram.UiType.TKINTER, help='Use tkinter I/O.')
-        argparser.add_argument('-T', f'--{DirarchyProgram.UiType.TERMINAL}'.lower(), action='store_const',
-                               dest='ui', const=DirarchyProgram.UiType.TERMINAL, default='terminal',
+        argparser.add_argument('-K', f'--{TemgenProgram.UiType.TKINTER}'.lower(), action='store_const',
+                               dest='ui', const=TemgenProgram.UiType.TKINTER, help='Use tkinter I/O.')
+        argparser.add_argument('-T', f'--{TemgenProgram.UiType.TERMINAL}'.lower(), action='store_const',
+                               dest='ui', const=TemgenProgram.UiType.TERMINAL, default='terminal',
                                help='Use terminal I/O.')
         argparser.add_argument('-C', '--custom-ui', metavar='custom_ui_cmd',
-                               help='Use a custom user interface to set variables before treating them with dirarchy. '
+                               help='Use a custom user interface to set variables before treating them with temgen. '
                                     '(Executing custom_ui_cmd in shell is expected to use the desired custom '
                                     'interface.)')
         argparser.add_argument('-o', '--output-dir', metavar='dir_path',
                                default=Path.cwd(),
                                help='The directory where to generate the desired hierarchy (dir or file).')
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
-                               type=DirarchyProgram.__var_from_key_value_str,
+                               type=TemgenProgram.__var_from_key_value_str,
                                help='Set variables.')
         argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
-        argparser.add_argument('dirarchy_xml_file',
-                               help='The dirarchy XML file to process.')
+        argparser.add_argument('temgen_xml_file',
+                               help='The temgen XML file to process.')
         args = argparser.parse_args(argv)
         if args.ui is None:
-            args.ui = DirarchyProgram.UiType.TKINTER
+            args.ui = TemgenProgram.UiType.TKINTER
         args.output_dir = Path(args.output_dir)
         return args
 
@@ -66,9 +66,9 @@ class DirarchyProgram:
 
     def __set_execution_context_from_args(self):
         match self.args.ui:
-            case DirarchyProgram.UiType.TERMINAL:
+            case TemgenProgram.UiType.TERMINAL:
                 ui = TerminalAskDialog()
-            case DirarchyProgram.UiType.TKINTER:
+            case TemgenProgram.UiType.TKINTER:
                 ui = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self.args.io}'")
@@ -83,14 +83,14 @@ class DirarchyProgram:
 
     def run(self):
         if self.args.output_dir.exists():
-            tree_info = TemplateTreeInfo(current_temgen_filepath=Path(self.args.dirarchy_xml_file),
+            tree_info = TemplateTreeInfo(current_temgen_filepath=Path(self.args.temgen_xml_file),
                                          current_dirpath=self.args.output_dir)
             tree_info.variables = self.__execution_context.init_variables
-            dirarchy.Dirarchy.treat_tree(self.__execution_context, tree_info)
+            temgen.Temgen.treat_tree_current_temgen_file(self.__execution_context, tree_info)
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
 
 
 if __name__ == '__main__':
-    dirarchy = DirarchyProgram()
-    dirarchy.run()
+    tgen = TemgenProgram()
+    tgen.run()

@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
-import dirarchy
+import temgen
 from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
 
@@ -23,7 +23,7 @@ class FileNode:
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.FILE,
                                                   current_temgen_filepath=Path(template_fpath))
-            working_dir = dirarchy.Dirarchy.treat_tree(execution_context, template_tree_info)
+            working_dir = temgen.Temgen.treat_tree_current_temgen_file(execution_context, template_tree_info)
             file_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             file_tree_info.variables = template_tree_info.variables
         else:

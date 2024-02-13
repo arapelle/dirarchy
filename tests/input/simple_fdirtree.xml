@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<dirarchy>
+<temgen>
     <vars>
         <var name="namespace" type="gstr" regex="[a-z_]+" />
         <var name="base_name" type="gstr" regex="[a-z_]+" />
@@ -37,4 +37,4 @@ inline namespace {base_name}
 # Project simple_fdirtree
         </file>
     </dir>
-</dirarchy>
+</temgen>
