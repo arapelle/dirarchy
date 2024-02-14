@@ -13,6 +13,8 @@ class Temgen:
                                        tree_info: TemplateTreeInfo):
         print('#' * 80)
         print(f"Input file: {tree_info.current_temgen_filepath}")
+        if not tree_info.current_dirpath.exists():
+            raise RuntimeError(f"The provided output directory does not exist: '{tree_info.current_dirpath}'.")
         with open(tree_info.current_temgen_filepath, 'r') as temgen_file:
             tree = XMLTree.parse(temgen_file)
             return temgen_node.TemgenNode.treat_temgen_node(tree.getroot(), execution_context, tree_info)
