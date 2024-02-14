@@ -6,6 +6,8 @@ from pathlib import Path
 
 import constants
 import regex
+from ask_dialog import AskDialog
+from variables_dict import VariablesDict
 
 
 def environment_template_roots():
@@ -49,10 +51,24 @@ def global_template_roots():
     return roots
 
 
-class TemplateRoots:
-    def __init__(self):
+class ExecutionContext:
+    def __init__(self, ui: AskDialog, variables: VariablesDict):
+        self.__ui = ui
+        self.__variables = variables
         self.__template_root_dpaths = global_template_roots()
         self.__template_root_dpaths.append(Path("."))
+
+    @property
+    def ui(self):
+        return self.__ui
+
+    @property
+    def init_variables(self):
+        return self.__variables
+
+    @property
+    def template_roots(self):
+        return self.__template_root_dpaths
 
     def find_template(self, template_fpath: Path, version_attr):
         template_dpath = template_fpath.parent
@@ -126,5 +142,5 @@ class TemplateRoots:
         if template_fpath is None:
             raise RuntimeError(f"No template '{template_fname}' compatible with version {version_attr} found "
                                f"in {template_dpath}.")
-        return template_fpath
+        return Path(template_fpath)
 

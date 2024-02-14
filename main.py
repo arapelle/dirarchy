@@ -7,7 +7,7 @@ import re
 import constants
 import random_var_value
 import regex
-import template_roots
+import execution_context
 from template_tree_info import TemplateTreeInfo
 from tkinter_ask_dialog import TkinterAskDialog
 from terminal_ask_dialog import TerminalAskDialog
@@ -32,15 +32,8 @@ class Dirarchy:
         TERMINAL = auto()
 
     def __init__(self, argv=None):
-        self.__template_roots = template_roots.TemplateRoots()
-        self.__variables = VariablesDict()
         self._args = self._parse_args(argv)
-        self.__set_ui_from_args()
-        self.__set_variables_from_args()
-
-    @property
-    def ui(self):
-        return self.__ui
+        self.__set_execution_context_from_args()
 
     @property
     def args(self):
@@ -52,22 +45,22 @@ class Dirarchy:
         else:
             raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
 
-    def __set_ui_from_args(self):
+    def __set_execution_context_from_args(self):
         match self.args.ui:
             case Dirarchy.UiType.TERMINAL:
-                self.__ui = TerminalAskDialog()
+                ui = TerminalAskDialog()
             case Dirarchy.UiType.TKINTER:
-                self.__ui = TkinterAskDialog()
+                ui = TkinterAskDialog()
             case _:
                 raise Exception(f"Unknown I/O: '{self.args.io}'")
-
-    def __set_variables_from_args(self):
+        variables = VariablesDict()
         if self.args.var:
-            self.__variables.update_vars_from_dict(self.args.var)
+            variables.update_vars_from_dict(self.args.var)
         if self.args.var_file:
-            self.__variables.update_vars_from_files(self.args.var_file)
+            variables.update_vars_from_files(self.args.var_file)
         if self.args.custom_ui:
-            self.__variables.update_vars_from_custom_ui(self.args.custom_ui)
+            variables.update_vars_from_custom_ui(self.args.custom_ui)
+        self.__execution_context = execution_context.ExecutionContext(ui, variables)
 
     def _parse_args(self, argv=None):
         prog_name = 'dirarchy'
@@ -128,7 +121,7 @@ class Dirarchy:
             version_attr = dir_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_fpath = self.__template_roots.find_template(template_fpath, version_attr)
+            template_fpath = self.__execution_context.find_template(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.DIRECTORY,
                                                   current_temgen_filepath=Path(template_fpath))
@@ -154,7 +147,7 @@ class Dirarchy:
             version_attr = file_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_fpath = self.__template_roots.find_template(template_fpath, version_attr)
+            template_fpath = self.__execution_context.find_template(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.FILE,
                                                   current_temgen_filepath=Path(template_fpath))
@@ -316,7 +309,8 @@ class Dirarchy:
                     var_default = var_node.attrib.get('default', None)
                     var_restr = var_node.attrib.get('regex', None)
                     regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
-                    var_value = self.ui.ask_valid_var(var_type, var_name, var_default, regex_full_match)
+                    var_value = self.__execution_context.ui.ask_valid_var(var_type, var_name, var_default,
+                                                                          regex_full_match)
             tree_info.variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")
 
@@ -330,7 +324,7 @@ class Dirarchy:
     def treat_xml_file(self, dirarchy_fpath, working_dir=Path.cwd()):
         tree_info = TemplateTreeInfo(current_temgen_filepath=Path(dirarchy_fpath),
                                      current_dirpath=working_dir)
-        tree_info.variables = self.__variables
+        tree_info.variables = self.__execution_context.init_variables
         self.__treat_xml_file(tree_info)
 
 
