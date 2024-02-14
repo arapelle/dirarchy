@@ -19,7 +19,7 @@ class FileNode:
             version_attr = file_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_fpath = execution_context.find_template(template_fpath, version_attr)
+            template_fpath = execution_context.find_temgen_file(template_fpath, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.FILE,
                                                   current_temgen_filepath=Path(template_fpath))

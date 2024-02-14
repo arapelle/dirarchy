@@ -22,6 +22,24 @@ class TestTemgenProgram(TestTemgenProgramBase):
     def test__simple_dirtree__valid__ok(self):
         self._test_temgen_file("simple_dirtree")
 
+    def test__simple_dirtree__template_not_found__err(self):
+        temgen_fpath = "temgen_not_found"
+        try:
+            self._run_temgen_file(temgen_fpath)
+            self.fail()
+        except FileNotFoundError as err:
+            self.assertTrue(str(err).find(f"Template not found") != -1)
+            self.assertTrue(str(err).find(temgen_fpath) != -1)
+
+    def test__simple_dirtree__file_not_found__err(self):
+        temgen_fpath = "temgen__not__found"
+        try:
+            self._run_temgen_file(temgen_fpath)
+            self.fail()
+        except FileNotFoundError as err:
+            self.assertTrue(str(err).find(f"Template not found") == -1)
+            self.assertTrue(str(err).find(temgen_fpath) != -1)
+
     def test__simple_fdirtree__valid__ok(self):
         self._test_temgen_file("simple_fdirtree", stdin_str='arba\ncore')
 
@@ -376,8 +394,8 @@ class TestTemgenProgram(TestTemgenProgramBase):
             in_str = f'{output_root_dir}\ninput/templates\n{filename}\nmy_equipment'
             self._test_temgen_file("dir_template__valid", project_root_dir=output_root_dir, stdin_str=in_str)
             self.fail()
-        except RuntimeError as err:
-            self.assertTrue(str(err).startswith("Template not found: "))
+        except FileNotFoundError as err:
+            self.assertTrue(str(err).find("Template not found: "))
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
     def test__vars_bool__y_Y_True__ok(self):
@@ -496,7 +514,6 @@ class TestTemgenProgram(TestTemgenProgramBase):
         self.assertEqual(Path(template_data[0]).as_posix(), Path(f"{cwd}/input/templates").as_posix())
         self.assertEqual(Path(caller_data[0]).as_posix(), Path(f"{cwd}/input").as_posix())
         self.assertEqual(caller_data[1], project_root_dir)
-        pass
 
 
 if __name__ == '__main__':

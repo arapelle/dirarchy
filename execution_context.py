@@ -1,3 +1,4 @@
+import errno
 import os
 import re
 import glob
@@ -70,29 +71,34 @@ class ExecutionContext:
     def template_roots(self):
         return self.__template_root_dpaths
 
-    def find_template(self, template_fpath: Path, version_attr):
-        template_dpath = template_fpath.parent
-        template_fname = template_fpath.name
+    def find_temgen_file(self, input_fpath: Path, version_attr):
+        template_dpath = input_fpath.parent
+        template_fname = input_fpath.name
+        has_xml_suffix = input_fpath.suffix == ".xml"
         rmatch = re.fullmatch(regex.TEMPLATE_FILENAME_REGEX, template_fname)
         if not rmatch:
-            raise RuntimeError(f"The path '{template_fpath}' is not a valid path.")
-        template_name = rmatch.group(regex.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
-        template_ext = rmatch.group(regex.TEMPLATE_FILENAME_REGEX_EXT_GROUP_ID)
-        if template_ext is not None:
+            if not has_xml_suffix:
+                raise RuntimeError(f"The path '{input_fpath}' is not a valid path.")
+            elif input_fpath.exists():
+                return input_fpath
+            else:
+                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(input_fpath))
+        if has_xml_suffix:
             if version_attr:
                 print("WARNING: The attribute version is ignored as the provided template is a file path "
-                      f"(version or extension is contained in the path): '{template_fpath}'.")
+                      f"(version or extension is contained in the path): '{input_fpath}'.")
             for template_root_dpath in self.__template_root_dpaths:
-                xml_path = template_root_dpath / template_fpath
+                xml_path = template_root_dpath / input_fpath
                 if xml_path.exists():
                     return xml_path
-            raise RuntimeError(f"Template not found: '{template_fpath}'.")
+            raise FileNotFoundError(errno.ENOENT, "Template not found", str(input_fpath))
+        template_name = rmatch.group(regex.TEMPLATE_FILENAME_REGEX_NAME_GROUP_ID)
         template_version = rmatch.group(regex.TEMPLATE_FILENAME_REGEX_VERSION_GROUP_ID)
         if template_version:
-            raise RuntimeError(f"The extension '.xml' is missing at the end of the template path: '{template_fpath}'.")
+            raise RuntimeError(f"The extension '.xml' is missing at the end of the template path: '{input_fpath}'.")
         if not version_attr:
             for template_root_dpath in self.__template_root_dpaths:
-                xml_path = template_root_dpath / f"{template_fpath}.xml"
+                xml_path = template_root_dpath / f"{input_fpath}.xml"
                 if xml_path.exists():
                     return xml_path
             name_pattern = f"{template_name}-*.*.*.xml"
@@ -120,6 +126,7 @@ class ExecutionContext:
                 name_pattern = f"{name_pattern}.*"
                 expected_patch = 0
             name_pattern = f"{name_pattern}.xml"
+        template_fpath = None
         for template_root_dpath in self.__template_root_dpaths:
             t_dir = template_root_dpath / template_dpath
             template_file_list = glob.glob(name_pattern, root_dir=t_dir)
