@@ -89,25 +89,25 @@ class TestTemgenProgram(TestTemgenProgramBase):
         output_root_dir = "match_valid_value"
         in_str = f'{output_root_dir}\nvalue'
         self._test_temgen_file("match_fdirtree__valid_with_default",
-                                 project_root_dir=output_root_dir, stdin_str=in_str)
+                               project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__match_fdirtree__valid_expr_09__ok(self):
         output_root_dir = "match_valid_expr_09"
         in_str = f'{output_root_dir}\n1235'
         self._test_temgen_file("match_fdirtree__valid_with_default",
-                                 project_root_dir=output_root_dir, stdin_str=in_str)
+                               project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__match_fdirtree__valid_default__ok(self):
         output_root_dir = "match_valid_default"
         in_str = f'{output_root_dir}\ndefault_case'
         self._test_temgen_file("match_fdirtree__valid_with_default",
-                                 project_root_dir=output_root_dir, stdin_str=in_str)
+                               project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__match_fdirtree__valid_no_match__ok(self):
         output_root_dir = "match_valid_no_match"
         in_str = f'{output_root_dir}\nno_match'
         self._test_temgen_file("match_fdirtree__valid_without_default",
-                                 project_root_dir=output_root_dir, stdin_str=in_str)
+                               project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__match_fdirtree__invalid_two_default__exception(self):
         try:
@@ -133,7 +133,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             output_root_dir = "cli_args__invalid_output_dir"
             in_str = f'{output_root_dir}\nok\nok'
             self._test_temgen_file("simple_fdirtree", project_root_dir=output_root_dir, stdin_str=in_str,
-                                     context_argv=context_argv)
+                                   context_argv=context_argv)
             self.fail()
         except Exception as ex:
             self.assertEqual(str(ex), "The provided output directory does not exist: '__not_found__'.")
@@ -143,21 +143,21 @@ class TestTemgenProgram(TestTemgenProgramBase):
         args = ['--var', 'text=coucou', 'other_text=']
         var_defs = '<var name="text" />\n<var name="other_text" />'
         self._test_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                 var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
     def test__cli_args__valid_var__ok(self):
         output_root_dir = "cli_args__valid_var"
         args = ['--var', 'text=coucou', 'other_text=']
         var_defs = '<var name="text" />\n<var name="other_text" />'
         self._test_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                 var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
     def test__cli_args__valid_var_override__ok(self):
         output_root_dir = "cli_args__valid_var_override"
         args = ['--var', 'text=good_value', 'other_text=']
         var_defs = '<var name="text" value="bad_value" />\n<var name="other_text" />'
         self._test_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                 var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
     def test__cli_args__invalid_v__exception(self):
         bad_var = 'bad-var=coucou'
@@ -166,7 +166,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             args = ['-v', 'text=coucou', bad_var]
             var_defs = '<var name="text" value="{text}" />'
             self._run_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                      var_definitions=var_defs, file_contents="{text}")
+                                                    var_definitions=var_defs, file_contents="{text}")
             self.fail()
         except RuntimeError as err:
             self.assertEqual(str(err), bad_var)
@@ -190,7 +190,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         args = ['--var-file', 'input/var_files/texts.json']
         var_defs = '<var name="text" />\n<var name="other_text" />'
         self._test_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                 var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
     def test__var_file__unknown_var_file__exception(self):
         json_fpath = 'input/var_files/not_found.json'
@@ -209,7 +209,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             args = ['--var-file', json_fpath]
             var_defs = '<var name="text" />\n<var name="other_text" />'
             self._run_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                      var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
             self.fail()
         except JSONDecodeError:
             pass
@@ -219,7 +219,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         args = ['-C', f'{sys.executable} input/custom_ui/myui.py']
         var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
         self._test_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                 var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
     def test__custom_ui__invalid_cmd__exception(self):
         try:
@@ -227,7 +227,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             args = ['-C', f'{sys.executable} input/custom_ui/not_found.py']
             var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
             self._run_generated_trivial_temgen_file(output_root_dir, argv=args,
-                                                      var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
         except RuntimeError as err:
             self.assertTrue(str(err).find("Execution of custom ui did not work well") != -1)
 
@@ -288,6 +288,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         template_root = Path(f"{execution_context.system_template_roots()[-1]}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temdir-1.0.0.xml", f"{template_root}/temdir-1.0.0.xml")
+        shutil.copyfile("input/templates/temdir-1.1.0.xml", f"{template_root}/temdir-1.1.0.xml")
         shutil.copyfile("input/templates/temdir.xml", f"{template_root}/temdir.xml")
 
     def test__dir_template__local_xml__ok(self):
@@ -405,7 +406,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="third" type="bool" />'
         in_str = "f\nfalse\nno\ny\nY\nTrue"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="{first}\n{second}\n{third}\n")
+                                                 file_contents="{first}\n{second}\n{third}\n")
 
     def test__vars_bool__n_N_False__ok(self):
         output_root_dir = "vars_bool__n_N_False"
@@ -414,7 +415,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="third" type="bool" />'
         in_str = "t\ntrue\nyes\nn\nN\nFalse"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="{first}\n{second}\n{third}\n")
+                                                 file_contents="{first}\n{second}\n{third}\n")
 
     def test__vars_int__ints__ok(self):
         output_root_dir = "vars_int__ints"
@@ -422,14 +423,14 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="second" type="int" />'
         in_str = "7t\n42.5\n36\n-42.5\n-37"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="{first}\n{second}\n")
+                                                 file_contents="{first}\n{second}\n")
 
     def test__vars_uint__uint__ok(self):
         output_root_dir = "vars_uint__uint"
         var_defs = '<var name="first" type="uint" />'
         in_str = "7t\n42.5\n-42.5\n-37\n36"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="{first}\n")
+                                                 file_contents="{first}\n")
 
     def test__vars_float__ints_floats__ok(self):
         output_root_dir = "vars_float__ints_floats"
@@ -441,8 +442,8 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="sixth" type="float" />'
         in_str = "7t\n52\n-32\n65.0\n67.2\n-72.0\n-74.3"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="{first}\n{second}\n{third}\n{fourth}\n{fifth}\n"
-                                                                 "{sixth}\n")
+                                                 file_contents="{first}\n{second}\n{third}\n{fourth}\n{fifth}\n"
+                                                               "{sixth}\n")
 
     def test__vars_str__strs__ok(self):
         output_root_dir = "vars_str__strs"
@@ -452,7 +453,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="fourth" type="str" />'
         in_str = "\n  \ninfo\n  info  \n"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="'{first}'\n'{second}'\n'{third}'\n'{fourth}'\n")
+                                                 file_contents="'{first}'\n'{second}'\n'{third}'\n'{fourth}'\n")
 
     def test__vars_pstr__pstrs__ok(self):
         output_root_dir = "vars_pstr__pstrs"
@@ -461,7 +462,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="third" type="pstr" />'
         in_str = "\n  \ninfo\n  info  \n"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="'{first}'\n'{second}'\n'{third}'\n")
+                                                 file_contents="'{first}'\n'{second}'\n'{third}'\n")
 
     def test__vars_gstr__gstrs__ok(self):
         output_root_dir = "vars_gstr__gstrs"
@@ -469,7 +470,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs += '<var name="second" type="gstr" />'
         in_str = "\n  \ninfo\n  info  \n"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="'{first}'\n'{second}'\n")
+                                                 file_contents="'{first}'\n'{second}'\n")
 
     def test__vars_invalid_type__invalid__err(self):
         var_type = "conaipa"
@@ -478,7 +479,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             var_defs = f'<var name="first" type="{var_type}" />'
             in_str = "\n  \ninfo\n  info  \n"
             self._run_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                      file_contents="{first}\n")
+                                                    file_contents="{first}\n")
         except RuntimeError as err:
             self.assertTrue(str(err).startswith("Bad var_type: '"))
             self.assertTrue(str(err).find(f"{var_type}") != -1)
@@ -488,14 +489,14 @@ class TestTemgenProgram(TestTemgenProgramBase):
         var_defs = '<var name="first" type="gstr" default="dummy" />'
         in_str = "\n"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="'{first}'\n")
+                                                 file_contents="'{first}'\n")
 
     def test__vars_regex__bad_str_good_str__ok(self):
         output_root_dir = "vars_regex__bad_str_good_str"
         var_defs = '<var name="first" type="gstr" regex="[A-Z]{4}_[0-9]{2}" />'
         in_str = "\nbale_26\nBANA23\nAZER_58"
         self._test_generated_trivial_temgen_file(output_root_dir, stdin_str=in_str, var_definitions=var_defs,
-                                                   file_contents="'{first}'\n")
+                                                 file_contents="'{first}'\n")
 
     def test__vars_rand_value__all__ok(self):
         random.seed(42)
@@ -514,6 +515,26 @@ class TestTemgenProgram(TestTemgenProgramBase):
         self.assertEqual(Path(template_data[0]).as_posix(), Path(f"{cwd}/input/templates").as_posix())
         self.assertEqual(Path(caller_data[0]).as_posix(), Path(f"{cwd}/input").as_posix())
         self.assertEqual(caller_data[1], project_root_dir)
+
+    def test__template_path_and_version__temdir_1__ok(self):
+        project_root_dir = "local__temdir__1"
+        in_str = f"{project_root_dir}"
+        self._test_temgen_template(f"input/templates/temdir", "1", project_root_dir, stdin_str=in_str)
+
+    def test__template_path_and_version__temdir_1_0__ok(self):
+        project_root_dir = "local__temdir__1_0"
+        in_str = f"{project_root_dir}"
+        self._test_temgen_template(f"input/templates/temdir", "1.0", project_root_dir, stdin_str=in_str)
+
+    def test__template_path_and_version__global_temdir_1__ok(self):
+        project_root_dir = "global__temdir__1"
+        in_str = f"{project_root_dir}"
+        self._test_temgen_template(f"temdir/temdir", "1", project_root_dir, stdin_str=in_str)
+
+    def test__template_path_and_version__global_temdir_1_0__ok(self):
+        project_root_dir = "global__temdir__1_0"
+        in_str = f"{project_root_dir}"
+        self._test_temgen_template(f"temdir/temdir", "1.0", project_root_dir, stdin_str=in_str)
 
 
 if __name__ == '__main__':

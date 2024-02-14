@@ -20,5 +20,11 @@ helmet
 hood
             </file>
         </dir>
+        <dir path="items">
+            <file path="hand.txt">
+ring
+glove
+            </file>
+        </dir>
     </dir>
 </temgen>

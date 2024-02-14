@@ -49,8 +49,10 @@ class TemgenProgram:
                                help='Set variables.')
         argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
-        argparser.add_argument('temgen_xml_file',
-                               help='The temgen XML file to process.')
+        argparser.add_argument('temgen_path',
+                               help='The temgen path of the file to process (XML file or template).')
+        argparser.add_argument('temgen_template_version', nargs='?',
+                               help='The template version.')
         args = argparser.parse_args(argv)
         if args.ui is None:
             args.ui = TemgenProgram.UiType.TKINTER
@@ -90,13 +92,10 @@ class TemgenProgram:
         return variables
 
     def run(self):
-        if self.args.output_dir.exists():
-            tree_info = TemplateTreeInfo(current_temgen_filepath=Path(self.args.temgen_xml_file),
-                                         current_dirpath=self.args.output_dir)
-            tree_info.variables = self.__execution_context.init_variables
-            temgen.Temgen.treat_tree_current_temgen_file(self.__execution_context, tree_info)
-        else:
-            raise Exception(f"The provided output directory does not exist: '{self.args.output_dir}'.")
+        temgen.Temgen.treat_temgen_template(Path(self.args.temgen_path),
+                                            self.args.temgen_template_version,
+                                            execution_context=self.__execution_context,
+                                            output_dir=self.args.output_dir)
 
 
 if __name__ == '__main__':
