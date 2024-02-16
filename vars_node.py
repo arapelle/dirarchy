@@ -1,9 +1,9 @@
 import re
 import xml.etree.ElementTree as XMLTree
 
-import random_var_value
 import regex
 from execution_context import ExecutionContext
+from random_node import RandomNode
 from template_tree_info import TemplateTreeInfo
 
 
@@ -40,9 +40,9 @@ class VarsNode:
             if var_value is not None:
                 var_value = tree_info.format_str(var_value)
             else:
-                var_rand_value = var_node.attrib.get('rand_value', None)
-                if var_rand_value is not None:
-                    var_value = random_var_value.random_var_value(var_rand_value)
+                random_value_node = var_node.find("random", None)
+                if random_value_node is not None:
+                    var_value = RandomNode.random_string(random_value_node)
                 else:
                     var_type = var_node.attrib.get('type', 'str')
                     var_default = var_node.attrib.get('default', None)
