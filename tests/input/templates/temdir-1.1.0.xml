@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<temgen>
+    <vars>
+        <var name="dirname" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{dirname}">
+        <dir path="weapons">
+            <file path="two_hands.txt">
+long sword
+bow
+            </file>
+            <file path="one_hand.txt">
+short sword
+dagger
+            </file>
+        </dir>
+        <dir path="armors">
+            <file path="head.txt">
+helmet
+hood
+            </file>
+        </dir>
+        <dir path="items">
+            <file path="hand.txt">
+ring
+glove
+            </file>
+        </dir>
+    </dir>
+</temgen>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<temgen>
+    <vars>
+        <var name="template_path" type="gstr" />
+    </vars>
+    <dir template="{template_path}">
+        <file path="caller_data.txt">
+{$CURRENT_SOURCE_DIR}
+{dirname}
+        </file>
+    </dir>
+</temgen>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<temgen>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-z_]+" />
+        <var name="contents_format" type="gstr" regex="[a-z_]+" />
+        <var name="text" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="{contents_format}_{text}.txt" format="{contents_format}">TEXT:
+{{
+{text}
+}}
+  </file>
+    </dir>
+</temgen>

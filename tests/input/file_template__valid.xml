@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<temgen>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-z_]+" />
+        <var name="template_root" type="gstr" />
+        <var name="template_id" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="{template_root}/{template_id}" />
+        <file path="what.md">
+Object file
+        </file>
+    </dir>
+</temgen>
