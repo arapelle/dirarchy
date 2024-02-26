@@ -7,9 +7,8 @@ import constants
 import temgen
 import regex
 from execution_context import ExecutionContext
-from template_tree_info import TemplateTreeInfo
-from tkinter_ask_dialog import TkinterAskDialog
-from terminal_ask_dialog import TerminalAskDialog
+from ask_dialog.tkinter_ask_dialog import TkinterAskDialog
+from ask_dialog.terminal_ask_dialog import TerminalAskDialog
 import version
 from variables_dict import VariablesDict
 

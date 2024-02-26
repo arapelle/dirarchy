@@ -1,7 +1,7 @@
-from ask_dialog import AskDialog
+from ask_dialog.abstract_ask_dialog import AbstractAskDialog
 
 
-class TerminalAskDialog(AskDialog):
+class TerminalAskDialog(AbstractAskDialog):
     @staticmethod
     def __ask_str_value(prompt: str, prev_value=None):
         try:
