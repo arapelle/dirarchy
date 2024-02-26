@@ -1,9 +1,7 @@
 import xml.etree.ElementTree as XMLTree
 
 import constants
-import dir_node
-import file_node
-import vars_node
+from node import dir_node, file_node, vars_node
 from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
 

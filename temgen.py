@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
-import temgen_node
+from node import temgen_node
 from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
 from variables_dict import VariablesDict

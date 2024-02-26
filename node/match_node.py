@@ -2,7 +2,7 @@ import re
 import xml.etree.ElementTree as XMLTree
 
 from execution_context import ExecutionContext
-import node_base
+from node import node_base
 from template_tree_info import TemplateTreeInfo
 
 

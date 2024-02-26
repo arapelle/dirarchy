@@ -1,9 +1,6 @@
 import xml.etree.ElementTree as XMLTree
 
-import dir_node
-import file_node
-import if_node
-import match_node
+from node import dir_node, file_node, if_node, match_node
 from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
 

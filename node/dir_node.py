@@ -3,7 +3,7 @@ from pathlib import Path
 
 import temgen
 from execution_context import ExecutionContext
-import node_base
+from node import node_base
 from template_tree_info import TemplateTreeInfo
 
 

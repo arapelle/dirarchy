@@ -3,7 +3,7 @@ import xml.etree.ElementTree as XMLTree
 
 import regex
 from execution_context import ExecutionContext
-from random_node import RandomNode
+from node import random_node
 from template_tree_info import TemplateTreeInfo
 
 
@@ -42,7 +42,7 @@ class VarsNode:
             else:
                 random_value_node = var_node.find("random", None)
                 if random_value_node is not None:
-                    var_value = RandomNode.random_string(random_value_node)
+                    var_value = random_node.RandomNode.random_string(random_value_node)
                 else:
                     var_type = var_node.attrib.get('type', 'str')
                     var_default = var_node.attrib.get('default', None)
