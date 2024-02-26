@@ -23,8 +23,8 @@ class IfNode:
             raise Exception("A 'else' node is provided for a 'if' node but a 'then' node is missing.")
         expr_attr = if_node.attrib['expr']
         expr_attr = tree_info.format_str(expr_attr)
-        b_expr = eval(expr_attr)
-        if b_expr:
+        bool_expr_value = bool(eval(expr_attr))
+        if bool_expr_value:
             if then_count == 0:
                 node_base.NodeBase.treat_action_children_nodes_of(if_node, execution_context, tree_info)
             else:
