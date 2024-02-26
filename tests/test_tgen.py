@@ -46,17 +46,17 @@ class TestTemgenProgram(TestTemgenProgramBase):
     def test__if_fdirtree__valid_yes_yes__ok(self):
         output_root_dir = "if_valid_yes_yes"
         in_str = f'{output_root_dir}\nyes\nyes'
-        self._test_temgen_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+        self._test_temgen_file("if_fdirtree__valid_cmp_str", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__if_fdirtree__valid_yes_no__ok(self):
         output_root_dir = "if_valid_yes_no"
         in_str = f'{output_root_dir}\nyes\nno'
-        self._test_temgen_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+        self._test_temgen_file("if_fdirtree__valid_cmp_str", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__if_fdirtree__valid_no_no__ok(self):
         output_root_dir = "if_valid_no_no"
         in_str = f'{output_root_dir}\nno\nno'
-        self._test_temgen_file("if_fdirtree__valid", project_root_dir=output_root_dir, stdin_str=in_str)
+        self._test_temgen_file("if_fdirtree__valid_cmp_str", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__if_fdirtree__invalid_two_then__exception(self):
         try:
@@ -84,6 +84,11 @@ class TestTemgenProgram(TestTemgenProgramBase):
             self.fail()
         except Exception as ex:
             self.assertEqual(str(ex), "A 'else' node is provided for a 'if' node but a 'then' node is missing.")
+
+    def test__if_fdirtree__valid_6_7__ok(self):
+        output_root_dir = "if_valid_6_7"
+        in_str = f'{output_root_dir}\n6\n7'
+        self._test_temgen_file("if_fdirtree__valid_cmp_int", project_root_dir=output_root_dir, stdin_str=in_str)
 
     def test__match_fdirtree__valid_value__ok(self):
         output_root_dir = "match_valid_value"
