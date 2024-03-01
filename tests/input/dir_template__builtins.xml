@@ -5,7 +5,7 @@
     </vars>
     <dir template="{template_path}">
         <file path="caller_data.txt">
-{$CURRENT_SOURCE_DIR}
+{$TEMPLATE_DIR}
 {dirname}
         </file>
     </dir>

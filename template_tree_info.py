@@ -20,7 +20,7 @@ class TemplateTreeInfo:
     CURRENT_FILE = "current_file"
     VARIABLES = "variables"
 
-    CURRENT_SOURCE_DIR_VARNAME = '$CURRENT_SOURCE_DIR'
+    TEMPLATE_DIR_VARNAME = '$TEMPLATE_DIR'
 
     def __init__(self, **kwargs):
         # parent
@@ -67,7 +67,7 @@ class TemplateTreeInfo:
 
     def __set_builtin_variables(self):
         if self.current_template_filepath is not None:
-            self.variables[self.CURRENT_SOURCE_DIR_VARNAME] = self.current_template_dirpath()
+            self.variables[self.TEMPLATE_DIR_VARNAME] = self.current_template_dirpath()
 
     def current_template_dirpath(self):
         return self.current_template_filepath.absolute().parent

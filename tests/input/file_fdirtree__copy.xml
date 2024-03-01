@@ -8,7 +8,7 @@
     </vars>
     <dir path="{project_root_dir}">
         <file path="{contents_format}_copy.txt"
-              copy="{$CURRENT_SOURCE_DIR}/data/{filename}"
+              copy="{$TEMPLATE_DIR}/data/{filename}"
               format="{contents_format}" />
     </dir>
 </template>

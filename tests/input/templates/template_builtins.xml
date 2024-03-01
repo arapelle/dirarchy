@@ -6,7 +6,7 @@
     <dir path="{dirname}">
         <dir path="subdir">
             <file path="template_data.txt">
-{$CURRENT_SOURCE_DIR}
+{$TEMPLATE_DIR}
             </file>
         </dir>
     </dir>

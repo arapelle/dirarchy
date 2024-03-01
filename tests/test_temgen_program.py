@@ -8,6 +8,7 @@ from pathlib import Path
 
 import constants
 import execution_context
+from template_tree_info import TemplateTreeInfo
 from tests.test_temgen_program_base import TestTemgenProgramBase
 
 
@@ -262,9 +263,9 @@ class TestTemgenProgram(TestTemgenProgramBase):
         except FileNotFoundError as err:
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
-    def test__trivial_fdirtree__builtin_CURRENT_SOURCE_DIR__ok(self):
-        project_root_dir = "builtin_CURRENT_SOURCE_DIR"
-        f_contents = "{$CURRENT_SOURCE_DIR}"
+    def test__trivial_fdirtree__builtin_CURRENT_TEMPLATE_DIR__ok(self):
+        project_root_dir = f"builtin_{TemplateTreeInfo.TEMPLATE_DIR_VARNAME[1:]}"
+        f_contents = f"{{{TemplateTreeInfo.TEMPLATE_DIR_VARNAME}}}"
         file_contents_dict = self._run_generated_trivial_template_file(project_root_dir, file_contents=f_contents)
         extracted_value = file_contents_dict["data.txt"]
         extracted_value = Path(extracted_value).resolve()
