@@ -1,14 +1,13 @@
-import filecmp
 import glob
 import io
 import sys
 from pathlib import Path
-from unittest import TestCase
 
+from tests.dircmp_test_case import DirCmpTestCase
 from tgen import TemgenProgram
 
 
-class TestTemgenProgramBase(TestCase):
+class TestTemgenProgramBase(DirCmpTestCase):
     __STDIN = sys.stdin
     __TRIVIAL_TEMPLATE_STR = """<?xml version="1.0"?>
 <template>
@@ -23,38 +22,23 @@ class TestTemgenProgramBase(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls._output_dirname = "output"
-        cls._expected_dirname = "expected"
-        cls._generated_input_dirname = "generated_input"
-        output_dpath = Path(f"{cls._output_dirname}")
-        if output_dpath.exists():
-            import shutil
-            shutil.rmtree(output_dpath)
-        output_dpath.mkdir(parents=True)
+        DirCmpTestCase.setUpClass()
+        cls._generated_input_dirname = getattr(cls, "_generated_input_dirname", "generated_input")
         generated_input_dir_path = Path.cwd() / f"{cls._generated_input_dirname}"
         if generated_input_dir_path.exists():
             import shutil
             shutil.rmtree(generated_input_dir_path)
         generated_input_dir_path.mkdir(exist_ok=True)
-        cls._ut_context_argv = ['--terminal', '-o', f'{output_dpath}']
-
-    def run(self, result=None):
-        assert result is not None
-        self.__set_unit_tests_result(result)
-        TestCase.run(self, result)  # call superclass run method
-
-    @classmethod
-    def __set_unit_tests_result(cls, unit_tests_result):
-        cls.__unit_tests_result = unit_tests_result
+        cls._ut_context_argv = ['--terminal', '-o', f'{cls._output_dirname}']
 
     @classmethod
     def tearDownClass(cls):
-        if len(cls.__unit_tests_result.errors) == 0 and len(cls.__unit_tests_result.failures) == 0:
-            import shutil
-            output_dpath = Path(f"{cls._output_dirname}")
-            shutil.rmtree(output_dpath)
-            generated_input_dir_path = Path.cwd() / f"{cls._generated_input_dirname}"
-            shutil.rmtree(generated_input_dir_path)
+        cls.removeOutputDir()
+        cls.removeGeneratedInputDir()
+
+    @classmethod
+    def removeGeneratedInputDir(cls):
+        cls.removeDirIfSuccess(cls._generated_input_dirname)
 
     def _run_generated_trivial_template_file(self, project_root_dir, argv=None, stdin_str=None, **kargs):
         if argv is None:
@@ -144,48 +128,3 @@ class TestTemgenProgramBase(TestCase):
                                              argv=None, stdin_str=None, context_argv=None):
         self._run_template_path_template_versoin(template_path, template_version, argv, stdin_str, context_argv)
         self._compare_output_and_expected(project_root_dir)
-
-    def _compare_output_and_expected(self, project_root_dir):
-        left_dir = f"{self._output_dirname}/{project_root_dir}"
-        right_dir = f"{self._expected_dirname}/{project_root_dir}"
-        self._compare_directories(filecmp.dircmp(left_dir, right_dir))
-
-    def _compare_directories(self, dcmp):
-        if dcmp.diff_files:
-            for diff_file in dcmp.diff_files:
-                left_path = f"{dcmp.left}/{diff_file}"
-                right_path = f"{dcmp.right}/{diff_file}"
-                self._diff_files(left_path, right_path)
-        if dcmp.common_funny:
-            common_funny = [f"{dcmp.right}/{x}" for x in dcmp.common_funny]
-            self.assertListEqual([], common_funny)
-        if dcmp.funny_files:
-            funny_files = [f"{dcmp.right}/{x}" for x in dcmp.funny_files]
-            self.assertListEqual([], funny_files)
-        if dcmp.right_only:
-            right_only = [f"{dcmp.right}/{x}" for x in dcmp.right_only]
-            self.assertListEqual([], right_only)
-        if dcmp.left_only:
-            left_only = [f"{dcmp.left}/{x}" for x in dcmp.left_only]
-            self.assertListEqual([], left_only)
-        # recurse:
-        for sub_dcmp in dcmp.subdirs.values():
-            self._compare_directories(sub_dcmp)
-
-    def _diff_files(self, left_path, right_path):
-        print("### start of _diff_files ###")
-        import difflib
-        with open(left_path) as left_file:
-            left_text = left_file.readlines()
-        with open(right_path) as right_file:
-            right_text = right_file.readlines()
-        # Find and print the diff:
-        for line in difflib.unified_diff(left_text, right_text,
-                                         fromfile=left_path, tofile=right_path):
-            print(line.rstrip())
-            if line.startswith('---') or line.startswith('+++') or line.startswith(' '):
-                continue
-            assert len(line) > 0
-            if line[0] == '+':
-                self.fail(f"Difference met while comparing:\n  '{left_path}' and\n  '{right_path}'.")
-        self.fail(f"Difference met while comparing:\n  '{left_path}' and\n  '{right_path}'.")
