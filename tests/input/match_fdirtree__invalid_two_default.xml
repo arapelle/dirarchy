@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<temgen>
+<template>
     <vars>
         <var name="project_root_dir" type="gstr" regex="[a-z09_]+" />
         <var name="expr" type="gstr" />
@@ -23,4 +23,4 @@
             </case>
         </match>
     </dir>
-</temgen>
+</template>

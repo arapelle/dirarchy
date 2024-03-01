@@ -48,9 +48,9 @@ class TemgenProgram:
                                help='Set variables.')
         argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
-        argparser.add_argument('temgen_path',
-                               help='The temgen path of the file to process (XML file or template).')
-        argparser.add_argument('temgen_template_version', nargs='?',
+        argparser.add_argument('template_path',
+                               help='The template path of the file to find then to process.')
+        argparser.add_argument('template_version', nargs='?',
                                help='The template version.')
         args = argparser.parse_args(argv)
         if args.ui is None:
@@ -91,10 +91,10 @@ class TemgenProgram:
         return variables
 
     def run(self):
-        temgen.Temgen.treat_temgen_template(Path(self.args.temgen_path),
-                                            self.args.temgen_template_version,
-                                            execution_context=self.__execution_context,
-                                            output_dir=self.args.output_dir)
+        temgen.Temgen.find_and_treat_template_file(Path(self.args.template_path),
+                                                   self.args.template_version,
+                                                   execution_context=self.__execution_context,
+                                                   output_dir=self.args.output_dir)
 
 
 if __name__ == '__main__':

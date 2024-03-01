@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<temgen>
+<template>
     <dir path="simple_dirtree">
         <dir path="include/ns/simple_dirtree">
             <file path="feature/feature.hpp" format="raw">
@@ -19,4 +19,4 @@ int version() {{ return 1; }}
 # Project simple_dirtree
         </file>
     </dir>
-</temgen>
+</template>

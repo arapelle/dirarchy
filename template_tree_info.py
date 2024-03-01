@@ -14,7 +14,7 @@ class TemplateTreeInfo:
 
     EXPECTED_ROOT_NODE_TYPE = "expected_root_node_type"
     PARENT = "parent"
-    CURRENT_TEMGEN_FILEPATH = "current_temgen_filepath"
+    CURRENT_TEMPLATE_FILEPATH = "current_template_filepath"
     CURRENT_DIRPATH = "current_dirpath"
     CURRENT_FILEPATH = "current_filepath"
     CURRENT_FILE = "current_file"
@@ -35,16 +35,16 @@ class TemplateTreeInfo:
             assert isinstance(self.expected_root_node_type, self.RootNodeType)
         else:
             self.expected_root_node_type = self.parent.expected_root_node_type if self.parent else None
-        # current_temgen_filepath (and variables)
-        if self.CURRENT_TEMGEN_FILEPATH in kwargs:
-            self.current_temgen_filepath = kwargs[self.CURRENT_TEMGEN_FILEPATH]
+        # current_template_filepath (and variables)
+        if self.CURRENT_TEMPLATE_FILEPATH in kwargs:
+            self.current_template_filepath = kwargs[self.CURRENT_TEMPLATE_FILEPATH]
             self.variables = VariablesDict(self.parent.variables.copy() if self.parent
                                            else kwargs.get(self.VARIABLES, {}))
         else:
             assert self.parent
-            self.current_temgen_filepath = self.parent.current_temgen_filepath
+            self.current_template_filepath = self.parent.current_template_filepath
             self.variables = self.parent.variables
-        assert isinstance(self.current_temgen_filepath, Path)
+        assert isinstance(self.current_template_filepath, Path)
         # current_dirpath
         if self.CURRENT_DIRPATH in kwargs:
             self.current_dirpath = kwargs[self.CURRENT_DIRPATH]
@@ -66,10 +66,10 @@ class TemplateTreeInfo:
         self.__set_builtin_variables()
 
     def __set_builtin_variables(self):
-        self.variables[self.CURRENT_SOURCE_DIR_VARNAME] = self.current_temgen_dirpath()
+        self.variables[self.CURRENT_SOURCE_DIR_VARNAME] = self.current_template_dirpath()
 
-    def current_temgen_dirpath(self):
-        return self.current_temgen_filepath.absolute().parent
+    def current_template_dirpath(self):
+        return self.current_template_filepath.absolute().parent
 
     def format_str(self, value: str):
         formatted_value: str = ""

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<temgen>
+<template>
     <vars>
         <var name="dirname" type="gstr" regex="[a-z_]+" />
     </vars>
@@ -25,4 +25,4 @@ leather armor
             </file>
         </dir>
     </dir>
-</temgen>
+</template>

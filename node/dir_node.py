@@ -12,19 +12,19 @@ class DirNode:
     def treat_dir_node(dir_node: XMLTree.Element,
                        execution_context: ExecutionContext,
                        tree_info: TemplateTreeInfo):
-        template_fpath = dir_node.attrib.get('template', None)
-        if template_fpath is not None:
-            print(f"<dir  {template_fpath}>")
+        template_path = dir_node.attrib.get('template', None)
+        if template_path is not None:
+            print(f"<dir  {template_path}>")
             assert 'path' not in dir_node.attrib
-            template_fpath = Path(tree_info.format_str(template_fpath))
+            template_path = Path(tree_info.format_str(template_path))
             version_attr = dir_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_fpath = execution_context.find_temgen_file(template_fpath, version_attr)
+            template_path = execution_context.find_template_file(template_path, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.DIRECTORY,
-                                                  current_temgen_filepath=Path(template_fpath))
-            working_dir = temgen.Temgen.treat_tree_current_temgen_file(execution_context, template_tree_info)
+                                                  current_template_filepath=Path(template_path))
+            working_dir = temgen.Temgen.treat_template_tree_info(execution_context, template_tree_info)
             dir_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             dir_tree_info.variables = template_tree_info.variables
         else:
