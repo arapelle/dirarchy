@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from ask_dialog.terminal_ask_dialog import TerminalAskDialog
+from ui.terminal_ui import TerminalUi
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
 
@@ -36,7 +36,7 @@ class TestTemgen(DirCmpTestCase):
         """
         project_root_dir = "template_xml_string__basic_template"
         sys.stdin = io.StringIO(f"{project_root_dir}\ndata\nAlix\nwhite\ny")
-        Temgen.treat_template_xml_string(template_string, ui=TerminalAskDialog(), output_dir=Path(self._output_dirname))
+        Temgen.treat_template_xml_string(template_string, ui=TerminalUi(), output_dir=Path(self._output_dirname))
         self._compare_output_and_expected(project_root_dir)
 
 

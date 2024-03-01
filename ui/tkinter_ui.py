@@ -1,7 +1,7 @@
-from ask_dialog.abstract_ask_dialog import AbstractAskDialog
+from ui.abstract_ui import AbstractUi
 
 
-class TkinterAskDialog(AbstractAskDialog):
+class TkinterUi(AbstractUi):
     def __init__(self):
         import tkinter
         self.__gui = tkinter.Tk()

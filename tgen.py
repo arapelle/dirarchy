@@ -7,8 +7,8 @@ import constants
 import temgen
 import regex
 from execution_context import ExecutionContext
-from ask_dialog.tkinter_ask_dialog import TkinterAskDialog
-from ask_dialog.terminal_ask_dialog import TerminalAskDialog
+from ui.tkinter_ui import TkinterUi
+from ui.terminal_ui import TerminalUi
 import version
 from variables_dict import VariablesDict
 
@@ -73,9 +73,9 @@ class TemgenProgram:
     def __build_ui_from_args(self):
         match self.args.ui:
             case TemgenProgram.UiType.TERMINAL:
-                ui = TerminalAskDialog()
+                ui = TerminalUi()
             case TemgenProgram.UiType.TKINTER:
-                ui = TkinterAskDialog()
+                ui = TkinterUi()
             case _:
                 raise Exception(f"Unknown I/O: '{self.args.io}'")
         return ui

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import constants
 import regex
-from ask_dialog.abstract_ask_dialog import AbstractAskDialog
+from ui.abstract_ui import AbstractUi
 from variables_dict import VariablesDict
 
 
@@ -53,7 +53,7 @@ def global_template_roots():
 
 
 class ExecutionContext:
-    def __init__(self, ui: AbstractAskDialog, variables: VariablesDict):
+    def __init__(self, ui: AbstractUi, variables: VariablesDict):
         self.__ui = ui
         self.__variables = variables
         self.__template_root_dpaths = global_template_roots()

@@ -2,7 +2,7 @@ import re
 from abc import ABC, abstractmethod
 
 
-class AbstractAskDialog(ABC):
+class AbstractUi(ABC):
     @staticmethod
     def raise_cancel(res=0):
         print("CANCEL!")
