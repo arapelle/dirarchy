@@ -1,0 +1,5 @@
+{ 
+    name = Alix, 
+    color = white
+}
+ 

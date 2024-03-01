@@ -45,3 +45,20 @@ class Temgen:
             kwargs["execution_context"] = execution_context
         template_filepath = execution_context.find_template_file(template_path, version)
         Temgen.treat_template_file(template_filepath, **kwargs)
+
+    @staticmethod
+    def treat_template_xml_string(template_str: str, **kwargs):
+        execution_context = kwargs.get("execution_context", None)
+        if execution_context is None:
+            ui = kwargs["ui"]
+            init_variables = kwargs.get("variables", VariablesDict())
+            execution_context = ExecutionContext(ui, init_variables)
+        else:
+            assert "ui" not in kwargs
+            assert "variables" not in kwargs
+        output_dir = kwargs.get("output_dir", Path.cwd())
+        tree_info = TemplateTreeInfo(current_template_filepath=None,
+                                     variables=execution_context.init_variables,
+                                     current_dirpath=output_dir)
+        root_element = XMLTree.fromstring(template_str)
+        return template_node.TemplateNode.treat_template_node(root_element, execution_context, tree_info)

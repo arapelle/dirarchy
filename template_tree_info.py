@@ -44,7 +44,7 @@ class TemplateTreeInfo:
             assert self.parent
             self.current_template_filepath = self.parent.current_template_filepath
             self.variables = self.parent.variables
-        assert isinstance(self.current_template_filepath, Path)
+        assert isinstance(self.current_template_filepath, Path) or self.current_template_filepath is None
         # current_dirpath
         if self.CURRENT_DIRPATH in kwargs:
             self.current_dirpath = kwargs[self.CURRENT_DIRPATH]
@@ -66,7 +66,8 @@ class TemplateTreeInfo:
         self.__set_builtin_variables()
 
     def __set_builtin_variables(self):
-        self.variables[self.CURRENT_SOURCE_DIR_VARNAME] = self.current_template_dirpath()
+        if self.current_template_filepath is not None:
+            self.variables[self.CURRENT_SOURCE_DIR_VARNAME] = self.current_template_dirpath()
 
     def current_template_dirpath(self):
         return self.current_template_filepath.absolute().parent
