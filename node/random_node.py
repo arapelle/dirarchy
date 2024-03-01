@@ -19,15 +19,15 @@ class RandomNode:
             rand_fn_name = f"random_{value_type}_string"
             try:
                 rand_fn = getattr(random_string, rand_fn_name)
-                min_len = int(random_node.attrib.get("min_len"))
-                max_len = int(random_node.attrib.get("max_len"))
+                min_len = int(random_node.attrib.get("min-len"))
+                max_len = int(random_node.attrib.get("max-len"))
                 return rand_fn(min_len, max_len)
             except AttributeError:
                 raise RuntimeError(f"Bad value type: '{value_type}'.")
         else:
-            char_set = random_node.attrib.get("char_set")
-            min_len = int(random_node.attrib.get("min_len"))
-            max_len = int(random_node.attrib.get("max_len"))
+            char_set = random_node.attrib.get("char-set")
+            min_len = int(random_node.attrib.get("min-len"))
+            max_len = int(random_node.attrib.get("max-len"))
             return random_string.random_string(char_set, min_len, max_len)
 
     @staticmethod
