@@ -52,12 +52,17 @@ def global_template_roots():
     return roots
 
 
+def default_template_roots():
+    roots = global_template_roots()
+    roots.append(Path("."))
+    return roots
+
+
 class ExecutionContext:
     def __init__(self, ui: AbstractUi, variables: VariablesDict):
         self.__ui = ui
         self.__variables = variables
-        self.__template_root_dpaths = global_template_roots()
-        self.__template_root_dpaths.append(Path("."))
+        self.__template_root_dpaths = default_template_roots()
 
     @property
     def ui(self):
@@ -150,4 +155,3 @@ class ExecutionContext:
             raise RuntimeError(f"No template '{template_fname}' compatible with version {version_attr} found "
                                f"in {template_dpath}.")
         return Path(template_fpath)
-
