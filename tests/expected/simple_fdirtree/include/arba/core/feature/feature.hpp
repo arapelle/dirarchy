@@ -7,4 +7,3 @@ inline namespace core
     int version();
 }
 }
- 

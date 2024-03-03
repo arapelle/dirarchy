@@ -10,4 +10,3 @@ rand_upper_sisy = DUKUZIRE
 rand_snake = gia
 rand_format_cvqd = Zezax_kotil_li_34
 rand_chars = cud
- 

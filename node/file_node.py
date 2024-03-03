@@ -68,5 +68,5 @@ class FileNode:
             while " \t".find(text[-(idx + 1)]) != -1:
                 idx = idx + 1
             if idx > 0:
-                text = text[:-idx + 1]
+                text = text[:-idx]
         return text

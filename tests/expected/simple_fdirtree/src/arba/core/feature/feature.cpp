@@ -9,4 +9,3 @@ inline namespace core
     int version() { return 1; }
 }
 }
- 
