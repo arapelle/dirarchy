@@ -23,8 +23,7 @@ class VarsNode:
     def treat_vars_node(vars_node: XMLTree.Element,
                         execution_context: ExecutionContext,
                         tree_info: TemplateTreeInfo):
-        if vars_node is None:
-            return
+        assert vars_node is not None
         for var_node in vars_node.iterfind("var"):
             VarsNode.treat_var_node(var_node, execution_context, tree_info)
 

@@ -13,7 +13,9 @@ class TemplateNode:
                             tree_info: TemplateTreeInfo):
         if template_node.tag != constants.ROOT_NODE_NAME:
             raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
-        vars_node.VarsNode.treat_vars_node(template_node.find("vars"), execution_context, tree_info)
+        variables_node = template_node.find("vars")
+        if variables_node is not None:
+            vars_node.VarsNode.treat_vars_node(variables_node, execution_context, tree_info)
         dir_nodes = template_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
