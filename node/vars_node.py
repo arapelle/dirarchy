@@ -2,7 +2,7 @@ import re
 import xml.etree.ElementTree as XMLTree
 
 import regex
-from execution_context import ExecutionContext
+from abstract_temgen import AbstractTemgen
 from node import random_node
 from template_tree_info import TemplateTreeInfo
 
@@ -21,15 +21,15 @@ class RegexFullMatch:
 class VarsNode:
     @staticmethod
     def treat_vars_node(vars_node: XMLTree.Element,
-                        execution_context: ExecutionContext,
+                        temgen: AbstractTemgen,
                         tree_info: TemplateTreeInfo):
         assert vars_node is not None
         for var_node in vars_node.iterfind("var"):
-            VarsNode.treat_var_node(var_node, execution_context, tree_info)
+            VarsNode.treat_var_node(var_node, temgen, tree_info)
 
     @staticmethod
     def treat_var_node(var_node: XMLTree.Element,
-                       execution_context: ExecutionContext,
+                       temgen: AbstractTemgen,
                        tree_info: TemplateTreeInfo):
         var_name = var_node.attrib.get('name')
         if not re.match(regex.VAR_NAME_REGEX, var_name):
@@ -47,6 +47,6 @@ class VarsNode:
                     var_default = var_node.attrib.get('default', None)
                     var_restr = var_node.attrib.get('regex', None)
                     regex_full_match = RegexFullMatch(var_restr) if var_restr is not None else None
-                    var_value = execution_context.ui.ask_valid_var(var_type, var_name, var_default, regex_full_match)
+                    var_value = temgen.ui().ask_valid_var(var_type, var_name, var_default, regex_full_match)
             tree_info.variables[var_name] = var_value
             # print(f"{var_name}:{var_type}({var_default})={var_value}")

@@ -2,14 +2,14 @@ import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
 import temgen
-from execution_context import ExecutionContext
+from abstract_temgen import AbstractTemgen
 from template_tree_info import TemplateTreeInfo
 
 
 class FileNode:
     @staticmethod
     def treat_file_node(file_node: XMLTree.Element,
-                        execution_context: ExecutionContext,
+                        temgen: AbstractTemgen,
                         tree_info: TemplateTreeInfo):
         template_path = file_node.attrib.get('template', None)
         if template_path is not None:
@@ -19,11 +19,11 @@ class FileNode:
             version_attr = file_node.attrib.get('template-version', None)
             if version_attr:
                 version_attr = tree_info.format_str(version_attr)
-            template_path = execution_context.find_template_file(template_path, version_attr)
+            template_path = temgen.find_template_file(template_path, version_attr)
             template_tree_info = TemplateTreeInfo(parent=tree_info,
                                                   expected_root_node_type=TemplateTreeInfo.RootNodeType.FILE,
                                                   current_template_filepath=Path(template_path))
-            working_dir = temgen.Temgen.treat_template_tree_info(execution_context, template_tree_info)
+            working_dir = temgen.treat_template_tree_info(template_tree_info)
             file_tree_info = TemplateTreeInfo(parent=tree_info, current_dirpath=working_dir)
             file_tree_info.variables = template_tree_info.variables
         else:

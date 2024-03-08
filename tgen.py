@@ -6,7 +6,6 @@ import re
 import constants
 import temgen
 import regex
-from execution_context import ExecutionContext
 from ui.tkinter_ui import TkinterUi
 from ui.terminal_ui import TerminalUi
 import version
@@ -20,7 +19,7 @@ class TemgenProgram:
 
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
-        self.__set_execution_context_from_args()
+        self.__set_temgen_from_args()
 
     @property
     def args(self):
@@ -65,10 +64,10 @@ class TemgenProgram:
             return key, value
         raise RuntimeError(key_value_str)
 
-    def __set_execution_context_from_args(self):
+    def __set_temgen_from_args(self):
         ui = self.__build_ui_from_args()
         variables = self.__build_variables_from_args()
-        self.__execution_context = ExecutionContext(ui, variables)
+        self.__temgen = temgen.Temgen(ui, variables)
 
     def __build_ui_from_args(self):
         match self.args.ui:
@@ -91,9 +90,8 @@ class TemgenProgram:
         return variables
 
     def run(self):
-        temgen.Temgen.find_and_treat_template_file(Path(self.args.template_path),
+        self.__temgen.find_and_treat_template_file(Path(self.args.template_path),
                                                    self.args.template_version,
-                                                   execution_context=self.__execution_context,
                                                    output_dir=self.args.output_dir)
 
 

@@ -1,21 +1,21 @@
 import xml.etree.ElementTree as XMLTree
 
 import constants
+from abstract_temgen import AbstractTemgen
 from node import dir_node, file_node, vars_node
-from execution_context import ExecutionContext
 from template_tree_info import TemplateTreeInfo
 
 
 class TemplateNode:
     @staticmethod
     def treat_template_node(template_node: XMLTree.Element,
-                            execution_context: ExecutionContext,
+                            temgen: AbstractTemgen,
                             tree_info: TemplateTreeInfo):
         if template_node.tag != constants.ROOT_NODE_NAME:
             raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
         variables_node = template_node.find("vars")
         if variables_node is not None:
-            vars_node.VarsNode.treat_vars_node(variables_node, execution_context, tree_info)
+            vars_node.VarsNode.treat_vars_node(variables_node, temgen, tree_info)
         dir_nodes = template_node.findall("dir")
         fsys_node = dir_nodes[0] if len(dir_nodes) > 0 else None
         if fsys_node is None:
@@ -32,8 +32,8 @@ class TemplateNode:
             raise Exception("Only one 'dir' node is expected at root.")
         match fsys_node.tag:
             case "dir":
-                return dir_node.DirNode.treat_dir_node(fsys_node, execution_context, tree_info)
+                return dir_node.DirNode.treat_dir_node(fsys_node, temgen, tree_info)
             case "file":
-                return file_node.FileNode.treat_file_node(fsys_node, execution_context, tree_info)
+                return file_node.FileNode.treat_file_node(fsys_node, temgen, tree_info)
             case _:
                 assert False

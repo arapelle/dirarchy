@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as XMLTree
 
-from execution_context import ExecutionContext
+from abstract_temgen import AbstractTemgen
 from node import node_base
 from template_tree_info import TemplateTreeInfo
 
@@ -8,7 +8,7 @@ from template_tree_info import TemplateTreeInfo
 class IfNode:
     @staticmethod
     def treat_if_node(if_node: XMLTree.Element,
-                      execution_context: ExecutionContext,
+                      temgen: AbstractTemgen,
                       tree_info: TemplateTreeInfo):
         from re import match, fullmatch
         then_nodes = if_node.findall('then')
@@ -26,8 +26,8 @@ class IfNode:
         bool_expr_value = bool(eval(expr_attr))
         if bool_expr_value:
             if then_count == 0:
-                node_base.NodeBase.treat_action_children_nodes_of(if_node, execution_context, tree_info)
+                node_base.NodeBase.treat_action_children_nodes_of(if_node, temgen, tree_info)
             else:
-                node_base.NodeBase.treat_action_children_nodes_of(then_nodes[0], execution_context, tree_info)
+                node_base.NodeBase.treat_action_children_nodes_of(then_nodes[0], temgen, tree_info)
         elif else_count > 0:
-            node_base.NodeBase.treat_action_children_nodes_of(else_nodes[0], execution_context, tree_info)
+            node_base.NodeBase.treat_action_children_nodes_of(else_nodes[0], temgen, tree_info)

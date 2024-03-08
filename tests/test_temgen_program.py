@@ -7,7 +7,7 @@ from json import JSONDecodeError
 from pathlib import Path
 
 import constants
-import execution_context
+import temgen
 from template_tree_info import TemplateTreeInfo
 from tests.test_temgen_program_base import TestTemgenProgramBase
 
@@ -284,7 +284,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
     def setUpClass(cls) -> None:
         TestTemgenProgramBase.setUpClass()
         template_local_root = "temfile"
-        template_root = Path(f"{execution_context.system_template_roots()[-1]}/{template_local_root}")
+        template_root = Path(f"{temgen.system_template_roots()[-1]}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temfile-1.0.0.xml", f"{template_root}/temfile-1.0.0.xml")
         shutil.copyfile("input/templates/temfile-1.1.0.xml", f"{template_root}/temfile-1.1.0.xml")
@@ -292,7 +292,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         shutil.copyfile("input/templates/temfile-1.2.0.xml", f"{template_root}/temfile-1.2.0.xml")
         shutil.copyfile("input/templates/temfile-2.0.0.xml", f"{template_root}/temfile-2.0.0.xml")
         template_local_root = "temdir"
-        template_root = Path(f"{execution_context.system_template_roots()[-1]}/{template_local_root}")
+        template_root = Path(f"{temgen.system_template_roots()[-1]}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temdir-1.0.0.xml", f"{template_root}/temdir-1.0.0.xml")
         shutil.copyfile("input/templates/temdir-1.1.0.xml", f"{template_root}/temdir-1.1.0.xml")

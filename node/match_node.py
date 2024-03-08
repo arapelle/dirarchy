@@ -1,7 +1,7 @@
 import re
 import xml.etree.ElementTree as XMLTree
 
-from execution_context import ExecutionContext
+from abstract_temgen import AbstractTemgen
 from node import node_base
 from template_tree_info import TemplateTreeInfo
 
@@ -9,7 +9,7 @@ from template_tree_info import TemplateTreeInfo
 class MatchNode:
     @staticmethod
     def treat_match_node(match_node: XMLTree.Element,
-                         execution_context: ExecutionContext,
+                         temgen: AbstractTemgen,
                          tree_info: TemplateTreeInfo):
         expr_attr = match_node.attrib['expr']
         expr_attr = tree_info.format_str(expr_attr)
@@ -36,6 +36,6 @@ class MatchNode:
                 raise Exception(f"A match node cannot have two default case nodes.")
             default_case_node = case_node
         if found_case_node:
-            node_base.NodeBase.treat_action_children_nodes_of(found_case_node, execution_context, tree_info)
+            node_base.NodeBase.treat_action_children_nodes_of(found_case_node, temgen, tree_info)
         elif default_case_node:
-            node_base.NodeBase.treat_action_children_nodes_of(default_case_node, execution_context, tree_info)
+            node_base.NodeBase.treat_action_children_nodes_of(default_case_node, temgen, tree_info)
