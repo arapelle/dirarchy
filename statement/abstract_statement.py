@@ -37,6 +37,14 @@ class AbstractStatement(ABC):
     def variables(self):
         return self.__variables
 
+    def get_variable_value(self, variable_name, default_value=None):
+        variable_value = self.__variables.get(variable_name, None)
+        if variable_value is not None:
+            return variable_value
+        if self.__parent_statement is None:
+            return default_value
+        return self.__parent_statement.get_variable_value(variable_name, default_value)
+
     def current_dir_statement(self):
         if self.__parent_statement is None:
             return None
