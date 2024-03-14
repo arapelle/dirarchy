@@ -2,6 +2,7 @@ import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
 import constants
+from log import MethodScopeLog
 from statement.abstract_dir_statement import AbstractDirStatement
 from statement.abstract_statement import AbstractStatement
 from statement.vars_statement import VarsStatement
@@ -60,12 +61,13 @@ class TemplateStatement(AbstractDirStatement):
         return self.__expected_statement
 
     def run(self):
-        vars_node = self.current_node().find("vars")
-        if vars_node is not None:
-            self.__current_child_statement = VarsStatement(vars_node, self)
-            self.__current_child_statement.run()
-        self.treat_children_nodes_of(self.current_node())
-        self.__current_child_statement = None
+        with MethodScopeLog(self):
+            vars_node = self.current_node().find("vars")
+            if vars_node is not None:
+                self.__current_child_statement = VarsStatement(vars_node, self)
+                self.__current_child_statement.run()
+            self.treat_children_nodes_of(self.current_node())
+            self.__current_child_statement = None
 
     def treat_children_nodes_of(self, node: XMLTree.Element):
         if node == self.current_node():

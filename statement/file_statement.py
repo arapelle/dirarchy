@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
+from log import MethodScopeLog
 from statement.abstract_main_statement import AbstractMainStatement
 
 
@@ -20,15 +21,16 @@ class FileStatement(AbstractMainStatement):
         return self.__output_file
 
     def run(self):
-        parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
-        self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
-        self.__output_filepath.parent.mkdir(parents=True, exist_ok=True)
-        open_mode = "w"
-        with open(self.__output_filepath, open_mode) as file:
-            self.__output_file = file
-            self.__output_file.write(self.__file_text(self.current_node()))
-            self.treat_children_nodes_of(self.current_node())
-        self.__output_file = None
+        with MethodScopeLog(self):
+            parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
+            self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
+            self.__output_filepath.parent.mkdir(parents=True, exist_ok=True)
+            open_mode = "w"
+            with open(self.__output_filepath, open_mode) as file:
+                self.__output_file = file
+                self.__output_file.write(self.__file_text(self.current_node()))
+                self.treat_children_nodes_of(self.current_node())
+            self.__output_file = None
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
         super().treat_child_node(node, child_node)

@@ -4,6 +4,7 @@ from builtins import RuntimeError
 from io import StringIO
 
 import regex
+from log import MethodScopeLog
 from statement.abstract_statement import AbstractStatement
 from statement.abstract_main_statement import AbstractMainStatement
 from statement.random_statement import RandomStatement
@@ -30,28 +31,29 @@ class VarStatement(AbstractMainStatement):
         self.__var_value = None
 
     def run(self):
-        var_node = self.current_node()
-        self.__var_name = var_node.attrib.get('name')
-        if not re.match(regex.VAR_NAME_REGEX, self.__var_name):
-            raise Exception(f"Variable name is not a valid name: '{self.__var_name}'.")
-        self.__var_value = self.get_variable_value(self.__var_name)
-        self.__var_type = var_node.attrib.get('type', 'str')
-        var_restr = var_node.attrib.get('regex', None)
-        self.__var_regex = RegexFullMatch(var_restr) if var_restr is not None else None
-        if self.__var_value is None:
-            self.__var_value = var_node.attrib.get('value', None)
+        with MethodScopeLog(self):
+            var_node = self.current_node()
+            self.__var_name = var_node.attrib.get('name')
+            if not re.match(regex.VAR_NAME_REGEX, self.__var_name):
+                raise Exception(f"Variable name is not a valid name: '{self.__var_name}'.")
+            self.__var_value = self.get_variable_value(self.__var_name)
+            self.__var_type = var_node.attrib.get('type', 'str')
+            var_restr = var_node.attrib.get('regex', None)
+            self.__var_regex = RegexFullMatch(var_restr) if var_restr is not None else None
             if self.__var_value is None:
-                if len(var_node) == 0:
-                    self.__var_default = var_node.attrib.get('default', None)
-                    self.__var_value = self.temgen().ui().ask_valid_var(self.__var_type, self.__var_name,
-                                                                        self.__var_default, self.__var_regex)
-                else:
-                    self.treat_children_nodes_of(self.current_node())
-            self.__var_value = self.format_str(self.__var_value)
-            self.__check_variable_value()
-            self.variables().update({self.__var_name: self.__var_value})
-        else:
-            self.__check_variable_value()
+                self.__var_value = var_node.attrib.get('value', None)
+                if self.__var_value is None:
+                    if len(var_node) == 0:
+                        self.__var_default = var_node.attrib.get('default', None)
+                        self.__var_value = self.temgen().ui().ask_valid_var(self.__var_type, self.__var_name,
+                                                                            self.__var_default, self.__var_regex)
+                    else:
+                        self.treat_children_nodes_of(self.current_node())
+                self.__var_value = self.format_str(self.__var_value)
+                self.__check_variable_value()
+                self.variables().update({self.__var_name: self.__var_value})
+            else:
+                self.__check_variable_value()
 
     def __check_variable_value(self):
         #TODO use self.__var_type and self.__var_regex (if any), to check sefl.__var_value

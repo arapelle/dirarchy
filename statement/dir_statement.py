@@ -2,6 +2,7 @@ import xml.etree.ElementTree as XMLTree
 from builtins import RuntimeError
 from pathlib import Path
 
+from log import MethodScopeLog
 from statement.abstract_dir_statement import AbstractDirStatement
 from statement.abstract_statement import AbstractStatement
 
@@ -12,12 +13,13 @@ class DirStatement(AbstractDirStatement):
         self.__output_dirpath = Path()
 
     def run(self):
-        template_path = self.current_node().get('template', None)
-        if template_path is None:
-            self.__make_output_dir()
-        else:
-            self.__run_template(template_path)
-        self.treat_children_nodes_of(self.current_node())
+        with MethodScopeLog(self):
+            template_path = self.current_node().get('template', None)
+            if template_path is None:
+                self.__make_output_dir()
+            else:
+                self.__run_template(template_path)
+            self.treat_children_nodes_of(self.current_node())
 
     def __make_output_dir(self):
         parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()

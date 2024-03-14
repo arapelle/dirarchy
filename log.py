@@ -67,3 +67,47 @@ def make_console_file_logger(**kwargs):
     if log_to_info:
         logger.info(f"Log to {logger_maker.log_filepath()}")
     return logger
+
+
+class ScopeLog:
+    STACKLEVEL = 2
+
+    def __init__(self, message: str, logger=None, **kwargs):
+        if logger is None:
+            logger = logging.getLogger()
+        self.__logger = logger
+        self.__level = kwargs.get("level", logging.DEBUG)
+        self.__begin_format = kwargs.get("begin_format", " {}")
+        self.__end_format = kwargs.get("end_format", "/{}")
+        self.__message = message
+        self.__stacklevel = kwargs.get("stacklevel", ScopeLog.STACKLEVEL)
+        self.__logger.log(self.__level, self.__begin_format.format(message), stacklevel=self.__stacklevel)
+
+    def __del__(self):
+        if self.__logger is not None:
+            message = self.__message
+            self.__logger.log(self.__level, self.__end_format.format(message), stacklevel=self.__stacklevel - 1)
+            self.__logger = None
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.__logger is not None:
+            message = self.__message
+            self.__logger.log(self.__level, self.__end_format.format(message), stacklevel=self.__stacklevel - 1)
+            self.__logger = None
+
+
+class MethodScopeLog(ScopeLog):
+    STACKLEVEL = ScopeLog.STACKLEVEL + 1
+
+    def __init__(self, hs, logger=None, **kwargs):
+        if logger is None:
+            logger = logging.getLogger()
+        try:
+            fn, lno, func, sinfo = logger.findCaller(False, 2)
+        except ValueError:
+            fn, lno, func = "(unknown file)", 0, "(unknown function)"
+        kwargs["stacklevel"] = MethodScopeLog.STACKLEVEL
+        super().__init__(f"{hs.__class__.__name__}.{func}", logger, **kwargs)
