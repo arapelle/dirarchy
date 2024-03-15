@@ -24,6 +24,7 @@ class DirStatement(AbstractDirStatement):
     def __make_output_dir(self):
         parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
         self.__output_dirpath = parent_output_dirpath / self.format_str(self.current_node().attrib['path'])
+        self.logger.info(f"Make dir {self.__output_dirpath}")
         self.__output_dirpath.mkdir(parents=True, exist_ok=True)
 
     def __run_template(self, template_path):

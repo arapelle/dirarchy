@@ -24,8 +24,12 @@ class FileStatement(AbstractMainStatement):
         with MethodScopeLog(self):
             parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
             self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
-            self.__output_filepath.parent.mkdir(parents=True, exist_ok=True)
+            output_file_parent_dirpath = self.__output_filepath.parent
+            if output_file_parent_dirpath != parent_output_dirpath:
+                self.logger.info(f"Make dir {output_file_parent_dirpath}")
+                output_file_parent_dirpath.mkdir(parents=True, exist_ok=True)
             open_mode = "w"
+            self.logger.info(f"Make file {self.__output_filepath}")
             with open(self.__output_filepath, open_mode) as file:
                 self.__output_file = file
                 self.__output_file.write(self.__file_text(self.current_node()))
