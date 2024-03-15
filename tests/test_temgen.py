@@ -154,6 +154,25 @@ rand_chars = {rand_chars}
                                                                   output_dir=Path(self._output_dirname))
         self._compare_output_and_expected(project_root_dir)
 
+    def test__treat_template_xml_string__file_copy__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="fruit" value="Ananas" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="list.txt" copy="input/data/fruits.txt" />
+    </dir>
+</template>
+        """
+        project_root_dir = "template_xml_string__file_copy"
+        sys.stdin = io.StringIO(f"{project_root_dir}")
+        template_generator = Temgen(TerminalUi())
+        template_generator.experimental_treat_template_xml_string(template_string,
+                                                                  output_dir=Path(self._output_dirname))
+        self._compare_output_and_expected(project_root_dir)
+
 
 if __name__ == '__main__':
     unittest.main()
