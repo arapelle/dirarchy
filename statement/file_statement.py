@@ -11,6 +11,10 @@ class FileStatement(AbstractMainStatement):
         self.__output_filepath = Path()
         self.__output_file = None
 
+    def __del__(self):
+        if self.__output_file is not None:
+            self.__output_file.close()
+
     def current_file_statement(self):
         return self
 
@@ -20,21 +24,51 @@ class FileStatement(AbstractMainStatement):
     def current_output_file(self):
         return self.__output_file
 
+    def extract_current_output_file(self):
+        output_file = self.__output_file
+        self.__output_file = None
+        return output_file
+
     def run(self):
         with MethodScopeLog(self):
-            parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
-            self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
-            output_file_parent_dirpath = self.__output_filepath.parent
-            if output_file_parent_dirpath != parent_output_dirpath:
-                self.logger.info(f"Make dir {output_file_parent_dirpath}")
-                output_file_parent_dirpath.mkdir(parents=True, exist_ok=True)
-            open_mode = "w"
-            self.logger.info(f"Make file {self.__output_filepath}")
-            with open(self.__output_filepath, open_mode) as file:
-                self.__output_file = file
-                self.__output_file.write(self.__file_text(self.current_node()))
-                self.treat_children_nodes_of(self.current_node())
-            self.__output_file = None
+            template_path = self.current_node().get('template', None)
+            if template_path is None:
+                self.__make_output_file()
+            else:
+                self.__run_template(template_path)
+            self.treat_children_nodes_of(self.current_node())
+
+    def __make_output_file(self):
+        parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
+        self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
+        output_file_parent_dirpath = self.__output_filepath.parent
+        if output_file_parent_dirpath != parent_output_dirpath:
+            self.logger.info(f"Make dir {output_file_parent_dirpath}")
+            output_file_parent_dirpath.mkdir(parents=True, exist_ok=True)
+        open_mode = "w"
+        self.logger.info(f"Make file {self.__output_filepath}")
+        self.__output_file = open(self.__output_filepath, open_mode)
+        self.__output_file.write(self.__file_text(self.current_node()))
+        self.__output_file.flush()
+
+    def __run_template(self, template_path: str):
+        assert 'path' not in self.current_node().attrib
+        template_path = Path(self.format_str(template_path))
+        version_attr = self.current_node().get('template-version', None)
+        if version_attr:
+            version_attr = self.format_str(version_attr)
+        template_path = self.temgen().find_template_file(template_path, version_attr)
+        from statement.template_statement import TemplateStatement
+        with open(template_path, 'r') as template_file:
+            data_tree = XMLTree.parse(template_file)
+        template_statement = TemplateStatement(data_tree.getroot(), self,
+                                               variables=self.variables(),
+                                               template_filepath=template_path)
+        template_statement.run()
+        expected_statement = template_statement.expected_statement()
+        assert isinstance(expected_statement, self.__class__)
+        self.__output_filepath = expected_statement.current_output_filepath()
+        self.__output_file = expected_statement.extract_current_output_file()
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
         super().treat_child_node(node, child_node)

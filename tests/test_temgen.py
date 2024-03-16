@@ -154,6 +154,24 @@ rand_chars = {rand_chars}
                                                                   output_dir=Path(self._output_dirname))
         self._compare_output_and_expected(project_root_dir)
 
+    def test__treat_template_xml_string__file_calls_template__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="input/templates/temfile" template-version="1" />
+    </dir>
+</template>
+        """
+        project_root_dir = "template_xml_string__file_calls_template"
+        sys.stdin = io.StringIO(f"{project_root_dir}\nstuff\ncard")
+        template_generator = Temgen(TerminalUi())
+        template_generator.experimental_treat_template_xml_string(template_string,
+                                                                  output_dir=Path(self._output_dirname))
+        self._compare_output_and_expected(project_root_dir)
+
     def test__treat_template_xml_string__file_copy__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
