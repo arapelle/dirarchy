@@ -45,5 +45,14 @@ class DirStatement(AbstractDirStatement):
         assert isinstance(expected_statement, self.__class__)
         self.__output_dirpath = expected_statement.current_output_dirpath()
 
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+        match child_node.tag:
+            case "if":
+                from statement.if_statement import IfStatement
+                if_statement = IfStatement(child_node, self)
+                if_statement.run()
+            case _:
+                super().treat_child_node(node, child_node)
+
     def current_output_dirpath(self) -> Path:
         return self.__output_dirpath
