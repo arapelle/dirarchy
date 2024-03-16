@@ -9,16 +9,19 @@ from statement.vars_statement import VarsStatement
 
 class TemplateStatement(AbstractDirStatement):
     from temgen import Temgen
+
     TEMGEN_LABEL = constants.LOWER_PROGRAM_NAME
     TEMPLATE_FILEPATH_LABEL = "template_filepath"
     OUTPUT_DIRPATH_LABEL = "output_dirpath"
 
-    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement | None, **kargs):
+    def __init__(self, current_node: XMLTree.Element, caller_statement: AbstractStatement | None, **kargs):
         if current_node.tag != constants.ROOT_NODE_NAME:
             raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
-        super().__init__(current_node, parent_statement, **kargs)
-        if self.parent_statement() is not None:
-            self.__parent_template_statement = self.parent_statement().template_statement()
+        self.__caller_statement = caller_statement
+        parent_statement = None
+        if self.__caller_statement is not None:
+            parent_statement = self.__caller_statement.parent_statement()
+            self.__parent_template_statement = parent_statement.template_statement()
             assert self.__parent_template_statement is not None
             self.__temgen = self.__parent_template_statement.temgen()
             self.__output_dirpath = parent_statement.current_dir_statement().current_output_dirpath()
@@ -31,6 +34,7 @@ class TemplateStatement(AbstractDirStatement):
         self.__template_filepath = kargs.get(TemplateStatement.TEMPLATE_FILEPATH_LABEL, None)
         assert isinstance(self.__template_filepath, Path) or self.__template_filepath is None
         self.__current_child_statement = None
+        self.__expected_statement = None
 
     def parent_template_statement(self):
         return self.__parent_template_statement
@@ -52,6 +56,9 @@ class TemplateStatement(AbstractDirStatement):
     def current_child_statement(self):
         return self.__current_child_statement
 
+    def expected_statement(self):
+        return self.__expected_statement
+
     def run(self):
         vars_node = self.current_node().find("vars")
         if vars_node is not None:
@@ -71,7 +78,16 @@ class TemplateStatement(AbstractDirStatement):
         if child_node.tag == "vars":
             if node == self.current_node():
                 return
+        if self.__caller_statement is not None and node == self.current_node():
+            expected_tag = self.__caller_statement.current_node().tag
+            if child_node.tag != expected_tag:
+                raise RuntimeError(f"Unexpected node ({child_node.tag}) under <template>. "
+                                   f"Expected: {expected_tag}.")
         super().treat_child_node(node, child_node)
+        assert self.__current_child_statement is not None
+        if self.__caller_statement is not None and node == self.current_node():
+            self.__expected_statement = self.__current_child_statement
+        self.__current_child_statement = None
 
     def _create_dir_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
         dir_statement = super()._create_dir_statement(node, child_node)
