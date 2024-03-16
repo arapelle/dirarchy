@@ -51,14 +51,25 @@ class TemplateStatement(AbstractDirStatement):
         return self.__current_child_statement
 
     def run(self):
+        vars_node = self.current_node().find("vars")
+        if vars_node is not None:
+            self.__current_child_statement = VarsStatement(vars_node, self)
+            self.__current_child_statement.run()
         self.treat_children_nodes_of(self.current_node())
         self.__current_child_statement = None
 
     def treat_children_nodes_of(self, node: XMLTree.Element):
         if node == self.current_node():
-            if len(node) > 1:
+            limit = 2 if node.find("vars") is not None else 1
+            if len(node) > limit:
                 raise RuntimeError("Too many nodes under <template>.")
         super().treat_children_nodes_of(node)
+
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+        if child_node.tag == "vars":
+            if node == self.current_node():
+                return
+        super().treat_child_node(node, child_node)
 
     def _create_dir_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
         dir_statement = super()._create_dir_statement(node, child_node)
