@@ -31,6 +31,10 @@ class AbstractStatement(ABC):
     def temgen(self):
         return self.__template_statement.temgen()
 
+    @property
+    def logger(self):
+        return self.temgen().logger
+
     def current_node(self):
         return self.__current_node
 

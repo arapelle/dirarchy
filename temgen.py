@@ -1,3 +1,4 @@
+import copy
 import errno
 import glob
 import os
@@ -8,6 +9,7 @@ from pathlib import Path
 
 import constants
 import regex
+from log import make_console_file_logger
 from node import template_node
 from abstract_temgen import AbstractTemgen
 from template_tree_info import TemplateTreeInfo
@@ -69,6 +71,11 @@ class Temgen(AbstractTemgen):
         self.__ui = ui
         self.__variables = variables
         self.__template_root_dpaths = default_template_roots()
+        self.__logger = make_console_file_logger(tool=constants.LOWER_PROGRAM_NAME, log_to_info=True)
+
+    @property
+    def logger(self):
+        return self.__logger
 
     def ui(self):
         return self.__ui
@@ -186,3 +193,21 @@ class Temgen(AbstractTemgen):
                                      current_dirpath=output_dir)
         root_element = XMLTree.fromstring(template_str)
         return template_node.TemplateNode.treat_template_node(root_element, self, tree_info)
+
+    def experimental_treat_template_xml_string(self, template_str: str, output_dir=None):
+        from statement.template_statement import TemplateStatement
+        root_element = XMLTree.fromstring(template_str)
+        output_dir = self.__resolve_output_dir(output_dir)
+        template_statement = TemplateStatement(root_element, None,
+                                               temgen=self,
+                                               variables=copy.deepcopy(self.init_variables()),
+                                               output_dirpath=Path(output_dir))
+        template_statement.run()
+
+    @staticmethod
+    def __resolve_output_dir(output_dir):
+        if output_dir is None:
+            output_dir = Path.cwd()
+        if not output_dir.exists():
+            raise FileNotFoundError(f"The provided output directory does not exist: '{output_dir}'.")
+        return output_dir

@@ -9,6 +9,32 @@ from tests.dircmp_test_case import DirCmpTestCase
 
 
 class TestTemgen(DirCmpTestCase):
+    def test__treat_template_xml_string__vars_dir_file__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="file_name" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="name" type="gstr" regex="[A-Z][a-z_]*" />
+        <var name="color" type="gstr" regex="[a-z]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="{file_name}.txt">
+{{ 
+    name = {name}, 
+    color = {color}
+}}
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "template_xml_string__vars_dir_file"
+        sys.stdin = io.StringIO(f"{project_root_dir}\ndata\nAlix\nwhite")
+        template_generator = Temgen(TerminalUi())
+        template_generator.experimental_treat_template_xml_string(template_string,
+                                                                  output_dir=Path(self._output_dirname))
+        self._compare_output_and_expected(project_root_dir)
+
     def test__treat_template_xml_string__basic_template__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>

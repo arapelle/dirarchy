@@ -1,5 +1,4 @@
 import xml.etree.ElementTree as XMLTree
-from abc import abstractmethod
 from pathlib import Path
 
 import constants
@@ -14,7 +13,7 @@ class TemplateStatement(AbstractDirStatement):
     TEMPLATE_FILEPATH_LABEL = "template_filepath"
     OUTPUT_DIRPATH_LABEL = "output_dirpath"
 
-    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement, **kargs):
+    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement | None, **kargs):
         if current_node.tag != constants.ROOT_NODE_NAME:
             raise RuntimeError(f"Root node must be '{constants.ROOT_NODE_NAME}'!")
         super().__init__(current_node, parent_statement, **kargs)
@@ -22,12 +21,15 @@ class TemplateStatement(AbstractDirStatement):
             self.__parent_template_statement = self.parent_statement().template_statement()
             assert self.__parent_template_statement is not None
             self.__temgen = self.__parent_template_statement.temgen()
-            self.__output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
+            self.__output_dirpath = parent_statement.current_dir_statement().current_output_dirpath()
         else:
             self.__parent_template_statement = None
             self.__temgen = kargs[TemplateStatement.TEMGEN_LABEL]
             self.__output_dirpath = kargs[TemplateStatement.OUTPUT_DIRPATH_LABEL]
-        self.__template_filepath = Path(kargs.get(TemplateStatement.TEMPLATE_FILEPATH_LABEL))
+        super().__init__(current_node, parent_statement, **kargs)
+        assert self.parent_statement() == parent_statement
+        self.__template_filepath = kargs.get(TemplateStatement.TEMPLATE_FILEPATH_LABEL, None)
+        assert isinstance(self.__template_filepath, Path) or self.__template_filepath is None
         self.__current_child_statement = None
 
     def parent_template_statement(self):
