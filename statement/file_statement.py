@@ -132,5 +132,10 @@ class FileStatement(AbstractMainStatement):
             raise RuntimeError("No child statement is expected when copying a file.")
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        super().treat_child_node(node, child_node)
-        # TODO match: <contents>
+        match child_node.tag:
+            case "if":
+                from statement.if_statement import IfStatement
+                if_statement = IfStatement(child_node, self)
+                if_statement.run()
+            case _:
+                super().treat_child_node(node, child_node)

@@ -287,6 +287,41 @@ Ve-_vQ==
         input_parameters = ["input/data/base64urldata.txt"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    @staticmethod
+    def __child_statement_if_str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="var" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" strip="strip">
+            <if expr="'{var}' == 'then'">
+                <then>
+                    THEN
+                </then>
+                <else>
+                    ELSE
+                </else>
+            </if>
+        </file>
+    </dir>
+</template>
+            """
+
+    def test__child_statement_if__then__ok(self):
+        template_string = self.__child_statement_if_str()
+        project_root_dir = "child_statement_if__then"
+        input_parameters = ["then"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__child_statement_if__else__ok(self):
+        template_string = self.__child_statement_if_str()
+        project_root_dir = "child_statement_if__else"
+        input_parameters = ["else"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__file_calls_template__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
