@@ -1,22 +1,293 @@
-import io
-import random
-import sys
 import unittest
-from pathlib import Path
+from builtins import RuntimeError
 
 from tests import config
-from ui.terminal_ui import TerminalUi
-from temgen import Temgen
-from tests.dircmp_test_case import DirCmpTestCase
+from tests.test_temgen_base import TestTemgenBase
 
 
-class TestTemgenFile(DirCmpTestCase):
+class TestTemgenFile(TestTemgenBase):
     @classmethod
     def setUpClass(cls) -> None:
         cls._local_sub_dirpath = "temgen/file"
         super().setUpClass()
 
-    def test__treat_template_xml_string__file_calls_template__ok(self):
+    def test__text_to_text_file__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="element" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" strip="lstrip">
+element: {element}
+        </file>
+    </dir>
+</template>
+            """
+        project_root_dir = "text_to_text_file"
+        input_parameters = ["fire"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__text_to_binary_file__base64_icon__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="icon.png" encoding="binary" format="base64">
+iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACoElEQVRYR9WXgZExQRCFZyNABIgA
+ESACZEAGRIAIyAARIAJEQAZkgAjcfVPVW7M7M3uzu1f3199VW9ya6X7z+nX3XKSU+nw//8yi/xJA
+o9FQj8fjV1hLMDAej9Xn81HH41G9Xi9ngGq1qp7Pp+p0Oup2u5UGkQCwWCzUfD7XwdfrtVoul84A
+5/NZHQ4HvaasOQGIU044Go0sugHa6/X0k7btdqvXsybErBRsNpvEPtjo9/sJugm83+9VrVZLrC2S
+ngSAdrutrterBRwQzWYz1oUE4p0pxixmfGxYZYjDer1urSfvMCEGqOFwqHiPURmAJ2XyLncK2CBC
+dG2eTCaKHGME4bv8jSgxQOUxiwFOgvgqlYrlB3agXQAAAsDT6VR/ksK8/cHZCbNYkPonOA8BEW7R
+vuBtxbDQarUsFugNACQ4LHFqMzVsQKSyl9/x9X6/nY3LCwAnBEmDuFwuuv75rdvtxsFZPxgMtAZ8
+OkC4aGW328VCzRxGOGUDgUz1U/+8R4B8EnC1WulKCLXZbKY7adA0FKGJMKMo0jRjNCRXR8wCAgPM
+HSwIgOSVTSiekwLgdDppDYQaOmC/lG4mAGgl/1Ja5I8pKRNQSs9Vri5AnJo96SlrMfBTPsmdNB3p
+huwBqNlBRfWiE994/3EYmafBKfTjFMXLyPY5D0lNDIBTIKgskx7ApUWMlDAjioLQABDU/X6Ple3L
+ISJE8YjPtDIgNICs1gvtUC0XDBcAwAg7IbSbazQA8opj0iD1DaUy8Ux6fQB0SX33h7wW3AfEsVxG
+XIHQQp67QK5GZAaUOZAGwWVESjSUidwM4Nh3dUtPxRAQhQDgmIpIX2D/LAVyMgQJ5bRjqkUEHHJy
+WVOYAVOU9Hgs9H8BqwzzIP7ttaUZKAvoC4xKqRALWT+yAAAAAElFTkSuQmCC
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "text_to_binary_file__base64_icon"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__text_to_binary_file__base64_data__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="bin_data" encoding="binary" format="base64">
+Mu+/vR8eNe+/ve+/ve+/vQrrna/vv71h77+977+977+977+9eO+/ve+/vWDvv70l77+9Iu+/ve+/
+ve+/vWjvv71m77+9Nlk/77+977+9BFQg77+9Lu+/ve+/vWkO77+9PgDvv73vv70j77+977+9GgHv
+v70n77+977+9fO+/vU12b++/vVzvv71u77+9Ie+/vSU+77+977+9Mx5p77+9ARhW77+9ae+/vVQP
+77+9D++/ve+/vSzvv73vv70p77+9CyNV77+977+9PShZSSpxO++/ve+/ve+/vVUR77+9byDKiO+/
+vW3vv70DJt6W77+9Vl8TQSRXXmd+TXHvv70c77+9CDnvv73vv704au+/vUIQX++/vXvvv71D77+9
+IANU77+9Lu+/vWkFyo8gOu+/ve+/vdeFRu+/vS1+77+977+977+9ae+/vXQM77+977+96KCN77+9
+77+9MxEnMPKwuJrvv73vv73vv70T77+977+9FO+/vQHvv71W77+9Ge+/ve+/vUkC77+9GXTvv71D
+77+977+977+9UNG5OiXvv70AFe+/ve+/ve+/vWvvv71177+977+9TO+/ve+/vXwF77+9Ou+/vQZA
+Ve+/vQ==
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "text_to_binary_file__base64_data"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__text_to_binary_file__base64_url_data__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="bin_data" encoding="binary" format="base64-url">
+Mu-_vR8eNe-_ve-_ve-_vQrrna_vv71h77-977-977-977-9eO-_ve-_vWDvv70l77-9Iu-_ve-_
+ve-_vWjvv71m77-9Nlk_77-977-9BFQg77-9Lu-_ve-_vWkO77-9PgDvv73vv70j77-977-9GgHv
+v70n77-977-9fO-_vU12b--_vVzvv71u77-9Ie-_vSU-77-977-9Mx5p77-9ARhW77-9ae-_vVQP
+77-9D--_ve-_vSzvv73vv70p77-9CyNV77-977-9PShZSSpxO--_ve-_ve-_vVUR77-9byDKiO-_
+vW3vv70DJt6W77-9Vl8TQSRXXmd-TXHvv70c77-9CDnvv73vv704au-_vUIQX--_vXvvv71D77-9
+IANU77-9Lu-_vWkFyo8gOu-_ve-_vdeFRu-_vS1-77-977-977-9ae-_vXQM77-977-96KCN77-9
+77-9MxEnMPKwuJrvv73vv73vv70T77-977-9FO-_vQHvv71W77-9Ge-_ve-_vUkC77-9GXTvv71D
+77-977-977-9UNG5OiXvv70AFe-_ve-_ve-_vWvvv71177-977-9TO-_ve-_vXwF77-9Ou-_vQZA
+Ve-_vQ==
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "text_to_binary_file__base64_url_data"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    @staticmethod
+    def __copy_text_file_to_text_file__format__str(copy_format_attr: str):
+        return f"""<?xml version="1.0"?>
+    <template>
+        <vars>
+            <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+            <var name="fruit" value="Ananas" />
+        </vars>
+        <dir path="{{project_root_dir}}">
+            <file path="list.txt" {copy_format_attr} copy="input/data/fruits.txt" />
+        </dir>
+    </template>
+        """
+
+    def test__copy_text_file_to_text_file__default_format__ok(self):
+        template_string = self.__copy_text_file_to_text_file__format__str('')
+        project_root_dir = "copy_text_file_to_text_file__default_format"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_text_file_to_text_file__raw__ok(self):
+        template_string = self.__copy_text_file_to_text_file__format__str('format="raw"')
+        project_root_dir = "copy_text_file_to_text_file__raw"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_text_file_to_text_file__bad_format__exception(self):
+        try:
+            template_string = self.__copy_text_file_to_text_file__format__str('format="base64"')
+            project_root_dir = "copy_text_file_to_text_file__bad_format"
+            input_parameters = []
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err), "Format action not handled when copying text to text stream: base64.")
+
+    @staticmethod
+    def __copy_binary_file_to_binary_file__format__str(copy_format_attr: str, strip_action_attr: str = ""):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="file_to_copy" type="gstr" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="icon.png" encoding="binary" {copy_format_attr} {strip_action_attr} copy="{{file_to_copy}}" />
+    </dir>
+</template>
+        """
+
+    def test__copy_binary_file_to_binary_file__default_format__ok(self):
+        template_string = self.__copy_binary_file_to_binary_file__format__str('')
+        project_root_dir = "copy_binary_file_to_binary_file__default_format"
+        input_parameters = ["input/data/butterfly.png"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_binary_file_to_binary_file__raw__ok(self):
+        template_string = self.__copy_binary_file_to_binary_file__format__str('format="raw"')
+        project_root_dir = "copy_binary_file_to_binary_file__raw"
+        input_parameters = ["input/data/butterfly.png"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_binary_file_to_binary_file__bad_format__exception(self):
+        try:
+            template_string = self.__copy_binary_file_to_binary_file__format__str('format="base64"')
+            project_root_dir = "copy_binary_file_to_binary_file__bad_format"
+            input_parameters = ["input/data/butterfly.png"]
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err),
+                             "Format action not handled when copying binary contents to binary stream: base64.")
+
+    def test__copy_binary_file_to_binary_file__bad_strip__exception(self):
+        try:
+            template_string = self.__copy_binary_file_to_binary_file__format__str('', 'strip="strip"')
+            project_root_dir = "copy_binary_file_to_binary_file__bad_strip"
+            input_parameters = ["input/data/butterfly.png"]
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err),
+                             "Strip is not available when copying binary contents to binary stream.")
+
+    @staticmethod
+    def __copy_binary_file_to_text_file__format__str(format_action_attr: str, strip_action_attr: str = ""):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt" {format_action_attr} {strip_action_attr} 
+              copy="input/data/butterfly.png" copy-encoding="binary" />
+    </dir>
+</template>
+        """
+
+    def test__copy_binary_file_to_text_file__default_format__ok(self):
+        template_string = self.__copy_binary_file_to_text_file__format__str('')
+        project_root_dir = "copy_binary_file_to_text_file__default_format"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_binary_file_to_text_file__base64__ok(self):
+        template_string = self.__copy_binary_file_to_text_file__format__str('format="base64"')
+        project_root_dir = "copy_binary_file_to_text_file__base64"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_binary_file_to_text_file__base64_url__ok(self):
+        template_string = self.__copy_binary_file_to_text_file__format__str('format="base64-url"')
+        project_root_dir = "copy_binary_file_to_text_file__base64_url"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_binary_file_to_text_file__bad_format__exception(self):
+        try:
+            template_string = self.__copy_binary_file_to_text_file__format__str('format="format"')
+            project_root_dir = "copy_binary_file_to_text_file__bad_format"
+            input_parameters = []
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err),
+                             "Format action not handled when copying binary contents to text stream: format.")
+
+    def test__copy_binary_file_to_text_file__bad_strip__exception(self):
+        try:
+            template_string = self.__copy_binary_file_to_text_file__format__str('', 'strip="strip"')
+            project_root_dir = "copy_binary_file_to_text_file__bad_strip"
+            input_parameters = []
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err),
+                             "Strip is not available when copying binary contents to text stream.")
+
+    @staticmethod
+    def __copy_text_file_to_binary_file__format__str(format_action_attr: str, strip_action_attr: str = ""):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="file_to_copy" type="gstr" />
+        <var name="fruit" value="Ananas" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="bin_data" {format_action_attr} {strip_action_attr} 
+              encoding="binary" copy="{{file_to_copy}}" copy-encoding="utf-8" />
+    </dir>
+</template>
+        """
+
+    def test__copy_text_file_to_binary_file__default_format__ok(self):
+        template_string = self.__copy_text_file_to_binary_file__format__str('')
+        project_root_dir = "copy_text_file_to_binary_file__default_format"
+        input_parameters = ["input/data/fruits_sp.txt"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_text_file_to_binary_file__format__ok(self):
+        template_string = self.__copy_text_file_to_binary_file__format__str('format="format"')
+        project_root_dir = "copy_text_file_to_binary_file__format"
+        input_parameters = ["input/data/fruits_sp.txt"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_text_file_to_binary_file__raw__ok(self):
+        template_string = self.__copy_text_file_to_binary_file__format__str('format="raw"')
+        project_root_dir = "copy_text_file_to_binary_file__raw"
+        input_parameters = ["input/data/fruits_sp.txt"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_text_file_to_binary_file__base64__ok(self):
+        template_string = self.__copy_text_file_to_binary_file__format__str('format="base64"')
+        project_root_dir = "copy_text_file_to_binary_file__base64"
+        input_parameters = ["input/data/base64data.txt"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__copy_text_file_to_binary_file__base64_url__ok(self):
+        template_string = self.__copy_text_file_to_binary_file__format__str('format="base64-url"')
+        project_root_dir = "copy_text_file_to_binary_file__base64_url"
+        input_parameters = ["input/data/base64urldata.txt"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__file_calls_template__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
     <vars>
@@ -28,32 +299,10 @@ class TestTemgenFile(DirCmpTestCase):
     </dir>
 </template>
         """
-        project_root_dir = "template_xml_string__file_calls_template"
+        project_root_dir = "file_calls_template"
         templates_dir = config.local_templates_dirpath()
-        sys.stdin = io.StringIO(f"{project_root_dir}\n{templates_dir}\nstuff\ncard")
-        template_generator = Temgen(TerminalUi())
-        template_generator.treat_template_xml_string(template_string,
-                                                     output_dir=Path(self._output_dirpath))
-        self._compare_output_and_expected(project_root_dir)
-
-    def test__treat_template_xml_string__file_copy__ok(self):
-        template_string = """<?xml version="1.0"?>
-<template>
-    <vars>
-        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
-        <var name="fruit" value="Ananas" />
-    </vars>
-    <dir path="{project_root_dir}">
-        <file path="list.txt" copy="input/data/fruits.txt" />
-    </dir>
-</template>
-        """
-        project_root_dir = "template_xml_string__file_copy"
-        sys.stdin = io.StringIO(f"{project_root_dir}")
-        template_generator = Temgen(TerminalUi())
-        template_generator.treat_template_xml_string(template_string,
-                                                     output_dir=Path(self._output_dirpath))
-        self._compare_output_and_expected(project_root_dir)
+        input_parameters = [f"{templates_dir}", "stuff", "card"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
 
 if __name__ == '__main__':
