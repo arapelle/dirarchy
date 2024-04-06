@@ -322,6 +322,44 @@ Ve-_vQ==
         input_parameters = ["else"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    @staticmethod
+    def __child_statement_match_str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="var" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" strip="strip">
+            <match expr="{var}">
+                <case value="one">
+                    ONE
+                </case>
+                <case value="two">
+                    TWO
+                </case>
+                <case>
+                    DEFAULT
+                </case>
+            </match>
+        </file>
+    </dir>
+</template>
+            """
+
+    def test__child_statement_match__two__ok(self):
+        template_string = self.__child_statement_match_str()
+        project_root_dir = "child_statement_match__two"
+        input_parameters = ["two"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__child_statement_match__default__ok(self):
+        template_string = self.__child_statement_match_str()
+        project_root_dir = "child_statement_match__default"
+        input_parameters = ["none"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__file_calls_template__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
