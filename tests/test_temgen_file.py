@@ -360,6 +360,49 @@ Ve-_vQ==
         input_parameters = ["none"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__child_statement_contents__text_and_copy__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="var" type="gstr" />
+        <var name="fruit" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+            <contents>
+                Hello {var}!
+            </contents>
+            <contents strip="strip-nl" copy="input/data/fruits_sp.txt" />
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "child_statement_contents__text_and_copy"
+        input_parameters = ["world", "Ananas"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__child_statement_contents__contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="fruit" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+            <contents>
+                <contents strip="strip-nl" copy="input/data/fruits_sp.txt" />
+                <contents strip="strip-nl" copy="input/data/fruits_sp.txt" />
+            </contents>
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "child_statement_contents__contents"
+        input_parameters = ["Ananas"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__file_calls_template__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>

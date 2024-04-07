@@ -2,27 +2,21 @@ import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
 from log import MethodScopeLog
+from statement.abstract_contents_statement import AbstractContentsStatement
 from statement.abstract_main_statement import AbstractMainStatement
-from statement.abstract_statement import AbstractStatement
-from statement.writer.binary_to_binary_writer import BinaryToBinaryWriter
-from statement.writer.binary_to_text_writer import BinaryToTextWriter
-from statement.writer.text_to_binary_writer import TextToBinaryWriter
-from statement.writer.text_to_text_writer import TextToTextWriter
 
 
-class FileStatement(AbstractMainStatement):
+class FileStatement(AbstractContentsStatement):
     from statement.template_statement import TemplateStatement
 
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractMainStatement, **kargs):
-        super().__init__(current_node, parent_statement, **kargs)
+        super().__init__(current_node, parent_statement, None, None, **kargs)
         self.__output_filepath = Path()
-        self.__output_file = None
-        self.__output_encoding = None
 
     def __del__(self):
-        if self.__output_file is not None:
-            self.__output_file.close()
-            self.__output_file = None
+        if self._output_stream is not None:
+            self._output_stream.close()
+            self._output_stream = None
 
     def current_file_statement(self):
         return self
@@ -31,12 +25,7 @@ class FileStatement(AbstractMainStatement):
         return self.__output_filepath
 
     def current_output_file(self):
-        return self.__output_file
-
-    def extract_current_output_file(self):
-        output_file = self.__output_file
-        self.__output_file = None
-        return output_file
+        return self._output_stream
 
     def allows_template(self):
         return True
@@ -51,12 +40,12 @@ class FileStatement(AbstractMainStatement):
         self.__open_output_file()
         copy_attr = self.current_node().attrib.get("copy", None)
         if copy_attr is not None:
-            self.__copy_file_to_output(copy_attr, self)
+            self._copy_file_to_output(copy_attr, self)
         else:
             if "copy-encoding" in self.current_node().attrib:
                 raise RuntimeError("'copy-encoding is provided but copy is missing.")
         self.treat_children_nodes()
-        self.__output_file.flush()
+        self._output_stream.flush()
 
     def __resolve_output_filepath_and_ensure_output_dir(self):
         parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
@@ -67,79 +56,20 @@ class FileStatement(AbstractMainStatement):
             output_file_parent_dirpath.mkdir(parents=True, exist_ok=True)
 
     def __open_output_file(self):
-        self.__output_encoding = self.current_node().get("encoding", None)
-        if self.__output_encoding == "binary":
+        self._output_encoding = self.current_node().get("encoding", None)
+        if self._output_encoding == "binary":
             open_mode = "wb"
             encoding = None
         else:
             open_mode = "wt"
-            encoding = self.__output_encoding
-        self.__output_file = open(self.__output_filepath, mode=open_mode, encoding=encoding)
-
-    def __copy_file_to_output(self, copy_attr: str, input_statement: AbstractStatement):
-        copy_encoding_attr: str = input_statement.current_node().get("copy-encoding", None)
-        copied_file_path = self.format_str(copy_attr)
-        if copy_encoding_attr is not None:
-            input_encoding = self.format_str(copy_encoding_attr)
-        else:
-            input_encoding = self.__output_encoding
-        if input_encoding == "binary":
-            encoding = None
-            mode = "rb"
-        else:
-            encoding = input_encoding
-            mode = "rt"
-        with open(copied_file_path, mode=mode, encoding=encoding) as input_file:
-            input_contents = input_file.read()
-        if self.__output_encoding == "binary":
-            if input_encoding == "binary":
-                writer = BinaryToBinaryWriter(self.__output_file, input_contents, input_statement)
-            else:
-                writer = TextToBinaryWriter(self.__output_file, input_contents, input_encoding, input_statement)
-        else:
-            if input_encoding == "binary":
-                writer = BinaryToTextWriter(self.__output_file, input_contents, input_statement)
-            else:
-                writer = TextToTextWriter(self.__output_file, input_contents, input_statement)
-        writer.execute()
-
-    def check_not_template_attributes(self, nb_template_attributes: int):
-        assert 'path' not in self.current_node().attrib
+            encoding = self._output_encoding
+        self._output_stream = open(self.__output_filepath, mode=open_mode, encoding=encoding)
 
     def post_template_run(self, template_statement: TemplateStatement):
         expected_statement = template_statement.expected_statement()
         self.__output_filepath = expected_statement.current_output_filepath()
-        self.__output_file = expected_statement.extract_current_output_file()
+        self._output_stream = expected_statement.extract_current_output_stream()
         self.treat_children_nodes()
-        self.__output_file.flush()
-        self.__output_file.close()
-        self.__output_file = None
-
-    def treat_text_of(self, node: XMLTree.Element):
-        input_contents = node.text if node.text is not None else ""
-        input_contents_len = len(input_contents)
-        if input_contents_len > 0:
-            if "copy" in node.attrib:
-                raise RuntimeError(f"No text is expected when copying a file.")
-            if self.__output_encoding == "binary":
-                writer = TextToBinaryWriter(self.__output_file, input_contents, None, self)
-            else:
-                writer = TextToTextWriter(self.__output_file,input_contents, self)
-            writer.execute()
-
-    def check_number_of_children_nodes_of(self, node: XMLTree.Element):
-        if "copy" in self.current_node().attrib and len(node) > 0:
-            raise RuntimeError("No child statement is expected when copying a file.")
-
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        match child_node.tag:
-            case "if":
-                from statement.if_statement import IfStatement
-                if_statement = IfStatement(child_node, self)
-                if_statement.run()
-            case "match":
-                from statement.match_statement import MatchStatement
-                match_statement = MatchStatement(child_node, self)
-                match_statement.run()
-            case _:
-                super().treat_child_node(node, child_node)
+        self._output_stream.flush()
+        self._output_stream.close()
+        self._output_stream = None
