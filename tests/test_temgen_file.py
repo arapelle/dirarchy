@@ -403,6 +403,56 @@ Ve-_vQ==
         input_parameters = ["Ananas"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__child_statement_if__contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="var" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" strip="strip">
+            <if expr="'{var}' == 'then'">
+                <then>
+                    <contents strip="strip-nl">THEN-CONTENTS</contents>
+                </then>
+                <else>
+                    <contents strip="strip-nl">ELSE-CONTENTS</contents>
+                </else>
+            </if>
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "child_statement_if__contents"
+        input_parameters = ["then"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__child_statement_match__contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="var" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" strip="strip">
+            <match expr="{var}">
+                <case value="one">
+                    <contents strip="strip-nl">ONE-CONTENTS</contents>
+                </case>
+                <case>
+                    <contents strip="strip-nl">DEFAULT-CONTENTS</contents>
+                </case>
+            </match>
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "child_statement_match__contents"
+        input_parameters = ["one"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__file_calls_template__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
