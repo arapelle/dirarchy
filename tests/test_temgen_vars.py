@@ -310,6 +310,131 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["super"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__var_from_text__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="text" type="gstr">Hello world</var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+{text}
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_from_text"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__var_from_text_and_value__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="text" type="gstr" value="val">text</var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+{text}
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_from_text_and_value"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err), "For 'var', you cannot provide value and text at the same time.")
+
+    def test__var_from_file__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="fruit" type="gstr" />
+        <var name="text" type="gstr" format="format" strip="strip" copy="input/data/fruits.txt" />
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+{text}
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_from_file"
+        input_parameters = ["Ananas"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__var_from_file_and_text__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="fruit" type="gstr" />
+        <var name="text" type="gstr" format="format" strip="strip" copy="input/data/fruits.txt">text</var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+{text}
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_from_file_and_text"
+        input_parameters = ["Ananas"]
+        try:
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("No text is expected when copying a file.", str(err))
+
+    def test__var_from_contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="fruit" type="gstr" />
+        <var name="text" type="gstr">
+            <contents>
+                <contents strip="strip-nl">Fruits:</contents>
+                <contents format="format" strip="strip" copy="input/data/fruits.txt" />
+            </contents>
+        </var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+{text}
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_from_contents"
+        input_parameters = ["Ananas"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__var_from_contents_and_value__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="text" type="gstr" value="val"><contents copy="input/data/fruits.txt" /></var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+{text}
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_from_contents_and_value"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("No child statement is expected when using value attribute.", str(err))
+
 
 if __name__ == '__main__':
     unittest.main()
