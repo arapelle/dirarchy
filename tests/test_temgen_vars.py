@@ -435,6 +435,64 @@ rand_alpha = '{rand_alpha}'
         except RuntimeError as err:
             self.assertEqual("No child statement is expected when using value attribute.", str(err))
 
+    def test__var_if_text__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="choice" type="gstr" />
+        <var name="text" type="gstr" strip="strip">
+            <if expr="'{choice}' == 'then'">
+                <then>
+                    THEN
+                </then>
+                <else>
+                    ELSE
+                </else>
+            </if>
+        </var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+'{text}'
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_if_text"
+        input_parameters = ["then"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__var_match_text__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="choice" type="gstr" />
+        <var name="text" type="gstr" strip="strip">
+            <match expr="{choice}">
+                <case value="one">
+                    ONE
+                </case>
+                <case value="two">
+                    TWO
+                </case>
+                <case>
+                    DEFAULT
+                </case>
+            </match>
+        </var>
+    </vars>
+    <dir path="{output_root_dir}">
+        <file path="data.txt">
+'{text}'
+        </file>
+    </dir>
+</template>
+"""
+        project_root_dir = "var_match_text"
+        input_parameters = ["two"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
 if __name__ == '__main__':
     unittest.main()
