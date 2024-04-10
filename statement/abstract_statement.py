@@ -54,7 +54,8 @@ class AbstractStatement(ABC):
 
     def format_str(self, value_str: str):
         from variables.variables_map import VariablesMap
-        return value_str.format_map(VariablesMap(self))
+        from variables.variables_formatter import VariablesFormatter
+        return VariablesFormatter(self).vformat(value_str, [], VariablesMap(self))
 
     def current_dir_statement(self):
         if self.__parent_statement is None:

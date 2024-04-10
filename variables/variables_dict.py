@@ -5,8 +5,6 @@ from pathlib import Path
 
 
 class VariablesDict(dict):
-    TEMPLATE_DIR_VARNAME = '$TEMPLATE_DIR'
-
     def update_vars_from_dict(self, var_dict):
         self.update(var_dict)
         for key, value in var_dict:
