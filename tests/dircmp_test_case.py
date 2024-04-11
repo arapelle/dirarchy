@@ -42,7 +42,9 @@ class DirCmpTestCase(TestCase):
     @classmethod
     def removeDirIfSuccess(cls, dir_path):
         if cls.executionIsSuccess():
-            shutil.rmtree(Path(dir_path))
+            dir_path = Path(dir_path)
+            if dir_path.exists():
+                shutil.rmtree(dir_path)
 
     @classmethod
     def __set_unit_tests_result(cls, unit_tests_result):
