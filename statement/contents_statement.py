@@ -2,7 +2,6 @@ import locale
 import xml.etree.ElementTree as XMLTree
 from io import StringIO
 
-from log import MethodScopeLog
 from statement.abstract_contents_statement import AbstractContentsStatement
 from statement.abstract_main_statement import AbstractMainStatement
 

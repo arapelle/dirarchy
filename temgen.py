@@ -11,7 +11,7 @@ import semver
 
 import constants
 import regex
-from log import make_console_file_logger
+from util.log import make_console_file_logger
 from ui.abstract_ui import AbstractUi
 from variables.variables_dict import VariablesDict
 

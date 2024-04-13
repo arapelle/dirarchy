@@ -3,8 +3,7 @@ import xml.etree.ElementTree as XMLTree
 from builtins import RuntimeError
 from io import IOBase, StringIO, BytesIO
 
-import random_string
-from log import MethodScopeLog
+from util import random_string
 from statement.abstract_main_statement import AbstractMainStatement
 from statement.abstract_statement import AbstractStatement
 

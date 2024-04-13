@@ -1,7 +1,5 @@
 import xml.etree.ElementTree as XMLTree
-from builtins import RuntimeError
 
-from log import MethodScopeLog
 from statement.abstract_statement import AbstractStatement
 from statement.abstract_main_statement import AbstractMainStatement
 from statement.var_statement import VarStatement

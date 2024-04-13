@@ -2,7 +2,7 @@ import io
 import sys
 from pathlib import Path
 
-import random_string
+from util import random_string
 from ui.terminal_ui import TerminalUi
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase

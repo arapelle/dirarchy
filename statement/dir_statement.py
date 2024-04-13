@@ -1,8 +1,6 @@
 import xml.etree.ElementTree as XMLTree
-from builtins import RuntimeError
 from pathlib import Path
 
-from log import MethodScopeLog
 from statement.abstract_dir_statement import AbstractDirStatement
 from statement.abstract_statement import AbstractStatement
 

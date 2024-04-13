@@ -2,7 +2,6 @@ import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
 import constants
-from log import MethodScopeLog
 from statement.abstract_dir_statement import AbstractDirStatement
 from statement.abstract_statement import AbstractStatement
 from statement.vars_statement import VarsStatement

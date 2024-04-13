@@ -5,7 +5,6 @@ from builtins import RuntimeError
 from io import StringIO, BytesIO
 
 import regex
-from log import MethodScopeLog
 from statement.abstract_contents_statement import AbstractContentsStatement
 from statement.abstract_statement import AbstractStatement
 from statement.random_statement import RandomStatement

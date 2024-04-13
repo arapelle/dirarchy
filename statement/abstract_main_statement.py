@@ -2,7 +2,7 @@ import xml.etree.ElementTree as XMLTree
 from abc import ABC
 from typing import final
 
-from log import MethodScopeLog
+from util.log import MethodScopeLog
 from statement.abstract_statement import AbstractStatement
 
 

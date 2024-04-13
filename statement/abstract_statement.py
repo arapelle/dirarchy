@@ -6,7 +6,7 @@ from typing import final
 
 import statement.abstract_dir_statement
 import statement.template_statement
-from log import MethodScopeLog
+from util.log import MethodScopeLog
 from variables.variables_dict import VariablesDict
 
 
