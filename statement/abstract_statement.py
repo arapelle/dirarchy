@@ -78,7 +78,7 @@ class AbstractStatement(ABC):
         if isinstance(child_statement, statement.abstract_dir_statement.AbstractDirStatement):
             return child_statement
         dir_statement = self.current_dir_statement()
-        if dir_statement is None or self.__template_statement == self:
+        if dir_statement is None or dir_statement == self.__template_statement:
             return None
         parent_dir_statement = dir_statement.parent_statement().current_dir_statement()
         while parent_dir_statement is not None:
