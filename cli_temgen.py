@@ -3,9 +3,8 @@ from enum import StrEnum, auto
 from pathlib import Path
 import re
 
-import constants
 import temgen
-import regex
+from constants import regex, names
 from ui.tkinter_ui import TkinterUi
 from ui.terminal_ui import TerminalUi
 
@@ -25,7 +24,7 @@ class CliTemgen(temgen.Temgen):
         return self._args
 
     def _parse_args(self, argv=None):
-        prog_name = constants.PROGRAM_NAME
+        prog_name = names.PROGRAM_NAME
         prog_desc = 'A tool generating a directory architecture based on a template.'
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
         argparser.add_argument('--version', action='version',

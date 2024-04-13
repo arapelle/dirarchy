@@ -9,8 +9,7 @@ from pathlib import Path
 
 import semver
 
-import constants
-import regex
+from constants import regex, names
 from util.log import make_console_file_logger
 from ui.abstract_ui import AbstractUi
 from variables.variables_dict import VariablesDict
@@ -18,7 +17,7 @@ from variables.variables_dict import VariablesDict
 
 def environment_template_roots():
     roots = []
-    temgen_templates_path = os.environ.get(f'{constants.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
+    temgen_templates_path = os.environ.get(f'{names.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
     for path in temgen_templates_path.split(':'):
         if path:
             roots.append(Path(path))
@@ -28,7 +27,7 @@ def environment_template_roots():
 def linux_template_roots():
     roots = []
     home_dpath = os.environ['HOME']
-    templates_dpath = Path(f"{home_dpath}/.local/share/{constants.LOWER_PROGRAM_NAME}/templates")
+    templates_dpath = Path(f"{home_dpath}/.local/share/{names.LOWER_PROGRAM_NAME}/templates")
     templates_dpath.mkdir(parents=True, exist_ok=True)
     roots.append(templates_dpath)
     return roots
@@ -37,7 +36,7 @@ def linux_template_roots():
 def strict_windows_template_roots():
     roots = []
     local_app_data_dpath = Path(os.environ['LOCALAPPDATA'])
-    templates_dpath = local_app_data_dpath / f"{constants.LOWER_PROGRAM_NAME}/templates"
+    templates_dpath = local_app_data_dpath / f"{names.LOWER_PROGRAM_NAME}/templates"
     templates_dpath.mkdir(parents=True, exist_ok=True)
     roots.append(templates_dpath)
     return roots
@@ -81,7 +80,7 @@ class Temgen:
 
     def __init__(self, ui: AbstractUi, logger=None):
         if logger is None:
-            logger = make_console_file_logger(tool=constants.LOWER_PROGRAM_NAME, log_to_info=True)
+            logger = make_console_file_logger(tool=names.LOWER_PROGRAM_NAME, log_to_info=True)
         self.__logger = logger
         self.__ui = ui
         self.__variables = VariablesDict(self.__logger)

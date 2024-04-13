@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
-import constants
+from constants import names
 from statement.abstract_dir_statement import AbstractDirStatement
 from statement.abstract_statement import AbstractStatement
 from statement.vars_statement import VarsStatement
@@ -12,7 +12,7 @@ class TemplateStatement(AbstractDirStatement):
 
     STATEMENT_LABEL = "template"
 
-    TEMGEN_LABEL = constants.LOWER_PROGRAM_NAME
+    TEMGEN_LABEL = names.LOWER_PROGRAM_NAME
     TEMPLATE_FILEPATH_LABEL = "template_filepath"
     OUTPUT_DIRPATH_LABEL = "output_dirpath"
 
