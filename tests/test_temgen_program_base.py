@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from tests.dircmp_test_case import DirCmpTestCase
-from tgen import TemgenProgram
+from cli_temgen import CliTemgen
 
 
 class TestTemgenProgramBase(DirCmpTestCase):
@@ -44,7 +44,7 @@ class TestTemgenProgramBase(DirCmpTestCase):
         if argv is None:
             argv = []
         generated_template_file_path = self._generate_trivial_template_file(project_root_dir, **kargs)
-        temgen = TemgenProgram(self._ut_context_argv + argv + ['--', generated_template_file_path])
+        temgen = CliTemgen(self._ut_context_argv + argv + ['--', generated_template_file_path])
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
@@ -72,7 +72,7 @@ class TestTemgenProgramBase(DirCmpTestCase):
             argv = []
         generated_input_dir_path = Path(f"{self._generated_input_dirname}")
         generated_template_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
-        temgen = TemgenProgram(self._ut_context_argv + argv + ['--', generated_template_file_path])
+        temgen = CliTemgen(self._ut_context_argv + argv + ['--', generated_template_file_path])
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
@@ -97,7 +97,7 @@ class TestTemgenProgramBase(DirCmpTestCase):
             argv = ['--', f'input/{template_filestem}.xml']
         if context_argv is None:
             context_argv = self._ut_context_argv
-        temgen = TemgenProgram(context_argv + argv)
+        temgen = CliTemgen(context_argv + argv)
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
@@ -117,7 +117,7 @@ class TestTemgenProgramBase(DirCmpTestCase):
             argv = ['--', template_path, template_version]
         if context_argv is None:
             context_argv = self._ut_context_argv
-        temgen = TemgenProgram(context_argv + argv)
+        temgen = CliTemgen(context_argv + argv)
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:

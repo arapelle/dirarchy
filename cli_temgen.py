@@ -8,27 +8,21 @@ import temgen
 import regex
 from ui.tkinter_ui import TkinterUi
 from ui.terminal_ui import TerminalUi
-from variables.variables_dict import VariablesDict
-from log import make_console_file_logger
 
 
-class TemgenProgram:
+class CliTemgen(temgen.Temgen):
     class UiType(StrEnum):
         TKINTER = auto()
         TERMINAL = auto()
 
     def __init__(self, argv=None):
-        self.__logger = make_console_file_logger(tool=constants.LOWER_PROGRAM_NAME, log_to_info=True)
         self._args = self._parse_args(argv)
-        self.__set_temgen_from_args()
+        super().__init__(self.__build_ui_from_args())
+        self.__init_variables_from_args()
 
     @property
     def args(self):
         return self._args
-
-    @property
-    def temgen(self):
-        return self.__temgen
 
     def _parse_args(self, argv=None):
         prog_name = constants.PROGRAM_NAME
@@ -36,10 +30,10 @@ class TemgenProgram:
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
         argparser.add_argument('--version', action='version',
                                version=f'{prog_name} {temgen.Temgen.VERSION}')
-        argparser.add_argument('-K', f'--{TemgenProgram.UiType.TKINTER}'.lower(), action='store_const',
-                               dest='ui', const=TemgenProgram.UiType.TKINTER, help='Use tkinter I/O.')
-        argparser.add_argument('-T', f'--{TemgenProgram.UiType.TERMINAL}'.lower(), action='store_const',
-                               dest='ui', const=TemgenProgram.UiType.TERMINAL, default='terminal',
+        argparser.add_argument('-K', f'--{CliTemgen.UiType.TKINTER}'.lower(), action='store_const',
+                               dest='ui', const=CliTemgen.UiType.TKINTER, help='Use tkinter I/O.')
+        argparser.add_argument('-T', f'--{CliTemgen.UiType.TERMINAL}'.lower(), action='store_const',
+                               dest='ui', const=CliTemgen.UiType.TERMINAL, default='terminal',
                                help='Use terminal I/O.')
         argparser.add_argument('-C', '--custom-ui', metavar='custom_ui_cmd',
                                help='Use a custom user interface to set variables before treating them with temgen. '
@@ -49,7 +43,7 @@ class TemgenProgram:
                                default=Path.cwd(),
                                help='The directory where to generate the desired hierarchy (dir or file).')
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
-                               type=TemgenProgram.__var_from_key_value_str,
+                               type=CliTemgen.__var_from_key_value_str,
                                help='Set variables.')
         argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
                                help='Set variables from a JSON files.')
@@ -59,7 +53,7 @@ class TemgenProgram:
                                help='The template version.')
         args = argparser.parse_args(argv)
         if args.ui is None:
-            args.ui = TemgenProgram.UiType.TKINTER
+            args.ui = CliTemgen.UiType.TKINTER
         args.output_dir = Path(args.output_dir)
         return args
 
@@ -70,37 +64,30 @@ class TemgenProgram:
             return key, value
         raise RuntimeError(key_value_str)
 
-    def __set_temgen_from_args(self):
-        ui = self.__build_ui_from_args()
-        variables = self.__build_variables_from_args()
-        self.__temgen = temgen.Temgen(ui, variables, self.__logger)
-
     def __build_ui_from_args(self):
         match self.args.ui:
-            case TemgenProgram.UiType.TERMINAL:
+            case CliTemgen.UiType.TERMINAL:
                 ui = TerminalUi()
-            case TemgenProgram.UiType.TKINTER:
+            case CliTemgen.UiType.TKINTER:
                 ui = TkinterUi()
             case _:
                 raise Exception(f"Unknown I/O: '{self.args.io}'")
         return ui
 
-    def __build_variables_from_args(self):
-        variables = VariablesDict(self.__logger)
+    def __init_variables_from_args(self):
         if self.args.var:
-            variables.update_vars_from_dict(self.args.var)
+            self.init_variables().update_vars_from_dict(self.args.var)
         if self.args.var_file:
-            variables.update_vars_from_files(self.args.var_file)
+            self.init_variables().update_vars_from_files(self.args.var_file)
         if self.args.custom_ui:
-            variables.update_vars_from_custom_ui(self.args.custom_ui)
-        return variables
+            self.init_variables().update_vars_from_custom_ui(self.args.custom_ui)
 
     def run(self):
-        self.temgen.find_and_treat_template_file(Path(self.args.template_path),
-                                                 self.args.template_version,
-                                                 output_dir=self.args.output_dir)
+        self.find_and_treat_template_file(Path(self.args.template_path),
+                                          self.args.template_version,
+                                          output_dir=self.args.output_dir)
 
 
 if __name__ == '__main__':
-    tgen = TemgenProgram()
-    tgen.run()
+    cli_temgen = CliTemgen()
+    cli_temgen.run()
