@@ -6,6 +6,7 @@ from typing import final
 
 import statement.abstract_dir_statement
 import statement.template_statement
+from log import MethodScopeLog
 from variables.variables_dict import VariablesDict
 
 
@@ -20,7 +21,7 @@ class AbstractStatement(ABC):
             self.__template_statement = self
         else:
             self.__template_statement = self.__parent_statement.template_statement()
-        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict())
+        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.__template_statement.temgen().logger))
         assert self.__template_statement is not None and \
                isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
         self.__was_template_called = False
@@ -93,6 +94,10 @@ class AbstractStatement(ABC):
         return self.__template_statement.parent_statement().tree_root_dir_statement()
 
     def run(self):
+        with MethodScopeLog(self):
+            self._run()
+
+    def _run(self):
         template_attr = self.current_node().get("template", None)
         version_attr = self.current_node().get('template-version', None)
         if not self.allows_template():

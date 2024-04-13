@@ -9,6 +9,7 @@ import regex
 from ui.tkinter_ui import TkinterUi
 from ui.terminal_ui import TerminalUi
 from variables.variables_dict import VariablesDict
+from log import make_console_file_logger
 
 
 class TemgenProgram:
@@ -17,6 +18,7 @@ class TemgenProgram:
         TERMINAL = auto()
 
     def __init__(self, argv=None):
+        self.__logger = make_console_file_logger(tool=constants.LOWER_PROGRAM_NAME, log_to_info=True)
         self._args = self._parse_args(argv)
         self.__set_temgen_from_args()
 
@@ -71,7 +73,7 @@ class TemgenProgram:
     def __set_temgen_from_args(self):
         ui = self.__build_ui_from_args()
         variables = self.__build_variables_from_args()
-        self.__temgen = temgen.Temgen(ui, variables)
+        self.__temgen = temgen.Temgen(ui, variables, self.__logger)
 
     def __build_ui_from_args(self):
         match self.args.ui:
@@ -84,7 +86,7 @@ class TemgenProgram:
         return ui
 
     def __build_variables_from_args(self):
-        variables = VariablesDict()
+        variables = VariablesDict(self.__logger)
         if self.args.var:
             variables.update_vars_from_dict(self.args.var)
         if self.args.var_file:

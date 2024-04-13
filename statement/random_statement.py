@@ -19,15 +19,14 @@ class RandomStatement(AbstractMainStatement):
         return self.__io_stream
 
     def execute(self):
-        with MethodScopeLog(self):
-            random_value = self.__try_random_value_from_type()
-            if random_value is None:
-                random_value = self.__try_random_value_from_set()
-            if random_value is not None:
-                self.__io_stream.write(random_value)
-            else:
-                raise RuntimeError("One of the following attribute is missing for random statement: "
-                                   "type, char-set.")
+        random_value = self.__try_random_value_from_type()
+        if random_value is None:
+            random_value = self.__try_random_value_from_set()
+        if random_value is not None:
+            self.__io_stream.write(random_value)
+        else:
+            raise RuntimeError("One of the following attribute is missing for random statement: "
+                               "type, char-set.")
 
     def __build_string_stream_if_missing(self):
         if self.__io_stream is None:

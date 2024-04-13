@@ -2,6 +2,7 @@ import xml.etree.ElementTree as XMLTree
 from abc import ABC
 from typing import final
 
+from log import MethodScopeLog
 from statement.abstract_statement import AbstractStatement
 
 
@@ -12,9 +13,10 @@ class AbstractMainStatement(AbstractStatement, ABC):
 
     @final
     def run(self):
-        super().run()
-        if not self.__children_treated:
-            self.treat_children_nodes()
+        with MethodScopeLog(self):
+            super()._run()
+            if not self.__children_treated:
+                self.treat_children_nodes()
 
     def current_main_statement(self):
         return self

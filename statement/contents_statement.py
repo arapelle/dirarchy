@@ -20,8 +20,7 @@ class ContentsStatement(AbstractContentsStatement):
         return False  # TODO True
 
     def execute(self):
-        with MethodScopeLog(self):
-            self.__write_contents()
+        self.__write_contents()
 
     def __write_contents(self):
         copy_attr = self.current_node().attrib.get("copy", None)

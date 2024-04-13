@@ -12,8 +12,7 @@ class VarsStatement(AbstractMainStatement):
         super().__init__(current_node, parent_statement, variables=parent_statement.variables(), **kargs)
 
     def execute(self):
-        with MethodScopeLog(self):
-            pass
+        pass
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
         match child_node.tag:

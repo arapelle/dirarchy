@@ -31,12 +31,11 @@ class FileStatement(AbstractContentsStatement):
         return True
 
     def execute(self):
-        with MethodScopeLog(self):
-            self.__make_output_file()
+        self.__make_output_file()
 
     def __make_output_file(self):
         self.__resolve_output_filepath_and_ensure_output_dir()
-        self.logger.info(f"Make file {self.__output_filepath}")
+        self.logger.info(f"Make file: {self.__output_filepath}")
         self.__open_output_file()
         copy_attr = self.current_node().attrib.get("copy", None)
         if copy_attr is not None:

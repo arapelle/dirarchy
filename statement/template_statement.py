@@ -63,14 +63,15 @@ class TemplateStatement(AbstractDirStatement):
         return self.__expected_statement
 
     def execute(self):
-        with MethodScopeLog(self):
-            self.__check_temgen_version()
-            vars_node = self.current_node().find("vars")
-            if vars_node is not None:
-                self.__current_child_statement = VarsStatement(vars_node, self)
-                self.__current_child_statement.run()
-            self.treat_children_nodes()
-            self.__current_child_statement = None
+        if self.__template_filepath is not None:
+            self.logger.info(f"Template file: {self.__template_filepath}")
+        self.__check_temgen_version()
+        vars_node = self.current_node().find("vars")
+        if vars_node is not None:
+            self.__current_child_statement = VarsStatement(vars_node, self)
+            self.__current_child_statement.run()
+        self.treat_children_nodes()
+        self.__current_child_statement = None
 
     def __check_temgen_version(self):
         from temgen import Temgen

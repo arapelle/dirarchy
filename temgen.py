@@ -79,13 +79,15 @@ def default_template_roots():
 class Temgen:
     VERSION = semver.Version.parse('0.5.0')
 
-    def __init__(self, ui: AbstractUi, variables=None):
+    def __init__(self, ui: AbstractUi, variables=None, logger=None):
+        if logger is None:
+            logger = make_console_file_logger(tool=constants.LOWER_PROGRAM_NAME, log_to_info=True)
+        self.__logger = logger
         if variables is None:
-            variables = VariablesDict()
+            variables = VariablesDict(self.__logger)
         self.__ui = ui
         self.__variables = variables
         self.__template_root_dpaths = default_template_roots()
-        self.__logger = make_console_file_logger(tool=constants.LOWER_PROGRAM_NAME, log_to_info=True)
 
     @property
     def logger(self):
