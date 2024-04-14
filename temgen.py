@@ -76,7 +76,7 @@ def default_template_roots():
 
 
 class Temgen:
-    VERSION = semver.Version.parse('0.5.0')
+    VERSION = semver.Version.parse('0.6.0')
 
     def __init__(self, ui: AbstractUi, logger=None):
         if logger is None:
