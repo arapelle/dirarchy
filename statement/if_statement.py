@@ -8,6 +8,9 @@ class IfStatement(AbstractBranchStatement):
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement, **kargs):
         super().__init__(current_node, parent_statement, **kargs)
 
+    def allows_template(self):
+        return True
+
     def execute(self):
         from re import match, fullmatch
         then_node = None
@@ -41,3 +44,11 @@ class IfStatement(AbstractBranchStatement):
                 self.current_main_statement().treat_children_nodes_of(then_node)
         elif else_node is not None:
             self.current_main_statement().treat_children_nodes_of(else_node)
+
+    def check_not_template_attributes(self, nb_template_attributes: int):
+        if "expr" in self.current_node().attrib:
+            raise RuntimeError(f"The attribute 'expr' is unexpected when calling a 'if' template.")
+
+    def post_template_run(self, template_statement):
+        if len(self.current_node()) > 0:
+            raise RuntimeError("No child statement is expected when calling a 'if' template.")
