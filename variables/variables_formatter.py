@@ -67,6 +67,9 @@ class VariablesFormatter(Formatter):
                 dir_statement = self.__statement.local_tree_root_dir_statement()
                 return dir_statement.current_output_dirpath().as_posix() if dir_statement is not None else ""
             case "$OUTPUT_DIR":
+                file_statement = self.__statement.current_file_statement()
+                if file_statement is not None:
+                    return file_statement.current_output_filepath().parent.as_posix()
                 dir_statement = self.__statement.current_dir_statement()
                 assert dir_statement is not None
                 return dir_statement.current_output_dirpath().as_posix()
