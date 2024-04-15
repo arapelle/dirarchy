@@ -139,3 +139,9 @@ class TemplateStatement(AbstractDirStatement):
         if node == self.current_node():
             self.__current_child_statement = if_statement
         return if_statement
+
+    def _create_match_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
+        match_statement = super()._create_match_statement(node, child_node)
+        if node == self.current_node():
+            self.__current_child_statement = match_statement
+        return match_statement

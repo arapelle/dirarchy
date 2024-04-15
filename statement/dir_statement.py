@@ -33,12 +33,3 @@ class DirStatement(AbstractDirStatement):
     def post_template_run(self, template_statement: TemplateStatement):
         expected_statement = template_statement.expected_statement()
         self.__output_dirpath = expected_statement.current_output_dirpath()
-
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        match child_node.tag:
-            case "match":
-                from statement.match_statement import MatchStatement
-                match_statement = MatchStatement(child_node, self)
-                match_statement.run()
-            case _:
-                super().treat_child_node(node, child_node)
