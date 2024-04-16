@@ -212,15 +212,15 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
         expected_root_output_dirpath = Path(self._output_dirpath)
         expected_tree_root_output_dirpath = expected_root_output_dirpath / project_root_dir
         expected_output_filepath = expected_root_output_dirpath / f"{project_root_dir}/stories/info/{index_name}"
-        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd(),
-                                                                         main_template_filepath.parent,
-                                                                         main_template_filepath.parent,
-                                                                         expected_root_output_dirpath,
-                                                                         expected_root_output_dirpath,
-                                                                         expected_tree_root_output_dirpath,
-                                                                         expected_tree_root_output_dirpath,
-                                                                         expected_output_filepath.parent,
-                                                                         expected_output_filepath,
+        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd().as_posix(),
+                                                                         main_template_filepath.parent.as_posix(),
+                                                                         main_template_filepath.parent.as_posix(),
+                                                                         expected_root_output_dirpath.as_posix(),
+                                                                         expected_root_output_dirpath.as_posix(),
+                                                                         expected_tree_root_output_dirpath.as_posix(),
+                                                                         expected_tree_root_output_dirpath.as_posix(),
+                                                                         expected_output_filepath.parent.as_posix(),
+                                                                         expected_output_filepath.as_posix(),
                                                                          expected_output_filepath.name,
                                                                          expected_output_filepath.suffix,
                                                                          "".join(expected_output_filepath.suffixes))
@@ -234,15 +234,15 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
         expected_local_tree_root_output_dirpath = expected_local_root_output_dirpath / title
         expected_output_filepath = (expected_root_output_dirpath
                                     / f"{project_root_dir}/stories/{title}/chapters/{chapter_name}")
-        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd(),
-                                                                         main_template_filepath.parent,
-                                                                         sub_template_filepath.parent,
-                                                                         expected_root_output_dirpath,
-                                                                         expected_local_root_output_dirpath,
-                                                                         expected_tree_root_output_dirpath,
-                                                                         expected_local_tree_root_output_dirpath,
-                                                                         expected_output_filepath.parent,
-                                                                         expected_output_filepath,
+        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd().as_posix(),
+                                                                         main_template_filepath.parent.as_posix(),
+                                                                         sub_template_filepath.parent.as_posix(),
+                                                                         expected_root_output_dirpath.as_posix(),
+                                                                         expected_local_root_output_dirpath.as_posix(),
+                                                                         expected_tree_root_output_dirpath.as_posix(),
+                                                                         expected_local_tree_root_output_dirpath.as_posix(),
+                                                                         expected_output_filepath.parent.as_posix(),
+                                                                         expected_output_filepath.as_posix(),
                                                                          expected_output_filepath.name,
                                                                          expected_output_filepath.suffix,
                                                                          "".join(expected_output_filepath.suffixes))
@@ -273,15 +273,15 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
         expected_root_output_dirpath = Path(self._output_dirpath)
         expected_tree_root_output_dirpath = ""
         expected_output_filepath = expected_root_output_dirpath / file_name
-        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd(),
-                                                                         main_template_filepath.parent,
-                                                                         main_template_filepath.parent,
-                                                                         expected_root_output_dirpath,
-                                                                         expected_root_output_dirpath,
+        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd().as_posix(),
+                                                                         main_template_filepath.parent.as_posix(),
+                                                                         main_template_filepath.parent.as_posix(),
+                                                                         expected_root_output_dirpath.as_posix(),
+                                                                         expected_root_output_dirpath.as_posix(),
                                                                          expected_tree_root_output_dirpath,
                                                                          expected_tree_root_output_dirpath,
-                                                                         expected_output_filepath.parent,
-                                                                         expected_output_filepath,
+                                                                         expected_output_filepath.parent.as_posix(),
+                                                                         expected_output_filepath.as_posix(),
                                                                          expected_output_filepath.name,
                                                                          expected_output_filepath.suffix,
                                                                          "".join(expected_output_filepath.suffixes))
@@ -337,15 +337,15 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
         expected_tree_root_output_dirpath = expected_root_output_dirpath / project_root_dir
         expected_local_tree_root_output_dirpath = ""
         expected_output_filepath = expected_root_output_dirpath / project_root_dir / "docs" / file_name
-        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd(),
-                                                                         main_template_filepath.parent,
-                                                                         sub_template_filepath.parent,
-                                                                         expected_root_output_dirpath,
-                                                                         expected_local_root_output_dirpath,
-                                                                         expected_tree_root_output_dirpath,
+        expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd().as_posix(),
+                                                                         main_template_filepath.parent.as_posix(),
+                                                                         sub_template_filepath.parent.as_posix(),
+                                                                         expected_root_output_dirpath.as_posix(),
+                                                                         expected_local_root_output_dirpath.as_posix(),
+                                                                         expected_tree_root_output_dirpath.as_posix(),
                                                                          expected_local_tree_root_output_dirpath,
-                                                                         expected_output_filepath.parent,
-                                                                         expected_output_filepath,
+                                                                         expected_output_filepath.parent.as_posix(),
+                                                                         expected_output_filepath.as_posix(),
                                                                          expected_output_filepath.name,
                                                                          expected_output_filepath.suffix,
                                                                          "".join(expected_output_filepath.suffixes))
