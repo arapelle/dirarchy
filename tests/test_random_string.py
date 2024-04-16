@@ -1,7 +1,7 @@
 import unittest
 from unittest import TestCase
 
-import random_string
+from util import random_string
 
 
 class TestRandom(TestCase):

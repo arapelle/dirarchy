@@ -1,3 +1,0 @@
-- FIRST OBJECT: sword.
-- SECOND OBJECT: shield.
- 

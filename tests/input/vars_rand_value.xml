@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<temgen>
+<template>
     <vars>
         <var name="output_root_dir" type="gstr" />
         <var name="rand_i">
@@ -9,34 +9,34 @@
             <random type="float" min="-4.1" max="12.354" />
         </var>
         <var name="rand_digit">
-            <random type="digit" min_len="7" max_len="13" />
+            <random type="digit" min-len="7" max-len="13" />
         </var>
         <var name="rand_alpha">
-             <random type="alpha" min_len="4" max_len="9" />
+             <random type="alpha" min-len="4" max-len="9" />
         </var>
         <var name="rand_lower">
-             <random type="lower" min_len="4" max_len="9" />
+             <random type="lower" min-len="4" max-len="9" />
         </var>
         <var name="rand_upper">
-             <random type="upper" min_len="4" max_len="9" />
+             <random type="upper" min-len="4" max-len="9" />
         </var>
         <var name="rand_alnum">
-             <random type="alnum" min_len="15" max_len="26" />
+             <random type="alnum" min-len="15" max-len="26" />
         </var>
         <var name="rand_lower_sisy">
-             <random type="lower_sisy" min_len="2" max_len="10" />
+             <random type="lower_sisy" min-len="2" max-len="10" />
         </var>
         <var name="rand_upper_sisy">
-             <random type="upper_sisy" min_len="2" max_len="10" />
+             <random type="upper_sisy" min-len="2" max-len="10" />
         </var>
         <var name="rand_snake">
-             <random type="snake_case" min_len="2" max_len="10" />
+             <random type="snake_case" min-len="2" max-len="10" />
         </var>
         <var name="rand_format_cvqd">
              <random type="format_cvqd" fmt="Cvcvq_cvcvq_cv_dd" />
         </var>
         <var name="rand_chars">
-             <random char_set="btcdaeiou" min_len="2" max_len="10" />
+             <random char-set="btcdaeiou" min-len="2" max-len="10" />
         </var>
     </vars>
     <dir path="{output_root_dir}" >
@@ -55,4 +55,4 @@ rand_format_cvqd = {rand_format_cvqd}
 rand_chars = {rand_chars}
         </file>
     </dir>
-</temgen>
+</template>

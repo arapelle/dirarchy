@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<temgen>
+<template>
     <vars>
         <var name="dirname" type="gstr" regex="[a-zA-Z0-9_]+" />
     </vars>
     <dir path="{dirname}">
         <dir path="subdir">
             <file path="template_data.txt">
-{$CURRENT_SOURCE_DIR}
+{$TEMPLATE_DIR}
             </file>
         </dir>
     </dir>
-</temgen>
+</template>

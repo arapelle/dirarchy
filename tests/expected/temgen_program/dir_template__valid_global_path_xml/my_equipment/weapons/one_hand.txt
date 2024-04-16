@@ -1,0 +1,2 @@
+short sword
+dagger

@@ -1,0 +1,6 @@
+Fruits:
+Apple
+Banana
+Coconut
+Strawberry
+Ananas

@@ -1,0 +1,13 @@
+rand_i = 85
+rand_f = -2.268
+rand_digit = 433218196001
+rand_alpha = oGMbJ
+rand_alpha_fixed_len = TPSIAo
+rand_lower = sizayzf
+rand_upper = NKIEGYKDC
+rand_alnum = gw2wMqZcUDIh7yfJs1ON4
+rand_lower_sisy = revaber
+rand_upper_sisy = ZEK
+rand_snake = tifi_tik
+rand_format_cvqd = Repel_nokul_ti_03
+rand_chars = ei
