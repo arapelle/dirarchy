@@ -100,12 +100,3 @@ class VarStatement(AbstractContentsStatement):
         if len(node) > 1:
             raise RuntimeError(f"Too many nodes for <{node.tag}>.")
         super().check_number_of_children_nodes_of(node)
-
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        match child_node.tag:
-            case "random":
-                random_statement = RandomStatement(child_node, self, self._output_stream)
-                random_statement.run()
-                self._output_stream = random_statement.io_stream()
-            case _:
-                super().treat_child_node(node, child_node)

@@ -83,6 +83,11 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
                 from statement.match_statement import MatchStatement
                 match_statement = MatchStatement(child_node, self)
                 match_statement.run()
+            case "random":
+                from statement.random_statement import RandomStatement
+                random_statement = RandomStatement(child_node, self, self._output_stream)
+                random_statement.run()
+                self._output_stream = random_statement.io_stream()
             case "contents":
                 from statement.contents_statement import ContentsStatement
                 contents_statement = ContentsStatement(child_node, self)
