@@ -472,6 +472,76 @@ EOF
         input_parameters = [f"{templates_dir}", "stuff", "card"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    @staticmethod
+    def __contents_calls_template__main_template_str(contents_attrs=""):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="template_path" type="gstr" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt">
+            <contents template="{{template_path}}" {contents_attrs}>
+                <contents>
+- Indeed.
+                </contents>
+            </contents>
+        </file>
+    </dir>
+</template>
+        """
+
+    @staticmethod
+    def __contents_calls_template__sub_template_str():
+        return """<?xml version="1.0"?>
+<template>
+    <contents>
+- Wonderful text, isn't it ?
+    </contents>
+</template>
+        """
+
+    def test__contents_calls_template__ok(self):
+        main_template_string = self.__contents_calls_template__main_template_str()
+        sub_template_filepath = self._make_sub_template_filepath("contents_file_template")
+        sub_template_string = self.__contents_calls_template__sub_template_str()
+        project_root_dir = "contents_calls_template"
+        input_parameters = [str(sub_template_filepath)]
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
+    def test__contents_calls_template__exception(self):
+        main_template_string = self.__contents_calls_template__main_template_str('strip="strip"')
+        sub_template_filepath = self._make_sub_template_filepath("contents_file_template")
+        sub_template_string = self.__contents_calls_template__sub_template_str()
+        project_root_dir = "contents_calls_template"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("Unexpected attribute when calling 'contents' template: strip.", str(err))
+
+    def test__contents_template_alone__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <contents>TEXT</contents>
+</template>
+            """
+        project_root_dir = "text_to_text_file"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'template', bad child node type: contents.", str(err))
+
 
 if __name__ == '__main__':
     unittest.main()

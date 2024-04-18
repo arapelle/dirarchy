@@ -123,7 +123,15 @@ class TemplateStatement(AbstractDirStatement):
                 if child_node.tag != expected_tag:
                     raise RuntimeError(f"Unexpected node ({child_node.tag}) under <template>. "
                                        f"Expected: {expected_tag}.")
+                if child_node.tag == "contents":
+                    contents_statement = self._create_contents_statement(node, child_node)
+                    contents_statement.run()
+                    self.__post_treat_child_node(node)
+                    return
         super().treat_child_node(node, child_node)
+        self.__post_treat_child_node(node)
+
+    def __post_treat_child_node(self, node):
         if node == self.current_node():
             assert self.__current_child_statement is not None
             if self.__caller_statement is not None:
@@ -153,3 +161,10 @@ class TemplateStatement(AbstractDirStatement):
         if node == self.current_node():
             self.__current_child_statement = match_statement
         return match_statement
+
+    def _create_contents_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
+        from statement.contents_statement import ContentsStatement
+        contents_statement = ContentsStatement(child_node, self)
+        if node == self.current_node():
+            self.__current_child_statement = contents_statement
+        return contents_statement

@@ -71,6 +71,11 @@ class AbstractStatement(ABC):
             return None
         return self.__parent_statement.current_main_statement()
 
+    def current_contents_collector_statement(self):
+        if self.__parent_statement is None:
+            return None
+        return self.__parent_statement.current_contents_collector_statement()
+
     def local_tree_root_dir_statement(self):
         template_statement = self.template_statement()
         assert isinstance(template_statement, statement.template_statement.TemplateStatement)

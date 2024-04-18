@@ -16,6 +16,15 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
         self._output_stream = output_stream
         self._output_encoding = output_encoding
 
+    def output_stream(self):
+        return self._output_stream
+
+    def output_encoding(self):
+        return self._output_encoding
+
+    def current_contents_collector_statement(self):
+        return self
+
     def extract_current_output_stream(self):
         output_stream = self._output_stream
         self._output_stream = None
@@ -47,9 +56,6 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
             else:
                 writer = TextToTextWriter(self._output_stream, input_contents, input_statement)
         writer.execute()
-
-    def check_not_template_attributes(self, nb_template_attributes: int):
-        assert 'path' not in self.current_node().attrib
 
     def treat_text_of(self, node: XMLTree.Element):
         input_contents = node.text if node.text is not None else ""
