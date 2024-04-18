@@ -131,7 +131,14 @@ class AbstractStatement(ABC):
         return False
 
     def check_not_template_attributes(self, nb_template_attributes: int):
-        pass
+        if len(self.__current_node.attrib) > nb_template_attributes:
+            for key in self.__current_node.attrib:
+                match key:
+                    case "template" | "template-version":
+                        pass
+                    case _:
+                        raise RuntimeError(f"Unexpected attribute when calling '{self.current_node().tag}' "
+                                           f"template: {key}.")
 
     @abstractmethod
     def execute(self):

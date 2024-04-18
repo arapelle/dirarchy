@@ -79,7 +79,7 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
                 match_statement.run()
             case "contents":
                 from statement.contents_statement import ContentsStatement
-                match_statement = ContentsStatement(child_node, self, self._output_stream, self._output_encoding)
-                match_statement.run()
+                contents_statement = ContentsStatement(child_node, self)
+                contents_statement.run()
             case _:
                 super().treat_child_node(node, child_node)
