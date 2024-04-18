@@ -52,6 +52,9 @@ class TemplateStatement(AbstractDirStatement):
     def template_filepath(self):
         return self.__template_filepath
 
+    def template_statement(self):
+        return self
+
     def current_output_dirpath(self) -> Path:
         return self.__output_dirpath
 

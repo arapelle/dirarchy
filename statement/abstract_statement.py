@@ -17,13 +17,11 @@ class AbstractStatement(ABC):
         assert current_node is not None
         self.__current_node = current_node
         self.__parent_statement = parent_statement
-        if isinstance(self, statement.template_statement.TemplateStatement):
-            self.__template_statement = self
-        else:
+        if not isinstance(self, statement.template_statement.TemplateStatement):
             self.__template_statement = self.__parent_statement.template_statement()
-        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.__template_statement.temgen().logger))
-        assert self.__template_statement is not None and \
-               isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
+        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.template_statement().temgen().logger))
+        assert self.template_statement() is not None and \
+               isinstance(self.template_statement(), statement.template_statement.TemplateStatement)
         self.__was_template_called = False
 
     def parent_statement(self):
@@ -33,7 +31,7 @@ class AbstractStatement(ABC):
         return self.__template_statement
 
     def temgen(self):
-        return self.__template_statement.temgen()
+        return self.template_statement().temgen()
 
     @property
     def logger(self):
@@ -74,12 +72,13 @@ class AbstractStatement(ABC):
         return self.__parent_statement.current_main_statement()
 
     def local_tree_root_dir_statement(self):
-        assert isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
-        child_statement = self.__template_statement.current_child_statement()
+        template_statement = self.template_statement()
+        assert isinstance(template_statement, statement.template_statement.TemplateStatement)
+        child_statement = template_statement.current_child_statement()
         if isinstance(child_statement, statement.abstract_dir_statement.AbstractDirStatement):
             return child_statement
         dir_statement = self.current_dir_statement()
-        if dir_statement is None or dir_statement == self.__template_statement:
+        if dir_statement is None or dir_statement == template_statement:
             return None
         parent_dir_statement = dir_statement.parent_statement().current_dir_statement()
         while parent_dir_statement is not None:
@@ -88,10 +87,11 @@ class AbstractStatement(ABC):
         return dir_statement
 
     def tree_root_dir_statement(self):
-        assert isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
-        if self.__template_statement.parent_template_statement() is None:
+        template_statement = self.template_statement()
+        assert isinstance(template_statement, statement.template_statement.TemplateStatement)
+        if template_statement.parent_template_statement() is None:
             return self.local_tree_root_dir_statement()
-        return self.__template_statement.parent_statement().tree_root_dir_statement()
+        return template_statement.parent_statement().tree_root_dir_statement()
 
     def run(self):
         with MethodScopeLog(self):
