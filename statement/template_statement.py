@@ -69,6 +69,11 @@ class TemplateStatement(AbstractDirStatement):
     def expected_statement(self):
         return self.__expected_statement
 
+    def extract_expected_statement(self):
+        expected_statement = self.__expected_statement
+        self.__expected_statement = None
+        return expected_statement
+
     def execute(self):
         if self.__template_filepath is not None:
             self.logger.info(f"Template file: {self.__template_filepath}")

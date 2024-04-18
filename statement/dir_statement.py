@@ -31,5 +31,5 @@ class DirStatement(AbstractDirStatement):
         assert 'path' not in self.current_node().attrib
 
     def post_template_run(self, template_statement: TemplateStatement):
-        expected_statement = template_statement.expected_statement()
+        expected_statement = template_statement.extract_expected_statement()
         self.__output_dirpath = expected_statement.current_output_dirpath()
