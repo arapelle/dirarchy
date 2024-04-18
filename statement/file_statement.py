@@ -9,7 +9,7 @@ class FileStatement(AbstractContentsStatement):
     from statement.template_statement import TemplateStatement
 
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractMainStatement, **kargs):
-        super().__init__(current_node, parent_statement, None, None, **kargs)
+        super().__init__(current_node, parent_statement, **kargs)
         self.__output_filepath = Path()
 
     def __del__(self):

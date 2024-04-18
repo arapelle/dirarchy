@@ -11,7 +11,7 @@ from statement.writer.text_to_text_writer import TextToTextWriter
 
 class AbstractContentsStatement(AbstractMainStatement, ABC):
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement,
-                 output_stream, output_encoding, **kargs):
+                 output_stream=None, output_encoding=None, **kargs):
         super().__init__(current_node, parent_statement, **kargs)
         self._output_stream = output_stream
         self._output_encoding = output_encoding

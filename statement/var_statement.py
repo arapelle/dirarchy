@@ -23,7 +23,7 @@ class RegexFullMatch:
 
 class VarStatement(AbstractContentsStatement):
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement, **kargs):
-        super().__init__(current_node, parent_statement, None, None, variables=parent_statement.variables(), **kargs)
+        super().__init__(current_node, parent_statement, variables=parent_statement.variables(), **kargs)
         self.__var_name = None
         self.__var_type = None
         self.__var_default = None
