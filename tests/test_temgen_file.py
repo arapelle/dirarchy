@@ -461,7 +461,9 @@ Ve-_vQ==
         <var name="templates_dir" type="gstr" />
     </vars>
     <dir path="{project_root_dir}">
-        <file template="{templates_dir}/temfile" template-version="1" />
+        <file template="{templates_dir}/temfile" template-version="1">
+EOF
+        </file>
     </dir>
 </template>
         """
