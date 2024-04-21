@@ -18,6 +18,9 @@ class DirStatement(AbstractDirStatement):
     def allows_template(self):
         return True
 
+    def extends_template(self):
+        return True
+
     def execute(self):
         self.__make_output_dir()
 

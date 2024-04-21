@@ -16,6 +16,9 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
         self._output_stream = output_stream
         self._output_encoding = output_encoding
 
+    def extends_template(self):
+        return True
+
     def output_stream(self):
         return self._output_stream
 
