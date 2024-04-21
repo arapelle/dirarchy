@@ -40,6 +40,14 @@ class AbstractStatement(ABC):
     def current_node(self):
         return self.__current_node
 
+    @staticmethod
+    def is_text_empty(text):
+        return text is None or len(text.strip()) == 0
+
+    @staticmethod
+    def is_node_text_empty(node):
+        return AbstractStatement.is_text_empty(node.text)
+
     def variables(self):
         return self.__variables
 

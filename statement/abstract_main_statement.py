@@ -38,10 +38,8 @@ class AbstractMainStatement(AbstractStatement, ABC):
         pass
 
     def treat_text_of(self, node: XMLTree.Element):
-        if node.text is not None:
-            node_text = node.text.strip()
-            if len(node_text) > 0:
-                raise RuntimeError(f"In '{node.tag}', text is expected to be empty.")
+        if not self.is_node_text_empty(node):
+            raise RuntimeError(f"In '{node.tag}', text is expected to be empty.")
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
         raise RuntimeError(f"In '{node.tag}', bad child node type: {child_node.tag}.")
