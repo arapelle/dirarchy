@@ -168,3 +168,10 @@ class TemplateStatement(AbstractDirStatement):
         if node == self.current_node():
             self.__current_child_statement = contents_statement
         return contents_statement
+
+    def _create_exec_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
+        from statement.exec_statement import ExecStatement
+        exec_statement = ExecStatement(child_node, self)
+        if node == self.current_node():
+            self.__current_child_statement = exec_statement
+        return exec_statement
