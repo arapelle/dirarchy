@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 from string import Formatter
 
-from statement.abstract_statement import AbstractStatement
-
 
 class BuiltinDate:
     def __format__(self, format_spec):
@@ -33,6 +31,8 @@ class BuiltinEnv:
 
 
 class VariablesFormatter(Formatter):
+    from statement.abstract_statement import AbstractStatement
+
     TEMPLATE_DIR_VARNAME = '$TEMPLATE_DIR'
 
     def __init__(self, current_statement: AbstractStatement):

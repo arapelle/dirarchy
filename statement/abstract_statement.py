@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import final
 
-import statement.abstract_dir_statement
-import statement.template_statement
 from util.log import MethodScopeLog
 from variables.variables_dict import VariablesDict
 
@@ -14,6 +12,7 @@ class AbstractStatement(ABC):
     VARIABLES_LABEL = "variables"
 
     def __init__(self, current_node: XMLTree.Element, parent_statement, **kargs):
+        import statement.template_statement
         assert current_node is not None
         self.__current_node = current_node
         self.__parent_statement = parent_statement
@@ -85,6 +84,7 @@ class AbstractStatement(ABC):
         return self.__parent_statement.current_contents_collector_statement()
 
     def local_tree_root_dir_statement(self):
+        import statement.abstract_dir_statement
         template_statement = self.template_statement()
         assert isinstance(template_statement, statement.template_statement.TemplateStatement)
         child_statement = template_statement.current_child_statement()
@@ -100,6 +100,7 @@ class AbstractStatement(ABC):
         return dir_statement
 
     def tree_root_dir_statement(self):
+        import statement.template_statement
         template_statement = self.template_statement()
         assert isinstance(template_statement, statement.template_statement.TemplateStatement)
         if template_statement.parent_template_statement() is None:
