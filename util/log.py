@@ -1,19 +1,11 @@
 import logging
-import os
-import platform
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
 
 def tmp_dirpath():
-    platform_system = platform.system().strip().lower()
-    match platform_system:
-        case "windows":
-            return Path(f"{os.environ['TMP']}")
-        case "linux":
-            return Path(f"/tmp")
-        case _:
-            raise Exception(f"System not handled: '{platform_system}'")
+    return Path(tempfile.gettempdir())
 
 
 def tool_tmp_dirpath(tool_name: str):
