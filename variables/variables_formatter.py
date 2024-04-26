@@ -1,5 +1,6 @@
 import datetime
 import os
+import tempfile
 from pathlib import Path
 from string import Formatter
 
@@ -45,6 +46,8 @@ class VariablesFormatter(Formatter):
 
     def __get_builtin_var_value(self, builtin_var_name):
         match builtin_var_name:
+            case "$TMP":
+                return tempfile.gettempdir()
             case "$CURRENT_WORKING_DIR":
                 return Path.cwd().as_posix()
             case self.TEMPLATE_DIR_VARNAME:
