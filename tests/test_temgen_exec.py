@@ -102,7 +102,7 @@ echo "{$OUTPUT_DIR}" &gt;&gt; data.txt
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
     </vars>
     <dir path="{project_root_dir}">
-        <exec lang="python" timeout="0.1">
+        <exec lang="python" timeout="0.2">
 import time
 time.sleep(0.05)
 with open("data.txt", "w") as data_file:
