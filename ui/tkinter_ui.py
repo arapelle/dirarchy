@@ -2,6 +2,8 @@ from ui.abstract_ui import AbstractUi
 
 
 class TkinterUi(AbstractUi):
+    NAME = "TKINTER"
+
     def __init__(self):
         import tkinter
         self.__gui = tkinter.Tk()

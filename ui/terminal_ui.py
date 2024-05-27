@@ -2,6 +2,8 @@ from ui.abstract_ui import AbstractUi
 
 
 class TerminalUi(AbstractUi):
+    NAME = "TERMINAL"
+
     @staticmethod
     def __ask_str_value(prompt: str, prev_value=None):
         try:
