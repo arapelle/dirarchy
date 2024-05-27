@@ -1,9 +1,14 @@
 import datetime
 import os
+import tempfile
 import unittest
 from pathlib import Path
 
+from ui.terminal_ui import TerminalUi
+from ui.tkinter_ui import TkinterUi
+from util.random_string import random_lower_sisy_string
 from statement.template_statement import TemplateStatement
+from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase
 
 
@@ -350,6 +355,32 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
                                                                          expected_output_filepath.suffix,
                                                                          "".join(expected_output_filepath.suffixes))
         self._compare_file_lines_with_expected_lines(expected_output_filepath, expected_file_contents.strip())
+
+    def test__config__ui_default_TERMINAL__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+[ui]
+default = "TERMINAL"
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        temgen = Temgen(None, config_path=config_filepath)
+        self.assertTrue(isinstance(temgen.ui(), TerminalUi))
+        config_filepath.unlink(missing_ok=True)
+
+    def test__config__ui_default_TKINTER__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+[ui]
+default = "TKINTER"
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        temgen = Temgen(None, config_path=config_filepath)
+        self.assertTrue(isinstance(temgen.ui(), TkinterUi))
+        config_filepath.unlink(missing_ok=True)
 
 
 if __name__ == '__main__':

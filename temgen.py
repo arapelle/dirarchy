@@ -4,14 +4,17 @@ import glob
 import os
 import platform
 import re
+import tomllib
 import xml.etree.ElementTree as XMLTree
 from pathlib import Path
 
 import semver
 
 from constants import regex, names
-from util.log import make_console_file_logger
+from ui.make_ui_from_name import make_ui_from_name
+from ui.tkinter_ui import TkinterUi
 from ui.abstract_ui import AbstractUi
+from util.log import make_console_file_logger
 from variables.variables_dict import VariablesDict
 
 
@@ -78,17 +81,32 @@ def default_template_roots():
 class Temgen:
     VERSION = semver.Version.parse('0.6.0')
 
-    def __init__(self, ui: AbstractUi, logger=None):
+    def __init__(self, ui: AbstractUi | None, logger=None, **kargs):
+        self.__load_config(kargs)
         if logger is None:
             logger = make_console_file_logger(tool=names.LOWER_PROGRAM_NAME, log_to_info=True)
         self.__logger = logger
+        if ui is None:
+            ui_name = self.__config.get("ui", dict()).get("default", TkinterUi.NAME)
+            ui = make_ui_from_name(ui_name)
         self.__ui = ui
         self.__variables = VariablesDict(self.__logger)
         self.__template_root_dpaths = default_template_roots()
+    def __load_config(self, kargs):
+        default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config.toml"
+        config_path = Path(kargs.get("config_path", default_config_path))
+        if config_path.exists():
+            with open(config_path, 'rb') as config_file:
+                self.__config = tomllib.load(config_file)
+        else:
+            self.__config = dict()
 
     @property
     def logger(self):
         return self.__logger
+
+    def config(self):
+        return self.__config
 
     def ui(self):
         return self.__ui
