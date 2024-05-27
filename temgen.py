@@ -2,7 +2,6 @@ import copy
 import errno
 import glob
 import os
-import platform
 import re
 import tomllib
 import xml.etree.ElementTree as XMLTree
@@ -13,73 +12,15 @@ import semver
 from constants import regex, names
 from ui.make_ui_from_name import make_ui_from_name
 from ui.tkinter_ui import TkinterUi
+from util.application_directories import ApplicationDirectories
 from ui.abstract_ui import AbstractUi
 from util.log import make_console_file_logger
 from variables.variables_dict import VariablesDict
 
 
-def environment_template_roots():
-    roots = []
-    temgen_templates_path = os.environ.get(f'{names.UPPER_PROGRAM_NAME}_TEMPLATES_PATH', '')
-    for path in temgen_templates_path.split(':'):
-        if path:
-            roots.append(Path(path))
-    return roots
-
-
-def linux_template_roots():
-    roots = []
-    home_dpath = os.environ['HOME']
-    templates_dpath = Path(f"{home_dpath}/.local/share/{names.LOWER_PROGRAM_NAME}/templates")
-    templates_dpath.mkdir(parents=True, exist_ok=True)
-    roots.append(templates_dpath)
-    return roots
-
-
-def strict_windows_template_roots():
-    roots = []
-    local_app_data_dpath = Path(os.environ['LOCALAPPDATA'])
-    templates_dpath = local_app_data_dpath / f"{names.LOWER_PROGRAM_NAME}/templates"
-    templates_dpath.mkdir(parents=True, exist_ok=True)
-    roots.append(templates_dpath)
-    return roots
-
-
-def windows_template_roots():
-    roots = []
-    roots.extend(strict_windows_template_roots())
-    msystem_env_var = os.environ.get('MSYSTEM', None)
-    if msystem_env_var == 'MINGW64' or msystem_env_var == 'MINGW32':
-        roots.extend(linux_template_roots())
-    return roots
-
-
-def system_template_roots():
-    platform_system = platform.system().strip().lower()
-    match platform_system:
-        case "windows":
-            return windows_template_roots()
-        case "linux":
-            return linux_template_roots()
-        case _:
-            raise Exception(f"System not handled: '{platform_system}'")
-
-
-def global_template_roots():
-    roots = []
-    roots.extend(system_template_roots())
-    roots.extend(environment_template_roots())
-    return roots
-
-
-def default_template_roots():
-    roots = global_template_roots()
-    roots.append(Path("."))
-    return roots
-
-
 class Temgen:
     VERSION = semver.Version.parse('0.6.0')
+    APPLICATION_DIRECTORIES = ApplicationDirectories(names.LOWER_PROGRAM_NAME)
 
     def __init__(self, ui: AbstractUi | None, logger=None, **kargs):
         self.__load_config(kargs)
@@ -91,7 +32,12 @@ class Temgen:
             ui = make_ui_from_name(ui_name)
         self.__ui = ui
         self.__variables = VariablesDict(self.__logger)
-        self.__template_root_dpaths = default_template_roots()
+        self.__templates_dirpaths = self.APPLICATION_DIRECTORIES.data_dirpaths("templates")
+        template_dirpaths = self.__config.get("templates_dirs", [])
+        assert isinstance(template_dirpaths, list)
+        self.__templates_dirpaths.extend([Path(template_dirpath) for template_dirpath in template_dirpaths])
+        self.__templates_dirpaths.append(Path("."))
+
     def __load_config(self, kargs):
         default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config.toml"
         config_path = Path(kargs.get("config_path", default_config_path))
@@ -114,8 +60,8 @@ class Temgen:
     def init_variables(self):
         return self.__variables
 
-    def template_roots(self):
-        return self.__template_root_dpaths
+    def templates_dirpaths(self):
+        return self.__templates_dirpaths
 
     def find_template_file(self, template_path: Path, version_attr) -> Path:
         template_dpath = template_path.parent
@@ -133,7 +79,7 @@ class Temgen:
             if version_attr:
                 print("WARNING: The attribute version is ignored as the provided template is a file path "
                       f"(version or extension is contained in the path): '{template_path}'.")
-            for template_root_dpath in self.__template_root_dpaths:
+            for template_root_dpath in self.__templates_dirpaths:
                 xml_path = template_root_dpath / template_path
                 if xml_path.exists():
                     return xml_path
@@ -143,7 +89,7 @@ class Temgen:
         if template_version:
             raise RuntimeError(f"The extension '.xml' is missing at the end of the template path: '{template_path}'.")
         if not version_attr:
-            for template_root_dpath in self.__template_root_dpaths:
+            for template_root_dpath in self.__templates_dirpaths:
                 xml_path = template_root_dpath / f"{template_path}.xml"
                 if xml_path.exists():
                     return xml_path
@@ -173,7 +119,7 @@ class Temgen:
                 expected_patch = 0
             name_pattern = f"{name_pattern}.xml"
         template_fpath = None
-        for template_root_dpath in self.__template_root_dpaths:
+        for template_root_dpath in self.__templates_dirpaths:
             t_dir = template_root_dpath / template_dpath
             template_file_list = glob.glob(name_pattern, root_dir=t_dir)
             template_file_list.sort(reverse=True)
@@ -205,7 +151,7 @@ class Temgen:
         template_statement = TemplateStatement(element_tree.getroot(), None,
                                                temgen=self,
                                                template_filepath=template_filepath,
-                                               variables=copy.deepcopy(self.init_variables()),
+                                               variables=self.init_variables().clone(),
                                                output_dirpath=Path(output_dir))
         template_statement.run()
 
@@ -219,7 +165,7 @@ class Temgen:
         output_dir = self.__resolve_output_dir(output_dir)
         template_statement = TemplateStatement(root_element, None,
                                                temgen=self,
-                                               variables=copy.deepcopy(self.init_variables()),
+                                               variables=self.init_variables().clone(),
                                                output_dirpath=Path(output_dir))
         template_statement.run()
 

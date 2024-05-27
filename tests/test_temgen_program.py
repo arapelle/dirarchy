@@ -156,7 +156,8 @@ class TestTemgenProgram(TestTemgenProgramBase):
         cls._local_sub_dirpath = "temgen_program"
         super().setUpClass()
         template_local_root = "temfile"
-        template_root = Path(f"{temgen.system_template_roots()[-1]}/{template_local_root}")
+        templates_dirpath = temgen.Temgen.APPLICATION_DIRECTORIES.system_data_dirpaths('templates')[0]
+        template_root = Path(f"{templates_dirpath}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temfile-1.0.0.xml", f"{template_root}/temfile-1.0.0.xml")
         shutil.copyfile("input/templates/temfile-1.1.0.xml", f"{template_root}/temfile-1.1.0.xml")
@@ -164,7 +165,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         shutil.copyfile("input/templates/temfile-1.2.0.xml", f"{template_root}/temfile-1.2.0.xml")
         shutil.copyfile("input/templates/temfile-2.0.0.xml", f"{template_root}/temfile-2.0.0.xml")
         template_local_root = "temdir"
-        template_root = Path(f"{temgen.system_template_roots()[-1]}/{template_local_root}")
+        template_root = Path(f"{templates_dirpath}/{template_local_root}")
         template_root.mkdir(parents=True, exist_ok=True)
         shutil.copyfile("input/templates/temdir-1.0.0.xml", f"{template_root}/temdir-1.0.0.xml")
         shutil.copyfile("input/templates/temdir-1.1.0.xml", f"{template_root}/temdir-1.1.0.xml")

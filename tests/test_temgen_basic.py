@@ -356,6 +356,21 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
                                                                          "".join(expected_output_filepath.suffixes))
         self._compare_file_lines_with_expected_lines(expected_output_filepath, expected_file_contents.strip())
 
+    def test__config__templates_dirs__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+templates_dirs = [ "/path/to/templates", "/my/templates" ]
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        temgen = Temgen(TerminalUi(), config_path=config_filepath)
+        dirpaths = temgen.templates_dirpaths()
+        self.assertIn(Path("/path/to/templates"), dirpaths)
+        self.assertIn(Path("/my/templates"), dirpaths)
+        self.assertGreater(len(dirpaths), 2)
+        config_filepath.unlink(missing_ok=True)
+
     def test__config__ui_default_TERMINAL__ok(self):
         config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
         with open(config_filepath, "w") as config_file:
@@ -380,6 +395,46 @@ default = "TKINTER"
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
         self.assertTrue(isinstance(temgen.ui(), TkinterUi))
+        config_filepath.unlink(missing_ok=True)
+
+    def test__config__logging__ok(self):
+        log_dir = (Path(tempfile.gettempdir()) / "temgentests").as_posix()
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = f"""
+[logging.file]
+enabled = true
+level = "DEBUG"
+log_format = "%(levelname)-8s: %(message)s"
+date_format = "%Y%m%d %H%M%S"
+filename_format = "logfile.log"
+dir = "{str(log_dir)}"
+
+[logging.console] 
+enabled = true
+level = "DEBUG"
+log_format = "%(levelname)-8s: %(message)s"
+date_format = "%Y%m%d %H%M%S"
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        temgen = Temgen(TerminalUi(), config_path=config_filepath)
+        file_config = temgen.config()["logging"]["file"]
+        self.assertIsNotNone(file_config)
+        self.assertTrue(bool(file_config["enabled"]))
+        self.assertEqual(file_config["level"], "DEBUG")
+        self.assertEqual(file_config["log_format"], "%(levelname)-8s: %(message)s")
+        self.assertEqual(file_config["date_format"], "%Y%m%d %H%M%S")
+        self.assertEqual(file_config["filename_format"], "logfile.log")
+        self.assertEqual(file_config["dir"], log_dir)
+        self.assertEqual(len(file_config), 6)
+        console_config = temgen.config()["logging"]["console"]
+        self.assertIsNotNone(console_config)
+        self.assertTrue(bool(console_config["enabled"]))
+        self.assertEqual(console_config["level"], "DEBUG")
+        self.assertEqual(console_config["log_format"], "%(levelname)-8s: %(message)s")
+        self.assertEqual(console_config["date_format"], "%Y%m%d %H%M%S")
+        self.assertEqual(len(console_config), 4)
         config_filepath.unlink(missing_ok=True)
 
 
