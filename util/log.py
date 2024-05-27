@@ -1,64 +1,63 @@
+import datetime
 import logging
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 
-def tmp_dirpath():
-    return Path(tempfile.gettempdir())
-
-
-def tool_tmp_dirpath(tool_name: str):
-    return tmp_dirpath() / f"{tool_name}"
-
-
-def tool_log_dirpath(tool_name: str):
-    return tmp_dirpath() / f"{tool_name}/log"
-
-
-class LoggerMaker:
-    def __init__(self, **kwargs):
-        tool_name = kwargs.get("tool")
-        log_filestem = tool_name if tool_name is not None else "logfile"
-        if "dir" in kwargs:
-            log_dir = Path(kwargs.get("dir"))
-        elif "tool" in kwargs:
-            log_dir = tool_log_dirpath(log_filestem)
-        else:
-            raise RuntimeError("'dir' or 'tool' is missing as named argument.")
-        log_dir.mkdir(parents=True, exist_ok=True)
-        log_filename = datetime.now().strftime(f"{log_filestem}_%Y%m%d_%H%M%S_%f.log")
-        log_filename = kwargs.get("filename", log_filename)
-        self.__log_filepath = Path(f"{log_dir}/{log_filename}")
-
-    def log_filepath(self):
-        return self.__log_filepath
-
-    def make_console_file_logger(self):
-        file_format = "[%(levelname)-8s][%(asctime)s][%(pathname)s:%(lineno)d %(funcName)s]: %(message)s"
-        logging.basicConfig(filename=self.__log_filepath,
-                            level=logging.DEBUG,
-                            format=file_format,
-                            filemode='w',
-                            datefmt='%Y-%m-%d %H:%M:%S',
-                            force=True)
+def make_console_handler_from_config(console_config=None):
+    if console_config is None:
+        console_config = dict()
+    console_enabled = bool(console_config.get("enabled", "True"))
+    if console_enabled:
+        console_level = console_config.get("level", "DEBUG")
+        default_console_log_format = \
+            "[%(levelname)-8s][%(asctime)s][%(filename)s:%(lineno)d]: %(message)s"
+        console_log_format = console_config.get("log_format", default_console_log_format)
+        console_date_format = console_config.get("date_format", "%Y-%m-%d %H:%M:%S")
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_format = "[%(levelname)-8s][%(asctime)s][%(filename)s:%(lineno)d]: %(message)s"
-        formatter = logging.Formatter(console_format)
+        console_handler.setLevel(console_level)
+        formatter = logging.Formatter(console_log_format, datefmt=console_date_format)
         console_handler.setFormatter(formatter)
-        logger = logging.getLogger()
+        return console_handler
+    return None
+
+
+def make_file_handler_from_config(log_name="logfile", file_config=None):
+    file_enabled = bool(file_config.get("enabled", "True"))
+    if file_enabled:
+        file_level = file_config.get("level", "DEBUG")
+        default_file_log_format = \
+            "[%(levelname)-8s][%(asctime)s][%(pathname)s:%(lineno)d %(funcName)s]: %(message)s"
+        file_log_format = file_config.get("log_format", default_file_log_format)
+        file_date_format = file_config.get("date_format", "%Y-%m-%d %H:%M:%S")
+        filename_format = file_config.get("filename_format", f"{log_name}_%Y%m%d_%H%M%S_%f.log")
+        filename_format = datetime.datetime.now().strftime(filename_format)
+        file_dir = Path(file_config.get("dir", f"{tempfile.gettempdir()}/{log_name}"))
+        file_dir.mkdir(parents=True, exist_ok=True)
+        log_filepath = file_dir / filename_format
+        file_handler = logging.FileHandler(filename=log_filepath, mode="w")
+        file_handler.setLevel(file_level)
+        formatter = logging.Formatter(file_log_format, datefmt=file_date_format)
+        file_handler.setFormatter(formatter)
+        return file_handler, log_filepath
+    return None, None
+
+
+def make_logger_from_config(log_name="logfile", config=None, write_filepath: bool = False):
+    if config is None:
+        config = dict()
+    logger = logging.Logger(f"{log_name}")
+    console_config = config.get("console", dict())
+    console_handler = make_console_handler_from_config(console_config)
+    if console_handler is not None:
         logger.addHandler(console_handler)
-        return logger
-
-
-def make_console_file_logger(**kwargs):
-    logger_maker = LoggerMaker(**kwargs)
-    logger = logger_maker.make_console_file_logger()
-    log_to_info = kwargs.get("log_to_info", False)
-    if log_to_info:
-        logger.info(f"Log to {logger_maker.log_filepath()}")
-    return logger
+    file_config = config.get("file", dict())
+    file_handler, log_filepath = make_file_handler_from_config(log_name, file_config)
+    if file_handler is not None:
+        logger.addHandler(file_handler)
+        if write_filepath:
+            logger.info(f"Log to {log_filepath}")
+    return logger, log_filepath
 
 
 class ScopeLog:

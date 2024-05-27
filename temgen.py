@@ -14,7 +14,7 @@ from ui.make_ui_from_name import make_ui_from_name
 from ui.tkinter_ui import TkinterUi
 from util.application_directories import ApplicationDirectories
 from ui.abstract_ui import AbstractUi
-from util.log import make_console_file_logger
+from util.log import make_logger_from_config
 from variables.variables_dict import VariablesDict
 
 
@@ -25,7 +25,7 @@ class Temgen:
     def __init__(self, ui: AbstractUi | None, logger=None, **kargs):
         self.__load_config(kargs)
         if logger is None:
-            logger = make_console_file_logger(tool=names.LOWER_PROGRAM_NAME, log_to_info=True)
+            logger = make_logger_from_config(names.LOWER_PROGRAM_NAME, self.__config.get("logging"), True)[0]
         self.__logger = logger
         if ui is None:
             ui_name = self.__config.get("ui", dict()).get("default", TkinterUi.NAME)

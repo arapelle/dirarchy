@@ -13,7 +13,7 @@ class AbstractMainStatement(AbstractStatement, ABC):
 
     @final
     def run(self):
-        with MethodScopeLog(self):
+        with MethodScopeLog(self, logger=self.logger):
             super()._run()
             if not self.__children_treated:
                 self.treat_children_nodes()

@@ -108,7 +108,7 @@ class AbstractStatement(ABC):
         return template_statement.parent_statement().tree_root_dir_statement()
 
     def run(self):
-        with MethodScopeLog(self):
+        with MethodScopeLog(self, logger=self.logger):
             self._run()
 
     def _run(self):

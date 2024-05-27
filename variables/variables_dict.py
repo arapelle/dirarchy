@@ -6,11 +6,14 @@ from pathlib import Path
 
 
 class VariablesDict(dict):
-    def __init__(self, logger=None):
+    def __init__(self, logger):
         super().__init__()
-        if logger is None:
-            logger = logging.getLogger()
         self.__logger = logger
+
+    def clone(self):
+        var_dict = VariablesDict(self.__logger)
+        var_dict.update(self)
+        return var_dict
 
     def update_var_and_log(self, var_name, var_value):
         self.__log_set_var(var_name, var_value)
