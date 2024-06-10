@@ -1,7 +1,7 @@
-from ui.abstract_ui import AbstractUi
+from ui.abstract_ui import AbstractBasicUi
 
 
-class TerminalUi(AbstractUi):
+class TerminalBasicUi(AbstractBasicUi):
     NAME = "TERMINAL"
 
     @staticmethod

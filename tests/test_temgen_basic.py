@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from ui.terminal_ui import TerminalUi
-from ui.tkinter_ui import TkinterUi
+from ui.terminal_ui import TerminalBasicUi
+from ui.tkinter_ui import TkinterBasicUi
 from util.random_string import random_lower_sisy_string
 from statement.template_statement import TemplateStatement
 from temgen import Temgen
@@ -364,7 +364,7 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
 """
             config_file.write(config_contents)
             config_file.flush()
-        temgen = Temgen(TerminalUi(), config_path=config_filepath)
+        temgen = Temgen(TerminalBasicUi(), config_path=config_filepath)
         dirpaths = temgen.templates_dirpaths()
         self.assertIn(Path("/path/to/templates"), dirpaths)
         self.assertIn(Path("/my/templates"), dirpaths)
@@ -376,12 +376,12 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
         with open(config_filepath, "w") as config_file:
             config_contents = """
 [ui]
-default = "TERMINAL"
+basic = "TERMINAL"
 """
             config_file.write(config_contents)
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
-        self.assertTrue(isinstance(temgen.ui(), TerminalUi))
+        self.assertTrue(isinstance(temgen.ui(), TerminalBasicUi))
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_default_TKINTER__ok(self):
@@ -389,12 +389,12 @@ default = "TERMINAL"
         with open(config_filepath, "w") as config_file:
             config_contents = """
 [ui]
-default = "TKINTER"
+basic = "TKINTER"
 """
             config_file.write(config_contents)
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
-        self.assertTrue(isinstance(temgen.ui(), TkinterUi))
+        self.assertTrue(isinstance(temgen.ui(), TkinterBasicUi))
         config_filepath.unlink(missing_ok=True)
 
     def test__config__logging__ok(self):
@@ -418,7 +418,7 @@ date_format = "%Y%m%d %H%M%S"
 """
             config_file.write(config_contents)
             config_file.flush()
-        temgen = Temgen(TerminalUi(), config_path=config_filepath)
+        temgen = Temgen(TerminalBasicUi(), config_path=config_filepath)
         file_config = temgen.config()["logging"]["file"]
         self.assertIsNotNone(file_config)
         self.assertTrue(bool(file_config["enabled"]))

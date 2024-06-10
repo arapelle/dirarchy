@@ -11,9 +11,9 @@ import semver
 
 from constants import regex, names
 from ui.make_ui_from_name import make_ui_from_name
-from ui.tkinter_ui import TkinterUi
+from ui.tkinter_ui import TkinterBasicUi
 from util.application_directories import ApplicationDirectories
-from ui.abstract_ui import AbstractUi
+from ui.abstract_ui import AbstractBasicUi
 from util.log import make_logger_from_config
 from variables.variables_dict import VariablesDict
 
@@ -22,15 +22,15 @@ class Temgen:
     VERSION = semver.Version.parse('0.6.0')
     APPLICATION_DIRECTORIES = ApplicationDirectories(names.LOWER_PROGRAM_NAME)
 
-    def __init__(self, ui: AbstractUi | None, logger=None, **kargs):
+    def __init__(self, basic_ui: AbstractBasicUi | None, logger=None, **kargs):
         self.__load_config(kargs)
         if logger is None:
             logger = make_logger_from_config(names.LOWER_PROGRAM_NAME, self.__config.get("logging"), True)[0]
         self.__logger = logger
-        if ui is None:
-            ui_name = self.__config.get("ui", dict()).get("default", TkinterUi.NAME)
-            ui = make_ui_from_name(ui_name)
-        self.__ui = ui
+        if basic_ui is None:
+            basic_ui_name = self.__config.get("ui", dict()).get("basic", TkinterBasicUi.NAME)
+            basic_ui = make_ui_from_name(basic_ui_name)
+        self.__basic_ui = basic_ui
         self.__variables = VariablesDict(self.__logger)
         self.__templates_dirpaths = self.APPLICATION_DIRECTORIES.data_dirpaths("templates")
         template_dirpaths = self.__config.get("templates_dirs", [])
@@ -55,7 +55,7 @@ class Temgen:
         return self.__config
 
     def ui(self):
-        return self.__ui
+        return self.__basic_ui
 
     def init_variables(self):
         return self.__variables

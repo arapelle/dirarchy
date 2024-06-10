@@ -5,14 +5,14 @@ import re
 import temgen
 from constants import regex, names
 from ui.make_ui_from_name import make_ui_from_name
-from ui.terminal_ui import TerminalUi
-from ui.tkinter_ui import TkinterUi
+from ui.terminal_ui import TerminalBasicUi
+from ui.tkinter_ui import TkinterBasicUi
 
 
 class CliTemgen(temgen.Temgen):
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
-        super().__init__(make_ui_from_name(self.args.ui))
+        super().__init__(make_ui_from_name(self.args.basic_ui))
         self.__init_variables_from_args()
 
     @property
@@ -25,10 +25,10 @@ class CliTemgen(temgen.Temgen):
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
         argparser.add_argument('--version', action='version',
                                version=f'{prog_name} {temgen.Temgen.VERSION}')
-        argparser.add_argument('-K', f'--{TkinterUi.NAME}'.lower(), action='store_const',
-                               dest='ui', const=TkinterUi.NAME, help='Use tkinter I/O.')
-        argparser.add_argument('-T', f'--{TerminalUi.NAME}'.lower(), action='store_const',
-                               dest='ui', const=TerminalUi.NAME, default='terminal',
+        argparser.add_argument('-K', f'--{TkinterBasicUi.NAME}'.lower(), action='store_const',
+                               dest='basic_ui', const=TkinterBasicUi.NAME, help='Use tkinter I/O.')
+        argparser.add_argument('-T', f'--{TerminalBasicUi.NAME}'.lower(), action='store_const',
+                               dest='basic_ui', const=TerminalBasicUi.NAME, default='terminal',
                                help='Use terminal I/O.')
         argparser.add_argument('-C', '--custom-ui', metavar='custom_ui_cmd',
                                help='Use a custom user interface to set variables before treating them with temgen. '

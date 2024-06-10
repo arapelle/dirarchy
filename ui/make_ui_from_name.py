@@ -1,13 +1,13 @@
-from ui.terminal_ui import TerminalUi
-from ui.tkinter_ui import TkinterUi
+from ui.terminal_ui import TerminalBasicUi
+from ui.tkinter_ui import TkinterBasicUi
 
 
 def make_ui_from_name(ui_name: str):
     match ui_name:
-        case TerminalUi.NAME:
-            ui = TerminalUi()
-        case TkinterUi.NAME:
-            ui = TkinterUi()
+        case TerminalBasicUi.NAME:
+            ui = TerminalBasicUi()
+        case TkinterBasicUi.NAME:
+            ui = TkinterBasicUi()
         case _:
             ui = None
     return ui

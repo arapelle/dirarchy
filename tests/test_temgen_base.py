@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from util import random_string
-from ui.terminal_ui import TerminalUi
+from ui.terminal_ui import TerminalBasicUi
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
 
@@ -49,7 +49,7 @@ class TestTemgenBase(DirCmpTestCase):
                                              input_parameters):
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         self._compare_output_and_expected(project_root_dir)
 
@@ -59,7 +59,7 @@ class TestTemgenBase(DirCmpTestCase):
                                                     input_parameters):
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         self.fail()
 
@@ -105,7 +105,7 @@ class TestTemgenBase(DirCmpTestCase):
         """
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         with open(f"{self._output_dirpath}/{project_root_dir}/data.txt") as output_file:
             return output_file.read().strip()
@@ -119,7 +119,7 @@ class TestTemgenBase(DirCmpTestCase):
             self._make_template_file(template_filepath, template_string)
             input_parameters_str = "\n".join(input_parameters)
             sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-            template_generator = Temgen(TerminalUi())
+            template_generator = Temgen(TerminalBasicUi())
             template_generator.treat_template_file(template_filepath, output_dir=Path(self._output_dirpath))
         finally:
             template_filepath.unlink(missing_ok=True)
@@ -136,7 +136,7 @@ class TestTemgenBase(DirCmpTestCase):
             self._make_template_file(sub_template_filepath, sub_template_string)
             input_parameters_str = "\n".join(input_parameters)
             sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-            template_generator = Temgen(TerminalUi())
+            template_generator = Temgen(TerminalBasicUi())
             template_generator.treat_template_file(main_template_filepath, output_dir=Path(self._output_dirpath))
         finally:
             main_template_filepath.unlink(missing_ok=True)

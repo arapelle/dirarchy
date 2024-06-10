@@ -1,7 +1,7 @@
-from ui.abstract_ui import AbstractUi
+from ui.abstract_ui import AbstractBasicUi
 
 
-class TkinterUi(AbstractUi):
+class TkinterBasicUi(AbstractBasicUi):
     NAME = "TKINTER"
 
     def __init__(self):
