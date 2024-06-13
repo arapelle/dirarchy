@@ -1,8 +1,9 @@
 import json
-import logging
 import os
 import tempfile
 from pathlib import Path
+
+from util import random_string
 
 
 class VariablesDict(dict):
@@ -35,17 +36,23 @@ class VariablesDict(dict):
                     self.__log_set_var(key, value)
 
     def update_vars_from_custom_ui(self, cmd: str):
+        from temgen import Temgen
         with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
-            var_file_fpath = Path(vars_file.name)
+            input_var_filepath = Path(vars_file.name)
             json.dump(self, vars_file)
-        cmd_with_args = f"{cmd} {var_file_fpath}"
-        cmd_res = os.system(cmd_with_args)
+        app_dirpath = Temgen.APPLICATION_DIRECTORIES.tmp_dirpath()
+        output_var_filepath = app_dirpath / f"{random_string.random_lower_sisy_string(8)}.json"
+        formatted_cmd = cmd.format(input_var_filepath, output_var_filepath,
+                                   input_file=input_var_filepath,
+                                   output_file=output_var_filepath)
+        cmd_res = os.system(formatted_cmd)
         if cmd_res != 0:
             raise RuntimeError(f"Execution of custom ui did not work well (returned {cmd_res}). "
-                               f"command: {cmd_with_args}")
-        with open(var_file_fpath) as vars_file:
+                               f"command: {formatted_cmd}")
+        with open(output_var_filepath) as vars_file:
             self.update(json.load(vars_file))
-        var_file_fpath.unlink(missing_ok=True)
+        input_var_filepath.unlink(missing_ok=True)
+        output_var_filepath.unlink(missing_ok=True)
 
     def __log_set_var(self, var_name, var_value):
         var_value_log_str = str(var_value)
