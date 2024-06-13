@@ -102,7 +102,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
 
     def test__custom_ui__valid_cmd__ok(self):
         output_root_dir = "custom_ui__valid_cmd"
-        args = ['-C', f'{sys.executable} input/custom_ui/myui.py']
+        args = ['-U', f'{sys.executable} input/custom_ui/myui.py']
         var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
@@ -110,7 +110,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
     def test__custom_ui__invalid_cmd__exception(self):
         try:
             output_root_dir = "custom_ui__invalid_cmd"
-            args = ['-C', f'{sys.executable} input/custom_ui/not_found.py']
+            args = ['-U', f'{sys.executable} input/custom_ui/not_found.py']
             var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
             self._run_generated_trivial_template_file(output_root_dir, argv=args,
                                                       var_definitions=var_defs, file_contents=":{text}:{other_text}:")

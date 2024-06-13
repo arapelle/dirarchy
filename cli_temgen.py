@@ -30,10 +30,9 @@ class CliTemgen(temgen.Temgen):
         argparser.add_argument('-T', f'--{TerminalBasicUi.NAME}'.lower(), action='store_const',
                                dest='basic_ui', const=TerminalBasicUi.NAME, default='terminal',
                                help='Use terminal I/O.')
-        argparser.add_argument('-C', '--custom-ui', metavar='custom_ui_cmd',
+        argparser.add_argument('-U', '--ui', metavar='ui_cmd',
                                help='Use a custom user interface to set variables before treating them with temgen. '
-                                    '(Executing custom_ui_cmd in shell is expected to use the desired custom '
-                                    'interface.)')
+                                    '(Executing ui_cmd in shell is expected to use the desired custom interface.)')
         argparser.add_argument('-o', '--output-dir', metavar='dir_path',
                                default=Path.cwd(),
                                help='The directory where to generate the desired hierarchy (dir or file).')
@@ -62,8 +61,8 @@ class CliTemgen(temgen.Temgen):
             self.init_variables().update_vars_from_dict(self.args.var)
         if self.args.var_file:
             self.init_variables().update_vars_from_files(self.args.var_file)
-        if self.args.custom_ui:
-            self.init_variables().update_vars_from_custom_ui(self.args.custom_ui)
+        if self.args.ui:
+            self.init_variables().update_vars_from_custom_ui(self.args.ui)
 
     def run(self):
         self.find_and_treat_template_file(Path(self.args.template_path),
