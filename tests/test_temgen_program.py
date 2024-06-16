@@ -102,16 +102,16 @@ class TestTemgenProgram(TestTemgenProgramBase):
         except JSONDecodeError:
             pass
 
-    def test__custom_ui__valid_cmd__ok(self):
-        output_root_dir = "custom_ui__valid_cmd"
-        args = ['-U', f'{sys.executable} input/custom_ui/myui.py {{output_file}} {{input_file}}', '-v', 'text=coucou']
+    def test__extra_ui__valid_cmd__ok(self):
+        output_root_dir = "extra_ui__valid_cmd"
+        args = ['-U', f'{sys.executable} input/extra_ui/myui.py {{output_file}} {{input_file}}', '-v', 'text=coucou']
         var_defs = '<var name="message" value="" />'
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{message}:")
 
-    def test__custom_ui__valid_cmd_cli__ok(self):
+    def test__extra_ui__valid_cmd_cli__ok(self):
         import cli_temgen
-        output_root_dir = "custom_ui__valid_cmd_cli"
+        output_root_dir = "extra_ui__valid_cmd_cli"
         with tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False) as template_file:
             template_str = """<?xml version="1.0"?>
 <template>
@@ -128,7 +128,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             template_file.write(template_str)
             template_file.flush()
             template_filepath = Path(template_file.name)
-        args = ['-U', f'"{sys.executable} input/custom_ui/myui.py {{output_file}} {{input_file}}"',
+        args = ['-U', f'"{sys.executable} input/extra_ui/myui.py {{output_file}} {{input_file}}"',
                 '-v', 'text=coucou', f'project_root_dir={output_root_dir}']
         args.extend(self._ut_context_argv)
         cmd = f"""{sys.executable} {cli_temgen.__file__} {" ".join(args)} -- {template_filepath}"""
@@ -136,10 +136,10 @@ class TestTemgenProgram(TestTemgenProgramBase):
         self._compare_output_and_expected(output_root_dir)
         template_filepath.unlink(missing_ok=True)
 
-    def test__custom_ui__invalid_cmd__exception(self):
+    def test__extra_ui__invalid_cmd__exception(self):
         try:
-            output_root_dir = "custom_ui__invalid_cmd"
-            args = ['-U', f'{sys.executable} input/custom_ui/not_found.py']
+            output_root_dir = "extra_ui__invalid_cmd"
+            args = ['-U', f'{sys.executable} input/extra_ui/not_found.py']
             var_defs = '<var name="text" value="good_value" />\n<var name="other_text" value="" />'
             self._run_generated_trivial_template_file(output_root_dir, argv=args,
                                                       var_definitions=var_defs, file_contents=":{text}:{other_text}:")

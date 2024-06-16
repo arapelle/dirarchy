@@ -62,7 +62,7 @@ class CliTemgen(temgen.Temgen):
         if self.args.var_file:
             self.init_variables().update_vars_from_files(self.args.var_file)
         if self.args.ui:
-            self.init_variables().update_vars_from_custom_ui(self.args.ui)
+            self.init_variables().update_vars_from_extra_ui(self.args.ui)
 
     def run(self):
         self.find_and_treat_template_file(Path(self.args.template_path),

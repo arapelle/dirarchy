@@ -35,7 +35,7 @@ class VariablesDict(dict):
                     self[key] = value
                     self.__log_set_var(key, value)
 
-    def update_vars_from_custom_ui(self, cmd: str):
+    def update_vars_from_extra_ui(self, cmd: str):
         from temgen import Temgen
         with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
             input_var_filepath = Path(vars_file.name)
