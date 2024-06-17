@@ -12,8 +12,10 @@ from ui.tkinter_ui import TkinterBasicUi
 class CliTemgen(temgen.Temgen):
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
-        super().__init__(make_ui_from_name(self.args.basic_ui))
-        self.__init_variables_from_args()
+        super().__init__(make_ui_from_name(self.args.basic_ui),
+                         var_dict=self.args.var if self.args.var else [],
+                         var_files=self.args.var_file if self.args.var_file else [],
+                         ui=self.args.ui)
 
     @property
     def args(self):
@@ -55,14 +57,6 @@ class CliTemgen(temgen.Temgen):
         if re.match(regex.VAR_NAME_REGEX, key):
             return key, value
         raise RuntimeError(key_value_str)
-
-    def __init_variables_from_args(self):
-        if self.args.var:
-            self.init_variables().update_vars_from_dict(self.args.var)
-        if self.args.var_file:
-            self.init_variables().update_vars_from_files(self.args.var_file)
-        if self.args.ui:
-            self.init_variables().update_vars_from_extra_ui(self.args.ui)
 
     def run(self):
         self.find_and_treat_template_file(Path(self.args.template_path),

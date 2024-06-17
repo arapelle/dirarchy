@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -44,7 +45,8 @@ class VariablesDict(dict):
         output_var_filepath = app_dirpath / f"{random_string.random_lower_sisy_string(8)}.json"
         formatted_cmd = cmd.format(input_var_filepath, output_var_filepath,
                                    input_file=input_var_filepath,
-                                   output_file=output_var_filepath)
+                                   output_file=output_var_filepath,
+                                   python=sys.executable)
         cmd_res = os.system(formatted_cmd)
         if cmd_res != 0:
             raise RuntimeError(f"Execution of custom ui did not work well (returned {cmd_res}). "

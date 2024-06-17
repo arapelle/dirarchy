@@ -1,5 +1,7 @@
 import datetime
+import io
 import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -59,6 +61,37 @@ basic = "TKINTER"
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
         self.assertTrue(isinstance(temgen.ui(), TkinterBasicUi))
+        config_filepath.unlink(missing_ok=True)
+
+    def test__config__ui_extra__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+[ui.extra]
+myui = "{python} ./input/extra_ui/myui.py {output_file} {input_file}"
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="str" value="" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "extra_ui__valid_config_cmd"
+        sys.stdin = io.StringIO(f"{project_root_dir}\n")
+        template_generator = Temgen(TerminalBasicUi(), config_path=config_filepath,
+                                    ui="myui", var_dict=[("text", "coucou")])
+        template_generator.treat_template_xml_string(template_string,
+                                                     output_dir=Path(self._output_dirpath))
+        self._compare_output_and_expected(project_root_dir)
         config_filepath.unlink(missing_ok=True)
 
     def test__config__logging__ok(self):

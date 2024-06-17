@@ -32,6 +32,7 @@ class Temgen:
             basic_ui = make_ui_from_name(basic_ui_name)
         self.__basic_ui = basic_ui
         self.__variables = VariablesDict(self.__logger)
+        self.__init_variables(kargs)
         self.__templates_dirpaths = self.APPLICATION_DIRECTORIES.data_dirpaths("templates")
         template_dirpaths = self.__config.get("templates_dirs", [])
         assert isinstance(template_dirpaths, list)
@@ -46,6 +47,17 @@ class Temgen:
                 self.__config = tomllib.load(config_file)
         else:
             self.__config = dict()
+
+    def __init_variables(self, kargs):
+        var_dict = kargs.get("var_dict", [])
+        var_files = kargs.get("var_files", [])
+        ui = kargs.get("ui", None)
+        self.init_variables().update_vars_from_dict(var_dict)
+        self.init_variables().update_vars_from_files(var_files)
+        if ui is not None:
+            assert isinstance(ui, str)
+            ui = self.__config.get("ui", dict()).get("extra", dict()).get(ui, ui)
+            self.init_variables().update_vars_from_extra_ui(ui)
 
     @property
     def logger(self):
