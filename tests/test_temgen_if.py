@@ -229,6 +229,84 @@ class TestTemgenIf(TestTemgenBase):
         except RuntimeError as ex:
             self.assertEqual(str(ex), "In 'if', bad child node type: file.")
 
+    @staticmethod
+    def cond__template_string(condition_attr, good_value, bad_value):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-z_]+" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt" />
+        <if {condition_attr}="{good_value}">
+            <then>
+                <file path="{condition_attr}_is_true.txt" />
+                <if {condition_attr}="{bad_value}">
+                    <then>
+                    </then>
+                    <else>
+                        <file path="{condition_attr}_is_false.txt" />
+                    </else>
+                </if>
+            </then>
+        </if>
+    </dir>
+</template>
+        """
+
+    def test__expr_cond__cmp_path__ok(self):
+        template_string = self.cond__template_string("expr",
+                                                     "Path('.').resolve() == Path.cwd().resolve()",
+                                                     "Path('.').resolve() != Path.cwd().resolve()")
+        project_root_dir = "expr_cond__cmp_path"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__exists_cond__ok(self):
+        template_string = self.cond__template_string("exists", "{$OUTPUT_DIR}/data.txt", "{$OUTPUT_DIR}_")
+        project_root_dir = "exists_cond"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__not_exists_cond__ok(self):
+        template_string = self.cond__template_string("not-exists", "{$OUTPUT_DIR}_", "{$OUTPUT_DIR}")
+        project_root_dir = "not_exists_cond"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__is_dir_cond__ok(self):
+        template_string = self.cond__template_string("is-dir", "{$OUTPUT_DIR}", "{$OUTPUT_DIR}/data.txt")
+        project_root_dir = "is_dir_cond"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__is_not_dir_cond__ok(self):
+        template_string = self.cond__template_string("is-not-dir", "{$OUTPUT_DIR}/data.txt", "{$OUTPUT_DIR}")
+        project_root_dir = "is_not_dir_cond"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__is_file_cond__ok(self):
+        template_string = self.cond__template_string("is-file", "{$OUTPUT_DIR}/data.txt", "{$OUTPUT_DIR}")
+        project_root_dir = "is_file_cond"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__is_not_file_cond__ok(self):
+        template_string = self.cond__template_string("is-not-file", "{$OUTPUT_DIR}", "{$OUTPUT_DIR}/data.txt")
+        project_root_dir = "is_not_file_cond"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__bad_cond__exception(self):
+        template_string = self.cond__template_string("bad-cond", "{$OUTPUT_DIR}", "{$OUTPUT_DIR}")
+        project_root_dir = "bad_cond"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as ex:
+            self.assertEqual(str(ex), "Unexpected condition attribute: 'bad-cond'.")
+
     def test__if_as_tree_root__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>

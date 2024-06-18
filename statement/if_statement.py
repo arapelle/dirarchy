@@ -12,7 +12,6 @@ class IfStatement(AbstractBranchStatement):
         return True
 
     def execute(self):
-        from re import match, fullmatch
         then_node = None
         else_node = None
         unknown_children_count = 0
@@ -34,16 +33,41 @@ class IfStatement(AbstractBranchStatement):
             raise RuntimeError("A 'else' node is provided for a 'if' node but a 'then' node is missing.")
         if unknown_children_count > 0 and then_node is not None:
             raise RuntimeError(f"In 'if', bad child node type: {child_node.tag}.")
-        expr_attr = self.current_node().attrib['expr']
-        expr_attr = self.format_str(expr_attr)
-        bool_expr_value = bool(eval(expr_attr))
-        if bool_expr_value:
+        bool_value = self.eval_condition()
+        if bool_value:
             if then_node is None:
                 self.current_main_statement().treat_children_nodes_of(self.current_node())
             else:
                 self.current_main_statement().treat_children_nodes_of(then_node)
         elif else_node is not None:
             self.current_main_statement().treat_children_nodes_of(else_node)
+
+    def eval_condition(self):
+        node = self.current_node()
+        cond_attr_len = len(node.attrib)
+        if cond_attr_len != 1:
+            raise RuntimeError(f"An 'if' statement expects only one condition attribute. ({cond_attr_len} provided)")
+        key_value, attr_value = next(iter(node.attrib.items()))
+        attr_value = self.format_str(attr_value)
+        from re import match, fullmatch
+        from pathlib import Path
+        match key_value:
+            case "expr":
+                return bool(eval(attr_value))
+            case "exists":
+                return Path(attr_value).exists()
+            case "not-exists":
+                return not Path(attr_value).exists()
+            case "is-dir":
+                return Path(attr_value).is_dir()
+            case "is-not-dir":
+                return not Path(attr_value).is_dir()
+            case "is-file":
+                return Path(attr_value).is_file()
+            case "is-not-file":
+                return not Path(attr_value).is_file()
+            case _:
+                raise RuntimeError(f"Unexpected condition attribute: '{key_value}'.")
 
     def check_not_template_attributes(self, nb_template_attributes: int):
         if "expr" in self.current_node().attrib:
