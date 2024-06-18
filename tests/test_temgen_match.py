@@ -110,6 +110,25 @@ class TestTemgenMatch(TestTemgenBase):
         except RuntimeError as ex:
             self.assertEqual(str(ex), "case nodes are missing in match node.")
 
+    def test__expr_cond__using_path__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <match eval="Path('.').resolve()"> 
+            <case eval="Path.cwd().resolve()">
+                <file path="path_matches.txt" />
+            </case>
+        </match>
+    </dir>
+</template>
+        """
+        project_root_dir = "expr_cond__using_path"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__match_as_tree_root__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
