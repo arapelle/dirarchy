@@ -288,6 +288,24 @@ Ve-_vQ==
         input_parameters = ["input/data/base64urldata.txt"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__format_base64_contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" />
+        <var name="base64_data">
+            <contents format="base64" copy="input/data/butterfly.png" copy-encoding="binary" />
+        </var>
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="icon.png" encoding="binary" format="format|base64">{base64_data}</file>
+    </dir>
+</template>
+"""
+        project_root_dir = "format_base64_contents"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     @staticmethod
     def __child_statement_if_str():
         return """<?xml version="1.0"?>
