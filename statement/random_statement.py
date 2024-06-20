@@ -25,7 +25,7 @@ class RandomStatement(AbstractMainStatement):
             self.__io_stream.write(random_value)
         else:
             raise RuntimeError("One of the following attribute is missing for random statement: "
-                               "type, char-set.")
+                               "type, char-set, byte-set.")
 
     def __build_string_stream_if_missing(self):
         if self.__io_stream is None:
@@ -37,9 +37,14 @@ class RandomStatement(AbstractMainStatement):
 
     def __try_random_value_from_type(self):
         value_type = self.current_node().attrib.get("type", None)
-        if value_type is None:
-            return None
-        self.__build_string_stream_if_missing()
+        match value_type:
+            case None:
+                return None
+            case "binary":
+                self.__build_bytes_stream_if_missing()
+                return self.random_bytes(self.current_node())
+            case _:
+                self.__build_string_stream_if_missing()
         rand_fn_name = f"random_{value_type}_string"
         try:
             rand_fn = getattr(self, rand_fn_name)
@@ -54,12 +59,15 @@ class RandomStatement(AbstractMainStatement):
             raise RuntimeError(f"Bad value type: '{value_type}'.")
 
     def __try_random_value_from_set(self):
+        max_len, min_len = self.__get_min_max_len(self.current_node())
         element_set = self.current_node().attrib.get("char-set", None)
-        rand_fn = random_string.random_string
         if element_set is not None:
             self.__build_string_stream_if_missing()
-            max_len, min_len = self.__get_min_max_len(self.current_node())
-            return rand_fn(element_set, min_len, max_len)
+            return random_string.random_string(element_set, min_len, max_len)
+        element_set = self.current_node().attrib.get("byte-set", None)
+        if element_set is not None:
+            self.__build_bytes_stream_if_missing()
+            return self.random_selected_bytes(element_set, min_len, max_len)
         return None
 
     @staticmethod
@@ -94,3 +102,18 @@ class RandomStatement(AbstractMainStatement):
     def random_format_cvqd_string(rand_value_node: XMLTree.Element):
         fmt_str = rand_value_node.attrib.get("fmt")
         return random_string.random_format_cvqd_string(fmt_str)
+
+    @staticmethod
+    def random_bytes(rand_value_node: XMLTree.Element):
+        max_len, min_len = RandomStatement.__get_min_max_len(rand_value_node)
+        s_len = min_len if max_len is None else random.randint(min_len, max_len)
+        assert s_len >= 0
+        return random.randbytes(s_len)
+
+    @staticmethod
+    def random_selected_bytes(byte_set, min_len: int, max_len=None):
+        s_len = min_len if max_len is None else random.randint(min_len, max_len)
+        assert s_len >= 0
+        byte_set = byte_set.split(',')
+        byte_set = [int(sval) for sval in byte_set]
+        return b''.join(bytes([random.choice(byte_set)]) for i in range(s_len))

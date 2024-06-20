@@ -288,6 +288,27 @@ Ve-_vQ==
         input_parameters = ["input/data/base64urldata.txt"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__random_binary_contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}" >
+        <file path="bytes.bin" encoding="binary">
+            <random type="binary" min-len="4" max-len="8" />
+        </file>
+        <file path="abc.bin" encoding="binary">
+             <random byte-set="97,98,99" min-len="2" max-len="10" />
+        </file>
+    </dir>
+</template>
+"""
+        random.seed(42)
+        project_root_dir = "random_binary_contents"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__format_base64_contents__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>

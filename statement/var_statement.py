@@ -86,9 +86,6 @@ class VarStatement(AbstractContentsStatement):
             case "str" | "pstr" | "gstr" | "int" | "float":
                 self._output_stream = StringIO()
                 self._output_encoding = locale.getencoding()
-            case "binary":
-                self._output_stream = BytesIO()
-                self._output_encoding = "binary"
             case _:
                 raise RuntimeError(f"Bad type {self.__var_type}")
 

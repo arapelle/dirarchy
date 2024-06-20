@@ -494,5 +494,6 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["two"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+
 if __name__ == '__main__':
     unittest.main()
