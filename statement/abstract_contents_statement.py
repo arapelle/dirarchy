@@ -76,7 +76,7 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
         if "copy" in self.current_node().attrib and len(node) > 0:
             raise RuntimeError("No child statement is expected when copying a file.")
 
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         match child_node.tag:
             case "if":
                 from statement.if_statement import IfStatement
@@ -96,4 +96,4 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
                 contents_statement = ContentsStatement(child_node, self)
                 contents_statement.run()
             case _:
-                super().treat_child_node(node, child_node)
+                super().treat_child_node(node, child_node, current_statement)

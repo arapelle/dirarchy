@@ -35,33 +35,36 @@ class VarStatement(AbstractContentsStatement):
         self.__var_name = var_node.attrib.get('name')
         if not re.match(regex.VAR_NAME_REGEX, self.__var_name):
             raise Exception(f"Variable name is not a valid name: '{self.__var_name}'.")
-        self.__var_value = self.get_variable_value(self.__var_name)
         self.__var_type = var_node.attrib.get('type', 'str')
         var_restr = var_node.attrib.get('regex', None)
         self.__var_regex = RegexFullMatch(var_restr) if var_restr is not None else None
-        if self.__var_value is None:
-            self.__resolve_var_value(var_node)
-        else:
-            self.__check_variable_value()
+        self.__resolve_var_value(var_node)
+        self.__check_variable_value()
 
     def __resolve_var_value(self, var_node):
         copy_attr = self.current_node().attrib.get("copy", None)
         if copy_attr is not None:
             self.__resolve_var_value_with_file(copy_attr)
+            if 'value' in var_node.attrib:
+                raise RuntimeError("Incompatible 'value' attribute with 'copy' attribute.")
         else:
             if "copy-encoding" in self.current_node().attrib:
                 raise RuntimeError("'copy-encoding is provided but copy is missing.")
-            self.__var_value = var_node.attrib.get('value', None)
-            if self.__var_value is None:
-                if len(var_node) == 0 and (var_node.text is None or len(var_node.text) == 0):
-                    self.__ask_var_value(var_node)
+            self.__var_value = self.variables().get(self.__var_name, None)
+            if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
+                self.__var_value = var_node.attrib.get('value', None)
+                if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
+                    self.__var_value = self.get_variable_value(self.__var_name)
+                    if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
+                        if len(var_node) == 0 and (var_node.text is None or len(var_node.text) == 0):
+                            self.__ask_var_value(var_node)
+                        else:
+                            self.__resolve_var_value_with_text_or_children()
                 else:
-                    self.__resolve_var_value_with_text_or_children()
-            else:
-                if var_node.text is not None and len(var_node.text) > 0:
-                    raise RuntimeError("For 'var', you cannot provide value and text at the same time.")
-                if len(var_node) > 0:
-                    raise RuntimeError("No child statement is expected when using value attribute.")
+                    if var_node.text is not None and len(var_node.text) > 0:
+                        raise RuntimeError("For 'var', you cannot provide value and text at the same time.")
+                    if len(var_node) > 0:
+                        raise RuntimeError("No child statement is expected when using value attribute.")
             self.__var_value = self.format_str(self.__var_value)
         self.__check_variable_value()
         self.variables().update_var_and_log(self.__var_name, self.__var_value)

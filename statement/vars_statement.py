@@ -12,7 +12,7 @@ class VarsStatement(AbstractMainStatement):
     def execute(self):
         pass
 
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         match child_node.tag:
             case "var":
                 var_statement = VarStatement(child_node, self)
@@ -26,4 +26,4 @@ class VarsStatement(AbstractMainStatement):
                 match_statement = MatchStatement(child_node, self)
                 match_statement.run()
             case _:
-                super().treat_child_node(node, child_node)
+                super().treat_child_node(node, child_node, current_statement)

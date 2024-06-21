@@ -36,11 +36,11 @@ class IfStatement(AbstractBranchStatement):
         bool_value = self.eval_condition()
         if bool_value:
             if then_node is None:
-                self.current_main_statement().treat_children_nodes_of(self.current_node())
+                self.current_main_statement().treat_children_nodes_of(self.current_node(), self)
             else:
-                self.current_main_statement().treat_children_nodes_of(then_node)
+                self.current_main_statement().treat_children_nodes_of(then_node, self)
         elif else_node is not None:
-            self.current_main_statement().treat_children_nodes_of(else_node)
+            self.current_main_statement().treat_children_nodes_of(else_node, self)
 
     def eval_condition(self):
         node = self.current_node()

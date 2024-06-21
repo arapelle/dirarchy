@@ -63,9 +63,9 @@ class MatchStatement(AbstractBranchStatement):
                 raise RuntimeError("A match node cannot have two default case nodes.")
             default_case_node = case_node
         if found_case_node is not None:
-            self.current_main_statement().treat_children_nodes_of(found_case_node)
+            self.current_main_statement().treat_children_nodes_of(found_case_node, self)
         elif default_case_node is not None:
-            self.current_main_statement().treat_children_nodes_of(default_case_node)
+            self.current_main_statement().treat_children_nodes_of(default_case_node, self)
 
     def check_not_template_attributes(self, nb_template_attributes: int):
         if "value" in self.current_node().attrib:

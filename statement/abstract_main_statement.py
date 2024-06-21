@@ -22,14 +22,14 @@ class AbstractMainStatement(AbstractStatement, ABC):
         return self
 
     def treat_children_nodes(self):
-        self.treat_children_nodes_of(self.current_node())
+        self.treat_children_nodes_of(self.current_node(), self)
         self.__children_treated = True
 
     def extends_template(self):
         return False
 
     @final
-    def treat_children_nodes_of(self, node: XMLTree.Element):
+    def treat_children_nodes_of(self, node: XMLTree.Element, current_statement: AbstractStatement):
         self.check_number_of_children_nodes_of(node)
         if len(node) == 0:
             if not self.was_template_called() or self.extends_template():
@@ -39,7 +39,7 @@ class AbstractMainStatement(AbstractStatement, ABC):
         else:
             if not self.was_template_called() or self.extends_template():
                 for child_node in node:
-                    self.treat_child_node(node, child_node)
+                    self.treat_child_node(node, child_node, current_statement)
             else:
                 raise RuntimeError(f"Children statements are not expected when calling a template for '{node.tag}'.")
 
@@ -50,5 +50,5 @@ class AbstractMainStatement(AbstractStatement, ABC):
         if not self.is_node_text_empty(node):
             raise RuntimeError(f"In '{node.tag}', text is expected to be empty.")
 
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement: AbstractStatement):
         raise RuntimeError(f"In '{node.tag}', bad child node type: {child_node.tag}.")
