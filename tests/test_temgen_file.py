@@ -1,4 +1,5 @@
 import random
+import time
 import unittest
 from builtins import RuntimeError
 
@@ -619,6 +620,118 @@ EOF
             self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
         except RuntimeError as err:
             self.assertEqual("In 'template', bad child node type: contents.", str(err))
+
+    def test__random_vars__exception(self):
+        # random, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <file path="{project_root_dir}/data.txt">
+         <random type="lower_sisy" len="7">
+            <vars />
+         </random>
+    </file>
+</template>
+            """
+        project_root_dir = "random_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'random', bad child node type: vars.", str(err))
+
+    def test__random_var__exception(self):
+        # random, var -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <file path="{project_root_dir}/data.txt">
+         <random type="lower_sisy" len="7">
+            <var />
+         </random>
+    </file>
+</template>
+            """
+        project_root_dir = "random_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'random', bad child node type: var.", str(err))
+
+    def test__file_calls_template__template_raises_exception__exception(self):
+        main_template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="sub_template" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="{sub_template}">
+END
+        </file>
+    </dir>
+</template>
+        """
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <file path="data.txt">
+        <random type="lower_sisy" len="4">
+            <vars />
+        </random>
+    </file>
+</template>
+        """
+        project_root_dir = "file_calls_template__template_raises_exception"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'random', bad child node type: vars.", str(err))
+
+    def test__file_calls_template__post_template_raises_exception__exception(self):
+        main_template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="sub_template" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="{sub_template}">
+            <random type="lower_sisy" len="4">
+                <vars />
+            </random>
+        </file>
+    </dir>
+</template>
+        """
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <file path="data.txt">
+BEGIN
+    </file>
+</template>
+        """
+        project_root_dir = "file_calls_template__post_template_raises_exception"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'random', bad child node type: vars.", str(err))
 
 
 if __name__ == '__main__':

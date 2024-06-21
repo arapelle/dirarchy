@@ -494,6 +494,198 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["two"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__vars_vars__exception(self):
+        # vars, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <vars />
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "vars_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'vars', bad child node type: vars.", str(err))
+
+    def test__vars_if_vars__exception(self):
+        # vars, if, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <if eval="True">
+            <vars />
+        </if>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "vars_if_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'if', bad child node type: vars.", str(err))
+
+    def test__vars_match_case_vars__exception(self):
+        # vars, match, case, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <match value="a">
+            <case value="a">
+                <vars />
+            </case>
+        </match>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "vars_match_case_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'case', bad child node type: vars.", str(err))
+
+    def test__var_vars__exception(self):
+        # var, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <vars />
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'var', bad child node type: vars.", str(err))
+
+    def test__var_var__exception(self):
+        # var, var -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <var />
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'var', bad child node type: var.", str(err))
+
+    def test__var_if_vars__exception(self):
+        # var, if, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <if eval="True">
+                <vars />
+            </if>
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_if_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'if', bad child node type: vars.", str(err))
+
+        def test__var_if_var__exception(self):
+            # var, if, var -> exception
+            template_string = """<?xml version="1.0"?>
+    <template>
+        <vars>
+            <var name="output_root_dir" type="gstr" />
+            <var name="arg" type="gstr">
+                <if eval="True">
+                    <var />
+                </if>
+            </var>
+        </vars>
+        <file path="{output_root_dir}/data.txt" />
+    </template>
+    """
+            project_root_dir = "var_if_var"
+            input_parameters = []
+            try:
+                self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+            except RuntimeError as err:
+                self.assertEqual("In 'if', bad child node type: var.", str(err))
+
+    def test__var_match_case_vars__exception(self):
+        # var, match, case, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <match value="a">
+                <case value="a">
+                    <vars />
+                </case>
+            </match>
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_match_case_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'case', bad child node type: vars.", str(err))
+
+    def test__var_match_case_var__exception(self):
+        # var, match, case, var -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <match value="a">
+                <case value="a">
+                    <var />
+                </case>
+            </match>
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_match_case_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'case', bad child node type: var.", str(err))
+
 
 if __name__ == '__main__':
     unittest.main()
