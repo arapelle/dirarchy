@@ -41,7 +41,7 @@ class CliTemgen(temgen.Temgen):
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
                                type=CliTemgen.__var_from_key_value_str,
                                help='Set variables.')
-        argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
+        argparser.add_argument('--var-file', metavar='var_json_file', nargs='+',
                                help='Set variables from a JSON files.')
         argparser.add_argument('template_path',
                                help='The template path of the file to find then to process.')
