@@ -231,7 +231,7 @@ class TestTemgenMatch(TestTemgenBase):
         except RuntimeError as err:
             self.assertEqual("No child statement is expected when calling a 'match' template.", str(err))
 
-    def test__match_vars__ok(self):
+    def test__local_vars__match_vars__ok(self):
         # template, match, vars -> ok (leaf)
         template_string = """<?xml version="1.0"?>
 <template>
@@ -251,7 +251,27 @@ class TestTemgenMatch(TestTemgenBase):
     </match>
 </template>
         """
-        project_root_dir = "match_vars"
+        project_root_dir = "local_vars__match_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__local_vars__match_var__ok(self):
+        # template, match, var -> ok (leaf)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="message" type="gstr" />
+    <var name="fruit" type="gstr" value="orange" />
+    <match value="a">
+        <case value="a">
+            <var name="message" type="gstr" value="leaf" />
+            <var name="fruit" type="gstr" />
+            <file path="{project_root_dir}/leaf/data.txt">{message}: {fruit}</file>
+        </case>
+    </match>
+</template>
+        """
+        project_root_dir = "local_vars__match_var"
         input_parameters = ["root"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 

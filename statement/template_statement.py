@@ -107,12 +107,13 @@ class TemplateStatement(AbstractDirStatement):
     def check_number_of_children_nodes_of(self, node: XMLTree.Element):
         if node == self.current_node():
             limit = 2 if node.find("vars") is not None else 1
+            limit += len(node.findall("var"))
             if len(node) > limit:
                 raise RuntimeError("Too many nodes under <template>.")
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         if node == self.current_node():
-            if self.__caller_statement is not None and child_node.tag != "vars":
+            if self.__caller_statement is not None and child_node.tag != "vars" and child_node.tag != "var":
                 expected_tag = self.__caller_statement.current_node().tag
                 if child_node.tag != expected_tag:
                     raise RuntimeError(f"Unexpected node ({child_node.tag}) under <template>. "
@@ -128,7 +129,7 @@ class TemplateStatement(AbstractDirStatement):
     def __post_treat_child_node(self, node, child_node):
         if node == self.current_node():
             assert self.__current_child_statement is not None
-            if self.__caller_statement is not None and child_node.tag != "vars":
+            if self.__caller_statement is not None and child_node.tag != "vars" and child_node.tag != "var":
                 self.__expected_statement = self.__current_child_statement
             self.__current_child_statement = None
 
@@ -171,6 +172,12 @@ class TemplateStatement(AbstractDirStatement):
 
     def _create_vars_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         vars_statement = super()._create_vars_statement(node, child_node, current_statement)
+        if node == self.current_node():
+            self.__current_child_statement = vars_statement
+        return vars_statement
+
+    def _create_var_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        vars_statement = super()._create_var_statement(node, child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = vars_statement
         return vars_statement

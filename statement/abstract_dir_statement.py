@@ -37,6 +37,9 @@ class AbstractDirStatement(AbstractMainStatement):
             case "vars":
                 vars_statement = self._create_vars_statement(node, child_node, current_statement)
                 vars_statement.run()
+            case "var":
+                var_statement = self._create_var_statement(node, child_node, current_statement)
+                var_statement.run()
             case _:
                 super().treat_child_node(node, child_node, current_statement)
 
@@ -63,3 +66,7 @@ class AbstractDirStatement(AbstractMainStatement):
     def _create_vars_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         from statement.vars_statement import VarsStatement
         return VarsStatement(child_node, current_statement)
+
+    def _create_var_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        from statement.var_statement import VarStatement
+        return VarStatement(child_node, current_statement)

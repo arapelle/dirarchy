@@ -396,7 +396,7 @@ class TestTemgenIf(TestTemgenBase):
         except RuntimeError as err:
             self.assertEqual("No child statement is expected when calling a 'if' template.", str(err))
 
-    def test__if_vars__ok(self):
+    def test__local_vars__if_vars__ok(self):
         # template, if, vars -> ok (leaf)
         template_string = """<?xml version="1.0"?>
 <template>
@@ -414,7 +414,25 @@ class TestTemgenIf(TestTemgenBase):
     </if>
 </template>
         """
-        project_root_dir = "if_vars"
+        project_root_dir = "local_vars__if_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__local_vars__if_var__ok(self):
+        # template, if, var -> ok (leaf)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="message" type="gstr" />
+    <var name="fruit" type="gstr" value="orange" />
+    <if eval="True">
+        <var name="message" type="gstr" value="leaf" />
+        <var name="fruit" type="gstr" />
+        <file path="{project_root_dir}/leaf/data.txt">{message}: {fruit}</file>
+    </if>
+</template>
+        """
+        project_root_dir = "local_vars__if_var"
         input_parameters = ["root"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
