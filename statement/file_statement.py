@@ -86,5 +86,9 @@ class FileStatement(AbstractContentsStatement):
                 from statement.vars_statement import VarsStatement
                 vars_statement = VarsStatement(child_node, current_statement)
                 vars_statement.run()
+            case "var":
+                from statement.var_statement import VarStatement
+                var_statement = VarStatement(child_node, current_statement)
+                var_statement.run()
             case _:
                 super().treat_child_node(node, child_node, current_statement)
