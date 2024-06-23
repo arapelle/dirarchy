@@ -733,6 +733,128 @@ BEGIN
         except RuntimeError as err:
             self.assertEqual("In 'random', bad child node type: vars.", str(err))
 
+    def test__file_vars__ok(self):
+        # file, vars -> ok (leaf, root)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="gstr" />
+        <var name="fruit" type="gstr" value="orange" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="leaf.txt">
+            <vars>
+                <var name="message" type="gstr" value="leaf" />
+                <var name="fruit" type="gstr" />
+            </vars>
+            <contents>{message}: {fruit}</contents>
+        </file>
+        <file path="root.txt">{message}: {fruit}</file>
+    </dir>
+</template>
+            """
+        project_root_dir = "file_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__file_if_vars__ok(self):
+        # file, if, vars -> ok (leaf, root)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="gstr" />
+        <var name="fruit" type="gstr" value="orange" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="leaf.txt">
+            <if eval="True">
+                <vars>
+                    <var name="message" type="gstr" value="leaf" />
+                    <var name="fruit" type="gstr" />
+                </vars>
+                <contents>{message}: {fruit}</contents>
+            </if>
+        </file>
+        <file path="root.txt">{message}: {fruit}</file>
+    </dir>
+</template>
+            """
+        project_root_dir = "file_if_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__file_if_if_vars__ok(self):
+        # file, if, if, then/else, vars -> ok (leaf+branch, root)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="gstr" />
+        <var name="fruit" type="gstr" value="orange" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="leaf.txt">
+            <if eval="True">
+                <vars>
+                    <var name="message" type="gstr" value="branch" />
+                    <var name="fruit" type="gstr" />
+                </vars>
+                <if eval="True">
+                    <then>
+                        <vars>
+                            <var name="message" type="gstr" value="leaf" />
+                            <var name="fruit" type="gstr" />
+                        </vars>
+                        <contents>
+{message}: {fruit}
+                        </contents>
+                    </then>
+                    <else />
+                </if>
+                <contents>
+{message}: {fruit}
+                </contents>
+            </if>
+        </file>
+        <file path="root.txt">{message}: {fruit}</file>
+    </dir>
+</template>
+            """
+        project_root_dir = "file_if_if_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__file_match_case_vars__ok(self):
+        # file, match, case, vars -> ok (leaf, root)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="gstr" />
+        <var name="fruit" type="gstr" value="orange" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="leaf.txt">
+            <match value="a">
+                <case value="a">
+                    <vars>
+                        <var name="message" type="gstr" value="leaf" />
+                        <var name="fruit" type="gstr" />
+                    </vars>
+                    <contents>{message}: {fruit}</contents>
+                </case>
+            </match>
+        </file>
+        <file path="root.txt">{message}: {fruit}</file>
+    </dir>
+</template>
+            """
+        project_root_dir = "file_match_case_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
 
 if __name__ == '__main__':
     unittest.main()

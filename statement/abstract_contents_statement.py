@@ -80,20 +80,20 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
         match child_node.tag:
             case "if":
                 from statement.if_statement import IfStatement
-                if_statement = IfStatement(child_node, self)
+                if_statement = IfStatement(child_node, current_statement)
                 if_statement.run()
             case "match":
                 from statement.match_statement import MatchStatement
-                match_statement = MatchStatement(child_node, self)
+                match_statement = MatchStatement(child_node, current_statement)
                 match_statement.run()
             case "random":
                 from statement.random_statement import RandomStatement
-                random_statement = RandomStatement(child_node, self, self._output_stream)
+                random_statement = RandomStatement(child_node, current_statement, self._output_stream)
                 random_statement.run()
                 self._output_stream = random_statement.io_stream()
             case "contents":
                 from statement.contents_statement import ContentsStatement
-                contents_statement = ContentsStatement(child_node, self)
+                contents_statement = ContentsStatement(child_node, current_statement)
                 contents_statement.run()
             case _:
                 super().treat_child_node(node, child_node, current_statement)

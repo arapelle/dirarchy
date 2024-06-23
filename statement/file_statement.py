@@ -79,3 +79,12 @@ class FileStatement(AbstractContentsStatement):
             self._output_stream.flush()
             self._output_stream.close()
             self._output_stream = None
+
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        match child_node.tag:
+            case "vars":
+                from statement.vars_statement import VarsStatement
+                vars_statement = VarsStatement(child_node, current_statement)
+                vars_statement.run()
+            case _:
+                super().treat_child_node(node, child_node, current_statement)

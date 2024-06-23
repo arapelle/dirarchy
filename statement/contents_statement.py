@@ -1,11 +1,11 @@
 import xml.etree.ElementTree as XMLTree
 
 from statement.abstract_contents_statement import AbstractContentsStatement
-from statement.abstract_main_statement import AbstractMainStatement
+from statement.abstract_statement import AbstractStatement
 
 
 class ContentsStatement(AbstractContentsStatement):
-    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractMainStatement, **kargs):
+    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement, **kargs):
         assert parent_statement is not None
         collector_statement = parent_statement.current_contents_collector_statement()
         output_stream = collector_statement.output_stream()
