@@ -1,22 +1,19 @@
-import locale
 import xml.etree.ElementTree as XMLTree
-from io import StringIO
 
 from statement.abstract_contents_statement import AbstractContentsStatement
 from statement.abstract_main_statement import AbstractMainStatement
 
 
 class ContentsStatement(AbstractContentsStatement):
-    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractMainStatement,
-                 output_stream=None, output_encoding=None, **kargs):
-        if output_stream is None:
-            output_stream = StringIO()
-            if output_encoding is None:
-                output_encoding = locale.getencoding()
+    def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractMainStatement, **kargs):
+        assert parent_statement is not None
+        collector_statement = parent_statement.current_contents_collector_statement()
+        output_stream = collector_statement.output_stream()
+        output_encoding = collector_statement.output_encoding()
         super().__init__(current_node, parent_statement, output_stream, output_encoding, **kargs)
 
     def allows_template(self):
-        return False  # TODO True
+        return True
 
     def execute(self):
         self.__write_contents()
@@ -30,3 +27,9 @@ class ContentsStatement(AbstractContentsStatement):
                 raise RuntimeError("'copy-encoding is provided but copy is missing.")
         self.treat_children_nodes()
         self._output_stream.flush()
+
+    def post_template_run(self, template_statement):
+        template_statement.extract_expected_statement()
+        self.treat_children_nodes()
+        self._output_stream.flush()
+        self._output_stream = None

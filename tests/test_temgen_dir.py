@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from tests import config
-from ui.terminal_ui import TerminalUi
+from ui.terminal_ui import TerminalBasicUi
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
 
@@ -31,7 +31,7 @@ class TestTemgenDir(DirCmpTestCase):
         project_root_dir = "template_xml_string__dir_calls_template"
         templates_dir = config.local_templates_dirpath()
         sys.stdin = io.StringIO(f"{project_root_dir}\n{templates_dir}\nstuff")
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         template_generator.treat_template_xml_string(template_string,
                                                      output_dir=Path(self._output_dirpath))
         self._compare_output_and_expected(project_root_dir)

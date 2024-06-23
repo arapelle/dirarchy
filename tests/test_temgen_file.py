@@ -1,3 +1,4 @@
+import random
 import unittest
 from builtins import RuntimeError
 
@@ -287,6 +288,45 @@ Ve-_vQ==
         input_parameters = ["input/data/base64urldata.txt"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__random_binary_contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}" >
+        <file path="bytes.bin" encoding="binary">
+            <random type="binary" min-len="4" max-len="8" />
+        </file>
+        <file path="abc.bin" encoding="binary">
+             <random byte-set="97,98,99" min-len="2" max-len="10" />
+        </file>
+    </dir>
+</template>
+"""
+        random.seed(42)
+        project_root_dir = "random_binary_contents"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__format_base64_contents__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" />
+        <var name="base64_data">
+            <contents format="base64" copy="input/data/butterfly.png" copy-encoding="binary" />
+        </var>
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="icon.png" encoding="binary" format="format|base64">{base64_data}</file>
+    </dir>
+</template>
+"""
+        project_root_dir = "format_base64_contents"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     @staticmethod
     def __child_statement_if_str():
         return """<?xml version="1.0"?>
@@ -360,6 +400,24 @@ Ve-_vQ==
         input_parameters = ["none"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__child_statement_random__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+            <random type="lower_sisy" min-len="4" max-len="9" />
+        </file>
+    </dir>
+</template>
+        """
+        random.seed(42)
+        project_root_dir = "child_statement_random"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__child_statement_contents__text_and_copy__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
@@ -380,6 +438,26 @@ Ve-_vQ==
         """
         project_root_dir = "child_statement_contents__text_and_copy"
         input_parameters = ["world", "Ananas"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__child_statement_contents__random__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+            <contents>
+                <random type="lower_sisy" min-len="4" max-len="9" />
+            </contents>
+        </file>
+    </dir>
+</template>
+        """
+        random.seed(42)
+        project_root_dir = "child_statement_contents__random"
+        input_parameters = []
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
     def test__child_statement_contents__contents__ok(self):
@@ -461,7 +539,9 @@ Ve-_vQ==
         <var name="templates_dir" type="gstr" />
     </vars>
     <dir path="{project_root_dir}">
-        <file template="{templates_dir}/temfile" template-version="1" />
+        <file template="{templates_dir}/temfile" template-version="1">
+EOF
+        </file>
     </dir>
 </template>
         """
@@ -469,6 +549,76 @@ Ve-_vQ==
         templates_dir = config.local_templates_dirpath()
         input_parameters = [f"{templates_dir}", "stuff", "card"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    @staticmethod
+    def __contents_calls_template__main_template_str(contents_attrs=""):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="template_path" type="gstr" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt">
+            <contents template="{{template_path}}" {contents_attrs}>
+                <contents>
+- Indeed.
+                </contents>
+            </contents>
+        </file>
+    </dir>
+</template>
+        """
+
+    @staticmethod
+    def __contents_calls_template__sub_template_str():
+        return """<?xml version="1.0"?>
+<template>
+    <contents>
+- Wonderful text, isn't it ?
+    </contents>
+</template>
+        """
+
+    def test__contents_calls_template__ok(self):
+        main_template_string = self.__contents_calls_template__main_template_str()
+        sub_template_filepath = self._make_sub_template_filepath("contents_file_template")
+        sub_template_string = self.__contents_calls_template__sub_template_str()
+        project_root_dir = "contents_calls_template"
+        input_parameters = [str(sub_template_filepath)]
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
+    def test__contents_calls_template__exception(self):
+        main_template_string = self.__contents_calls_template__main_template_str('strip="strip"')
+        sub_template_filepath = self._make_sub_template_filepath("contents_file_template")
+        sub_template_string = self.__contents_calls_template__sub_template_str()
+        project_root_dir = "contents_calls_template"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("Unexpected attribute when calling 'contents' template: strip.", str(err))
+
+    def test__contents_template_alone__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <contents>TEXT</contents>
+</template>
+            """
+        project_root_dir = "text_to_text_file"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'template', bad child node type: contents.", str(err))
 
 
 if __name__ == '__main__':

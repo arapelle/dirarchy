@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import final
 
-import statement.abstract_dir_statement
-import statement.template_statement
 from util.log import MethodScopeLog
 from variables.variables_dict import VariablesDict
 
@@ -14,16 +12,15 @@ class AbstractStatement(ABC):
     VARIABLES_LABEL = "variables"
 
     def __init__(self, current_node: XMLTree.Element, parent_statement, **kargs):
+        import statement.template_statement
         assert current_node is not None
         self.__current_node = current_node
         self.__parent_statement = parent_statement
-        if isinstance(self, statement.template_statement.TemplateStatement):
-            self.__template_statement = self
-        else:
+        if not isinstance(self, statement.template_statement.TemplateStatement):
             self.__template_statement = self.__parent_statement.template_statement()
-        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.__template_statement.temgen().logger))
-        assert self.__template_statement is not None and \
-               isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
+        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.template_statement().temgen().logger))
+        assert self.template_statement() is not None and \
+               isinstance(self.template_statement(), statement.template_statement.TemplateStatement)
         self.__was_template_called = False
 
     def parent_statement(self):
@@ -33,7 +30,7 @@ class AbstractStatement(ABC):
         return self.__template_statement
 
     def temgen(self):
-        return self.__template_statement.temgen()
+        return self.template_statement().temgen()
 
     @property
     def logger(self):
@@ -41,6 +38,14 @@ class AbstractStatement(ABC):
 
     def current_node(self):
         return self.__current_node
+
+    @staticmethod
+    def is_text_empty(text):
+        return text is None or len(text.strip()) == 0
+
+    @staticmethod
+    def is_node_text_empty(node):
+        return AbstractStatement.is_text_empty(node.text)
 
     def variables(self):
         return self.__variables
@@ -73,13 +78,20 @@ class AbstractStatement(ABC):
             return None
         return self.__parent_statement.current_main_statement()
 
+    def current_contents_collector_statement(self):
+        if self.__parent_statement is None:
+            return None
+        return self.__parent_statement.current_contents_collector_statement()
+
     def local_tree_root_dir_statement(self):
-        assert isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
-        child_statement = self.__template_statement.current_child_statement()
+        import statement.abstract_dir_statement
+        template_statement = self.template_statement()
+        assert isinstance(template_statement, statement.template_statement.TemplateStatement)
+        child_statement = template_statement.current_child_statement()
         if isinstance(child_statement, statement.abstract_dir_statement.AbstractDirStatement):
             return child_statement
         dir_statement = self.current_dir_statement()
-        if dir_statement is None or dir_statement == self.__template_statement:
+        if dir_statement is None or dir_statement == template_statement:
             return None
         parent_dir_statement = dir_statement.parent_statement().current_dir_statement()
         while parent_dir_statement is not None:
@@ -88,13 +100,15 @@ class AbstractStatement(ABC):
         return dir_statement
 
     def tree_root_dir_statement(self):
-        assert isinstance(self.__template_statement, statement.template_statement.TemplateStatement)
-        if self.__template_statement.parent_template_statement() is None:
+        import statement.template_statement
+        template_statement = self.template_statement()
+        assert isinstance(template_statement, statement.template_statement.TemplateStatement)
+        if template_statement.parent_template_statement() is None:
             return self.local_tree_root_dir_statement()
-        return self.__template_statement.parent_statement().tree_root_dir_statement()
+        return template_statement.parent_statement().tree_root_dir_statement()
 
     def run(self):
-        with MethodScopeLog(self):
+        with MethodScopeLog(self, logger=self.logger):
             self._run()
 
     def _run(self):
@@ -131,7 +145,14 @@ class AbstractStatement(ABC):
         return False
 
     def check_not_template_attributes(self, nb_template_attributes: int):
-        pass
+        if len(self.__current_node.attrib) > nb_template_attributes:
+            for key in self.__current_node.attrib:
+                match key:
+                    case "template" | "template-version":
+                        pass
+                    case _:
+                        raise RuntimeError(f"Unexpected attribute when calling '{self.current_node().tag}' "
+                                           f"template: {key}.")
 
     @abstractmethod
     def execute(self):

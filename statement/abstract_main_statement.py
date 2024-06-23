@@ -13,7 +13,7 @@ class AbstractMainStatement(AbstractStatement, ABC):
 
     @final
     def run(self):
-        with MethodScopeLog(self):
+        with MethodScopeLog(self, logger=self.logger):
             super()._run()
             if not self.__children_treated:
                 self.treat_children_nodes()
@@ -25,23 +25,30 @@ class AbstractMainStatement(AbstractStatement, ABC):
         self.treat_children_nodes_of(self.current_node())
         self.__children_treated = True
 
+    def extends_template(self):
+        return False
+
     @final
     def treat_children_nodes_of(self, node: XMLTree.Element):
         self.check_number_of_children_nodes_of(node)
         if len(node) == 0:
-            self.treat_text_of(node)
+            if not self.was_template_called() or self.extends_template():
+                self.treat_text_of(node)
+            elif not self.is_node_text_empty(node):
+                raise RuntimeError(f"Text is not expected when calling a template for '{node.tag}'.")
         else:
-            for child_node in node:
-                self.treat_child_node(node, child_node)
+            if not self.was_template_called() or self.extends_template():
+                for child_node in node:
+                    self.treat_child_node(node, child_node)
+            else:
+                raise RuntimeError(f"Children statements are not expected when calling a template for '{node.tag}'.")
 
     def check_number_of_children_nodes_of(self, node: XMLTree.Element):
         pass
 
     def treat_text_of(self, node: XMLTree.Element):
-        if node.text is not None:
-            node_text = node.text.strip()
-            if len(node_text) > 0:
-                raise RuntimeError(f"In '{node.tag}', text is expected to be empty.")
+        if not self.is_node_text_empty(node):
+            raise RuntimeError(f"In '{node.tag}', text is expected to be empty.")
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
         raise RuntimeError(f"In '{node.tag}', bad child node type: {child_node.tag}.")

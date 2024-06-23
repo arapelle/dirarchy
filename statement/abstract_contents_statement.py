@@ -11,10 +11,22 @@ from statement.writer.text_to_text_writer import TextToTextWriter
 
 class AbstractContentsStatement(AbstractMainStatement, ABC):
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement,
-                 output_stream, output_encoding, **kargs):
+                 output_stream=None, output_encoding=None, **kargs):
         super().__init__(current_node, parent_statement, **kargs)
         self._output_stream = output_stream
         self._output_encoding = output_encoding
+
+    def extends_template(self):
+        return True
+
+    def output_stream(self):
+        return self._output_stream
+
+    def output_encoding(self):
+        return self._output_encoding
+
+    def current_contents_collector_statement(self):
+        return self
 
     def extract_current_output_stream(self):
         output_stream = self._output_stream
@@ -48,9 +60,6 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
                 writer = TextToTextWriter(self._output_stream, input_contents, input_statement)
         writer.execute()
 
-    def check_not_template_attributes(self, nb_template_attributes: int):
-        assert 'path' not in self.current_node().attrib
-
     def treat_text_of(self, node: XMLTree.Element):
         input_contents = node.text if node.text is not None else ""
         input_contents_len = len(input_contents)
@@ -77,9 +86,14 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
                 from statement.match_statement import MatchStatement
                 match_statement = MatchStatement(child_node, self)
                 match_statement.run()
+            case "random":
+                from statement.random_statement import RandomStatement
+                random_statement = RandomStatement(child_node, self, self._output_stream)
+                random_statement.run()
+                self._output_stream = random_statement.io_stream()
             case "contents":
                 from statement.contents_statement import ContentsStatement
-                match_statement = ContentsStatement(child_node, self, self._output_stream, self._output_encoding)
-                match_statement.run()
+                contents_statement = ContentsStatement(child_node, self)
+                contents_statement.run()
             case _:
                 super().treat_child_node(node, child_node)

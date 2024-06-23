@@ -1,7 +1,9 @@
-from ui.abstract_ui import AbstractUi
+from ui.abstract_ui import AbstractBasicUi
 
 
-class TerminalUi(AbstractUi):
+class TerminalBasicUi(AbstractBasicUi):
+    NAME = "TERMINAL"
+
     @staticmethod
     def __ask_str_value(prompt: str, prev_value=None):
         try:

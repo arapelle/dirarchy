@@ -23,7 +23,7 @@ class RegexFullMatch:
 
 class VarStatement(AbstractContentsStatement):
     def __init__(self, current_node: XMLTree.Element, parent_statement: AbstractStatement, **kargs):
-        super().__init__(current_node, parent_statement, None, None, variables=parent_statement.variables(), **kargs)
+        super().__init__(current_node, parent_statement, variables=parent_statement.variables(), **kargs)
         self.__var_name = None
         self.__var_type = None
         self.__var_default = None
@@ -86,9 +86,6 @@ class VarStatement(AbstractContentsStatement):
             case "str" | "pstr" | "gstr" | "int" | "float":
                 self._output_stream = StringIO()
                 self._output_encoding = locale.getencoding()
-            case "binary":
-                self._output_stream = BytesIO()
-                self._output_encoding = "binary"
             case _:
                 raise RuntimeError(f"Bad type {self.__var_type}")
 
@@ -100,12 +97,3 @@ class VarStatement(AbstractContentsStatement):
         if len(node) > 1:
             raise RuntimeError(f"Too many nodes for <{node.tag}>.")
         super().check_number_of_children_nodes_of(node)
-
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        match child_node.tag:
-            case "random":
-                random_statement = RandomStatement(child_node, self, self._output_stream)
-                random_statement.run()
-                self._output_stream = random_statement.io_stream()
-            case _:
-                super().treat_child_node(node, child_node)

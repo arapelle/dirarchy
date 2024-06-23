@@ -1,9 +1,14 @@
 import datetime
 import os
+import tempfile
 import unittest
 from pathlib import Path
 
+from ui.terminal_ui import TerminalBasicUi
+from ui.tkinter_ui import TkinterBasicUi
+from util.random_string import random_lower_sisy_string
 from statement.template_statement import TemplateStatement
+from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase
 
 
@@ -180,7 +185,7 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
     </vars>
     <dir path="{{title}}">
         <dir path="chapters">
-            <file path="{{chapter_name}}">
+            <file path="release/{{chapter_name}}">
 {self.__builtin_fsys_vars__template_vars_list_str()}
             </file>
         </dir>
@@ -233,7 +238,7 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
         expected_tree_root_output_dirpath = expected_root_output_dirpath / project_root_dir
         expected_local_tree_root_output_dirpath = expected_local_root_output_dirpath / title
         expected_output_filepath = (expected_root_output_dirpath
-                                    / f"{project_root_dir}/stories/{title}/chapters/{chapter_name}")
+                                    / f"{project_root_dir}/stories/{title}/chapters/release/{chapter_name}")
         expected_file_contents = self.__builtin_fsys_vars__vars_list_str(Path.cwd().as_posix(),
                                                                          main_template_filepath.parent.as_posix(),
                                                                          sub_template_filepath.parent.as_posix(),

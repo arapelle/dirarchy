@@ -7,13 +7,13 @@ import semver
 
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
-from ui.terminal_ui import TerminalUi
+from ui.terminal_ui import TerminalBasicUi
 
 
 class TestTemgenVersion(DirCmpTestCase):
     def test__temgen_version__ok(self):
         major = 0
-        minor = 5
+        minor = 6
         patch = 0
         expected_version = semver.Version(major, minor, patch)
         self.assertEqual(Temgen.VERSION.to_tuple()[0:3], expected_version.to_tuple()[0:3])
@@ -22,7 +22,7 @@ class TestTemgenVersion(DirCmpTestCase):
         template_string = f"""<?xml version="1.0"?>
 <template temgen-min-version="{Temgen.VERSION}" temgen-max-version="{Temgen.VERSION}" />
         """
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
 
     def test__check_temgen_version__invalid_version_compared_to_min__ok(self):
@@ -30,7 +30,7 @@ class TestTemgenVersion(DirCmpTestCase):
         template_string = f"""<?xml version="1.0"?>
 <template temgen-min-version="{next_major_version}" temgen-max-version="{next_major_version}" />
         """
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         try:
             template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         except RuntimeError as ex:
@@ -41,7 +41,7 @@ class TestTemgenVersion(DirCmpTestCase):
         template_string = f"""<?xml version="1.0"?>
 <template temgen-min-version="0.0.0" temgen-max-version="0.0.0" />
         """
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         try:
             template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         except RuntimeError as ex:
@@ -52,7 +52,7 @@ class TestTemgenVersion(DirCmpTestCase):
         template_string = f"""<?xml version="1.0"?>
 <template temgen-min-version="0.2.0" temgen-max-version="0.1.0" />
         """
-        template_generator = Temgen(TerminalUi())
+        template_generator = Temgen(TerminalBasicUi())
         try:
             template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         except RuntimeError as ex:

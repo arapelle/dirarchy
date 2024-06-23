@@ -110,6 +110,127 @@ class TestTemgenMatch(TestTemgenBase):
         except RuntimeError as ex:
             self.assertEqual(str(ex), "case nodes are missing in match node.")
 
+    def test__expr_cond__using_path__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <match eval="Path('.').resolve()"> 
+            <case eval="Path.cwd().resolve()">
+                <file path="path_matches.txt" />
+            </case>
+        </match>
+    </dir>
+</template>
+        """
+        project_root_dir = "expr_cond__using_path"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__match_as_tree_root__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="choice" type="gstr" />
+    </vars>
+    <match expr="{choice}">
+        <case value="yes">
+            <dir path="{project_root_dir}">
+                <file path="data.txt">yes</file>
+            </dir>
+        </case>
+        <case value="no">
+            <dir path="{project_root_dir}">
+                <file path="data.txt">no</file>
+            </dir>
+        </case>
+    </match>
+</template>
+        """
+        project_root_dir = "match_as_tree_root"
+        input_parameters = ["no"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    @staticmethod
+    def __match_calls_template__main_template_str(match_attrs="", match_children=""):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="template_path" type="gstr" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <match template="{{template_path}}" {match_attrs}>
+            {match_children}
+        </match>
+    </dir>
+</template>
+        """
+
+    @staticmethod
+    def __match_calls_template__sub_template_str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="choice" type="gstr" />
+    </vars>
+    <match expr="{choice}">
+        <case value="yes">
+            <file path="data.txt">yes</file>
+        </case>
+        <case value="no">
+            <file path="data.txt">no</file>
+        </case>
+    </match>
+</template>
+        """
+
+    def test__match_calls_template__ok(self):
+        main_template_string = self.__match_calls_template__main_template_str()
+        sub_template_filepath = self._make_sub_template_filepath("match_file_template")
+        sub_template_string = self.__match_calls_template__sub_template_str()
+        project_root_dir = "match_calls_template"
+        input_parameters = [str(sub_template_filepath), "yes"]
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
+    def test__match_calls_template__expr_attr__exception(self):
+        main_template_string = self.__match_calls_template__main_template_str('expr="True"')
+        sub_template_filepath = self._make_sub_template_filepath("match_file_template")
+        sub_template_string = self.__match_calls_template__sub_template_str()
+        project_root_dir = "match_calls_template"
+        input_parameters = [str(sub_template_filepath), "yes"]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("The attribute 'expr' is unexpected when calling a 'match' template.", str(err))
+
+    def test__match_calls_template__child_statement__exception(self):
+        match_children = '<case><dir path="bad" /></case>'
+        main_template_string = self.__match_calls_template__main_template_str(match_children=match_children)
+        sub_template_filepath = self._make_sub_template_filepath("match_file_template")
+        sub_template_string = self.__match_calls_template__sub_template_str()
+        project_root_dir = "match_calls_template"
+        input_parameters = [str(sub_template_filepath), "yes"]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("No child statement is expected when calling a 'match' template.", str(err))
+
 
 if __name__ == '__main__':
     unittest.main()

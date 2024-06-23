@@ -1,10 +1,12 @@
 from statement.abstract_statement import AbstractStatement
 from statement.writer.format_action import FormatAction
 from statement.writer.strip_action import apply_strip, StripAction
+from statement.writer.writer import Writer
 
 
-class TextToTextWriter:
+class TextToTextWriter(Writer):
     def __init__(self, output_stream, input_contents: str, statement: AbstractStatement):
+        super().__init__(statement)
         self.__output_stream = output_stream
         self.__input_contents = input_contents
         self.__statement = statement
@@ -18,13 +20,12 @@ class TextToTextWriter:
         self.__output_stream.write(self.__input_contents)
 
     def __apply_format(self):
-        default_format_attr = FormatAction.FORMAT
-        format_attr = self.__statement.current_node().get("format", default_format_attr)
-        format_action = FormatAction(self.__statement.format_str(format_attr))
-        match format_action:
-            case FormatAction.RAW:
-                return self.__input_contents
-            case FormatAction.FORMAT:
-                return self.__statement.format_str(self.__input_contents)
-            case _:
-                raise RuntimeError(f"Format action not handled when copying text to text stream: {format_action}.")
+        format_actions = self._get_format_actions(FormatAction.FORMAT)
+        for format_action in format_actions:
+            match format_action:
+                case FormatAction.RAW:
+                    return self.__input_contents
+                case FormatAction.FORMAT:
+                    return self.__statement.format_str(self.__input_contents)
+                case _:
+                    raise RuntimeError(f"Format action not handled when copying text to text stream: {format_action}.")

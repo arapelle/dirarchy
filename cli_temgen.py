@@ -1,23 +1,21 @@
 import argparse
-from enum import StrEnum, auto
 from pathlib import Path
 import re
 
 import temgen
 from constants import regex, names
-from ui.tkinter_ui import TkinterUi
-from ui.terminal_ui import TerminalUi
+from ui.make_ui_from_name import make_ui_from_name
+from ui.terminal_ui import TerminalBasicUi
+from ui.tkinter_ui import TkinterBasicUi
 
 
 class CliTemgen(temgen.Temgen):
-    class UiType(StrEnum):
-        TKINTER = auto()
-        TERMINAL = auto()
-
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
-        super().__init__(self.__build_ui_from_args())
-        self.__init_variables_from_args()
+        super().__init__(make_ui_from_name(self.args.basic_ui),
+                         var_dict=self.args.var if self.args.var else [],
+                         var_files=self.args.var_file if self.args.var_file else [],
+                         ui=self.args.ui)
 
     @property
     def args(self):
@@ -29,15 +27,14 @@ class CliTemgen(temgen.Temgen):
         argparser = argparse.ArgumentParser(prog=prog_name, description=prog_desc)
         argparser.add_argument('--version', action='version',
                                version=f'{prog_name} {temgen.Temgen.VERSION}')
-        argparser.add_argument('-K', f'--{CliTemgen.UiType.TKINTER}'.lower(), action='store_const',
-                               dest='ui', const=CliTemgen.UiType.TKINTER, help='Use tkinter I/O.')
-        argparser.add_argument('-T', f'--{CliTemgen.UiType.TERMINAL}'.lower(), action='store_const',
-                               dest='ui', const=CliTemgen.UiType.TERMINAL, default='terminal',
+        argparser.add_argument('-K', f'--{TkinterBasicUi.NAME}'.lower(), action='store_const',
+                               dest='basic_ui', const=TkinterBasicUi.NAME, help='Use tkinter I/O.')
+        argparser.add_argument('-T', f'--{TerminalBasicUi.NAME}'.lower(), action='store_const',
+                               dest='basic_ui', const=TerminalBasicUi.NAME, default='terminal',
                                help='Use terminal I/O.')
-        argparser.add_argument('-C', '--custom-ui', metavar='custom_ui_cmd',
+        argparser.add_argument('-U', '--ui', metavar='ui_cmd',
                                help='Use a custom user interface to set variables before treating them with temgen. '
-                                    '(Executing custom_ui_cmd in shell is expected to use the desired custom '
-                                    'interface.)')
+                                    '(Executing ui_cmd in shell is expected to use the desired custom interface.)')
         argparser.add_argument('-o', '--output-dir', metavar='dir_path',
                                default=Path.cwd(),
                                help='The directory where to generate the desired hierarchy (dir or file).')
@@ -51,8 +48,6 @@ class CliTemgen(temgen.Temgen):
         argparser.add_argument('template_version', nargs='?',
                                help='The template version.')
         args = argparser.parse_args(argv)
-        if args.ui is None:
-            args.ui = CliTemgen.UiType.TKINTER
         args.output_dir = Path(args.output_dir)
         return args
 
@@ -62,24 +57,6 @@ class CliTemgen(temgen.Temgen):
         if re.match(regex.VAR_NAME_REGEX, key):
             return key, value
         raise RuntimeError(key_value_str)
-
-    def __build_ui_from_args(self):
-        match self.args.ui:
-            case CliTemgen.UiType.TERMINAL:
-                ui = TerminalUi()
-            case CliTemgen.UiType.TKINTER:
-                ui = TkinterUi()
-            case _:
-                raise Exception(f"Unknown I/O: '{self.args.io}'")
-        return ui
-
-    def __init_variables_from_args(self):
-        if self.args.var:
-            self.init_variables().update_vars_from_dict(self.args.var)
-        if self.args.var_file:
-            self.init_variables().update_vars_from_files(self.args.var_file)
-        if self.args.custom_ui:
-            self.init_variables().update_vars_from_custom_ui(self.args.custom_ui)
 
     def run(self):
         self.find_and_treat_template_file(Path(self.args.template_path),

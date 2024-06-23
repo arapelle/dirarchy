@@ -18,6 +18,9 @@ class DirStatement(AbstractDirStatement):
     def allows_template(self):
         return True
 
+    def extends_template(self):
+        return True
+
     def execute(self):
         self.__make_output_dir()
 
@@ -31,18 +34,5 @@ class DirStatement(AbstractDirStatement):
         assert 'path' not in self.current_node().attrib
 
     def post_template_run(self, template_statement: TemplateStatement):
-        expected_statement = template_statement.expected_statement()
+        expected_statement = template_statement.extract_expected_statement()
         self.__output_dirpath = expected_statement.current_output_dirpath()
-
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        match child_node.tag:
-            case "if":
-                from statement.if_statement import IfStatement
-                if_statement = IfStatement(child_node, self)
-                if_statement.run()
-            case "match":
-                from statement.match_statement import MatchStatement
-                match_statement = MatchStatement(child_node, self)
-                match_statement.run()
-            case _:
-                super().treat_child_node(node, child_node)
