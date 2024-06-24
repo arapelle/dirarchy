@@ -31,8 +31,10 @@ class ExecStatement(AbstractMainStatement):
         if timeout_attr is not None:
             self.__timeout = float(self.format_str(timeout_attr))
         self.__on_timeout = node.get("on-timeout", "ERROR")
+        self.__on_timeout = self.format_str(self.__on_timeout)
         script_filepath = node.attrib.get("path", None)
         if script_filepath is not None:
+            script_filepath = self.format_str(script_filepath)
             self.__treat_script(script_filepath)
 
     def __treat_script(self, script_filepath):
