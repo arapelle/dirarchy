@@ -19,7 +19,7 @@ from variables.variables_dict import VariablesDict
 
 
 class Temgen:
-    VERSION = semver.Version.parse('0.6.0')
+    VERSION = semver.Version.parse('0.7.0-dev')
     APPLICATION_DIRECTORIES = ApplicationDirectories(names.LOWER_PROGRAM_NAME)
 
     def __init__(self, basic_ui: AbstractBasicUi | None, logger=None, **kargs):
