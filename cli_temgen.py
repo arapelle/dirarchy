@@ -13,8 +13,8 @@ class CliTemgen(temgen.Temgen):
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
         super().__init__(make_ui_from_name(self.args.basic_ui),
-                         var_dict=self.args.var if self.args.var else [],
                          var_files=self.args.var_file if self.args.var_file else [],
+                         var_dict=self.args.var if self.args.var else [],
                          ui=self.args.ui)
 
     @property

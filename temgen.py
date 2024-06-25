@@ -49,14 +49,15 @@ class Temgen:
             self.__config = dict()
 
     def __init_variables(self, kargs):
-        var_dict = kargs.get("var_dict", [])
         var_files = kargs.get("var_files", [])
+        var_dict = kargs.get("var_dict", [])
         ui = kargs.get("ui", None)
-        self.init_variables().update_vars_from_dict(var_dict)
         self.init_variables().update_vars_from_files(var_files)
+        self.init_variables().update_vars_from_dict(var_dict)
+        extra_uis = self.__config.setdefault("ui", dict()).setdefault("extra", dict())
         if ui is not None:
             assert isinstance(ui, str)
-            ui = self.__config.get("ui", dict()).get("extra", dict()).get(ui, ui)
+            ui = extra_uis.get(ui, ui)
             self.init_variables().update_vars_from_extra_ui(ui)
 
     @property
