@@ -47,7 +47,7 @@ basic = "TERMINAL"
             config_file.write(config_contents)
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
-        self.assertTrue(isinstance(temgen.ui(), TerminalBasicUi))
+        self.assertTrue(isinstance(temgen.basic_ui(), TerminalBasicUi))
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_basic_TKINTER__ok(self):
@@ -60,7 +60,7 @@ basic = "TKINTER"
             config_file.write(config_contents)
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
-        self.assertTrue(isinstance(temgen.ui(), TkinterBasicUi))
+        self.assertTrue(isinstance(temgen.basic_ui(), TkinterBasicUi))
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_extra__ok(self):

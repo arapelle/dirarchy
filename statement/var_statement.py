@@ -76,8 +76,8 @@ class VarStatement(AbstractContentsStatement):
 
     def __ask_var_value(self, var_node):
         self.__var_default = var_node.attrib.get('default', None)
-        self.__var_value = self.temgen().ui().ask_valid_var(self.__var_type, self.__var_name,
-                                                            self.__var_default, self.__var_regex)
+        self.__var_value = self.temgen().basic_ui().ask_valid_var(self.__var_type, self.__var_name,
+                                                                  self.__var_default, self.__var_regex)
 
     def __resolve_var_value_with_text_or_children(self):
         self.__make_output_stream()

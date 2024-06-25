@@ -67,7 +67,7 @@ class Temgen:
     def config(self):
         return self.__config
 
-    def ui(self):
+    def basic_ui(self):
         return self.__basic_ui
 
     def init_variables(self):
