@@ -686,6 +686,66 @@ rand_alpha = '{rand_alpha}'
         except RuntimeError as err:
             self.assertEqual("In 'case', bad child node type: var.", str(err))
 
+    def test__vars_calls_ui__valid_ui__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="text" value="novel" />
+    <dir path="{project_root_dir}">
+        <vars ui="{python} ./input/extra_ui/myui.py {output_file} {input_file}">
+            <var name="message" type="str" />
+        </vars>
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__valid_ui"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__vars_calls_ui__valid_ui_no_input__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <dir path="{project_root_dir}">
+        <vars ui="{python} ./input/extra_ui/myui_no_input.py {1}">
+            <var name="message" />
+        </vars>
+        <var name="end_message" />
+        <file path="data.txt">
+'{message}'
+'{end_message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__valid_ui_no_input"
+        input_parameters = ["default_end_message"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__vars_calls_ui__not_found_ui__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <dir path="{project_root_dir}">
+        <vars ui="{python} ./input/extra_ui/unknown.py {1}">
+            <var name="message" type="str" />
+        </vars>
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__not_found_ui"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertTrue(str(err).find("Execution of ui did not work well") != -1)
+
 
 if __name__ == '__main__':
     unittest.main()

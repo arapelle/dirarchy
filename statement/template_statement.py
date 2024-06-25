@@ -37,6 +37,9 @@ class TemplateStatement(AbstractDirStatement):
         assert isinstance(self.__template_filepath, Path) or self.__template_filepath is None
         self.__current_child_statement = None
         self.__expected_statement = None
+        ui = kargs.get("ui")
+        if ui is not None:
+            self.variables().update_vars_from_dict(self.temgen().call_ui(ui, self))
 
     def parent_template_statement(self):
         return self.__parent_template_statement

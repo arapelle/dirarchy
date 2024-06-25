@@ -88,9 +88,10 @@ myui = "{python} ./input/extra_ui/myui.py {output_file} {input_file}"
         project_root_dir = "extra_ui__valid_config_cmd"
         sys.stdin = io.StringIO(f"{project_root_dir}\n")
         template_generator = Temgen(TerminalBasicUi(), config_path=config_filepath,
-                                    ui="myui", var_dict=[("text", "coucou")])
+                                    var_dict=[("text", "coucou")])
         template_generator.treat_template_xml_string(template_string,
-                                                     output_dir=Path(self._output_dirpath))
+                                                     output_dir=Path(self._output_dirpath),
+                                                     ui="myui")
         self._compare_output_and_expected(project_root_dir)
         config_filepath.unlink(missing_ok=True)
 

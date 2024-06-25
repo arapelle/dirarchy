@@ -58,6 +58,16 @@ class AbstractStatement(ABC):
             return default_value
         return self.__parent_statement.get_variable_value(variable_name, default_value)
 
+    def get_variables_from_root(self) -> VariablesDict:
+        vars_dict = VariablesDict(self.logger)
+        self.__retrieve_variables_from_root(vars_dict)
+        return vars_dict
+
+    def __retrieve_variables_from_root(self, vars_dict):
+        if self.__parent_statement is not None:
+            self.__parent_statement.__retrieve_variables_from_root(vars_dict)
+        vars_dict |= self.__variables
+
     def format_str(self, value_str: str):
         from variables.variables_map import VariablesMap
         from variables.variables_formatter import VariablesFormatter

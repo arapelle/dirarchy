@@ -145,7 +145,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             self._run_generated_trivial_template_file(output_root_dir, argv=args,
                                                       var_definitions=var_defs, file_contents=":{text}:{other_text}:")
         except RuntimeError as err:
-            self.assertTrue(str(err).find("Execution of custom ui did not work well") != -1)
+            self.assertTrue(str(err).find("Execution of ui did not work well") != -1)
 
     def test__file_fdirtree__format_raw__ok(self):
         output_root_dir = "file_fdirtree__format_raw"
