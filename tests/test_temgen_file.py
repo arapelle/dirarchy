@@ -338,7 +338,7 @@ Ve-_vQ==
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt" strip="strip">
-            <if expr="'{var}' == 'then'">
+            <if eval="'{var}' == 'then'">
                 <then>
                     THEN
                 </then>
@@ -373,7 +373,7 @@ Ve-_vQ==
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt" strip="strip">
-            <match expr="{var}">
+            <match value="{var}">
                 <case value="one">
                     ONE
                 </case>
@@ -491,7 +491,7 @@ Ve-_vQ==
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt" strip="strip">
-            <if expr="'{var}' == 'then'">
+            <if eval="'{var}' == 'then'">
                 <then>
                     <contents strip="strip-nl">THEN-CONTENTS</contents>
                 </then>
@@ -516,7 +516,7 @@ Ve-_vQ==
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt" strip="strip">
-            <match expr="{var}">
+            <match value="{var}">
                 <case value="one">
                     <contents strip="strip-nl">ONE-CONTENTS</contents>
                 </case>

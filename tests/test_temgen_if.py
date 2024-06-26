@@ -19,21 +19,21 @@ class TestTemgenIf(TestTemgenBase):
         <var name="second_if" type="gstr" />
     </vars>
     <dir path="{project_root_dir}">
-        <if expr="'{first_if}' == 'yes'">
+        <if eval="'{first_if}' == 'yes'">
             <file path="first_if_alone.txt">data</file>
         </if>
-        <if expr="'{first_if}' == 'yes'">
-            <if expr="'{second_if}' == 'yes'">
+        <if eval="'{first_if}' == 'yes'">
+            <if eval="'{second_if}' == 'yes'">
                 <file path="second_if_alone.txt">data</file>
             </if>
         </if>
-        <if expr="match(r'[a-z]+', '{second_if}')">
+        <if eval="match(r'[a-z]+', '{second_if}')">
             <file path="expr_match.txt">data</file>
         </if>
-        <if expr="'{first_if}' == 'yes' and '{second_if}' == 'yes'">
+        <if eval="'{first_if}' == 'yes' and '{second_if}' == 'yes'">
             <file path="and.txt">data</file>
         </if>
-        <if expr="'{first_if}' == 'yes'">
+        <if eval="'{first_if}' == 'yes'">
             <then>
                 <file path="first_then.txt">data</file>
             </then>
@@ -41,9 +41,9 @@ class TestTemgenIf(TestTemgenBase):
                 <file path="first_else.txt">data</file>
             </else>
         </if>
-        <if expr="'{first_if}' == 'yes'">
+        <if eval="'{first_if}' == 'yes'">
             <then>
-                <if expr="'{second_if}' == 'yes'">
+                <if eval="'{second_if}' == 'yes'">
                     <then>
                         <file path="second_then.txt">data</file>
                     </then>
@@ -84,21 +84,21 @@ class TestTemgenIf(TestTemgenBase):
         <var name="second_if" type="int" />
     </vars>
     <dir path="{project_root_dir}">
-        <if expr="{first_if} == 6">
+        <if eval="{first_if} == 6">
             <file path="first_if_alone.txt">data</file>
         </if>
-        <if expr="{first_if} == 6">
-            <if expr="{second_if} == 7">
+        <if eval="{first_if} == 6">
+            <if eval="{second_if} == 7">
                 <file path="second_if_alone.txt">data</file>
             </if>
         </if>
-        <if expr="match(r'[13579]+', '{second_if}')">
+        <if eval="match(r'[13579]+', '{second_if}')">
             <file path="expr_match.txt">data</file>
         </if>
-        <if expr="{first_if} == 6 and {second_if} == 7">
+        <if eval="{first_if} == 6 and {second_if} == 7">
             <file path="and.txt">data</file>
         </if>
-        <if expr="{first_if} == 6">
+        <if eval="{first_if} == 6">
             <then>
                 <file path="first_then.txt">data</file>
             </then>
@@ -106,9 +106,9 @@ class TestTemgenIf(TestTemgenBase):
                 <file path="first_else.txt">data</file>
             </else>
         </if>
-        <if expr="{first_if} == 6">
+        <if eval="{first_if} == 6">
             <then>
-                <if expr="{second_if} == 7">
+                <if eval="{second_if} == 7">
                     <then>
                         <file path="second_then.txt">data</file>
                     </then>
@@ -254,11 +254,11 @@ class TestTemgenIf(TestTemgenBase):
 </template>
         """
 
-    def test__expr_cond__cmp_path__ok(self):
-        template_string = self.cond__template_string("expr",
+    def test__eval_cond__cmp_path__ok(self):
+        template_string = self.cond__template_string("eval",
                                                      "Path('.').resolve() == Path.cwd().resolve()",
                                                      "Path('.').resolve() != Path.cwd().resolve()")
-        project_root_dir = "expr_cond__cmp_path"
+        project_root_dir = "eval_cond__cmp_path"
         input_parameters = []
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
@@ -314,7 +314,7 @@ class TestTemgenIf(TestTemgenBase):
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
         <var name="choice" type="gstr" />
     </vars>
-    <if expr="'{choice}' == 'yes'">
+    <if eval="'{choice}' == 'yes'">
         <dir path="{project_root_dir}">
             <file path="data.txt">data</file>
         </dir>
@@ -348,7 +348,7 @@ class TestTemgenIf(TestTemgenBase):
     <vars>
         <var name="choice" type="gstr" />
     </vars>
-    <if expr="'{choice}' == 'yes'">
+    <if eval="'{choice}' == 'yes'">
         <file path="data.txt">data</file>
     </if>
 </template>

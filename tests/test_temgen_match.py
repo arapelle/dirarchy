@@ -16,10 +16,10 @@ class TestTemgenMatch(TestTemgenBase):
             <case value="value">
                 <file path="value.md" />
             </case>
-            <case expr="[a-z]+">
+            <case regex="[a-z]+">
                 <file path="expr_az.md" />
             </case>
-            <case expr="[0-9]+">
+            <case regex="[0-9]+">
                 <file path="expr_09.md" />
             </case>
             """
@@ -30,7 +30,7 @@ class TestTemgenMatch(TestTemgenBase):
         <var name="expr" type="gstr" />
     </vars>
     <dir path="{{project_root_dir}}">
-        <match expr="{{expr}}">
+        <match value="{{expr}}">
             {cases}
             {default_case}
         </match>
@@ -136,7 +136,7 @@ class TestTemgenMatch(TestTemgenBase):
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
         <var name="choice" type="gstr" />
     </vars>
-    <match expr="{choice}">
+    <match value="{choice}">
         <case value="yes">
             <dir path="{project_root_dir}">
                 <file path="data.txt">yes</file>
@@ -177,7 +177,7 @@ class TestTemgenMatch(TestTemgenBase):
     <vars>
         <var name="choice" type="gstr" />
     </vars>
-    <match expr="{choice}">
+    <match value="{choice}">
         <case value="yes">
             <file path="data.txt">yes</file>
         </case>
@@ -201,7 +201,7 @@ class TestTemgenMatch(TestTemgenBase):
                                                                    input_parameters)
 
     def test__match_calls_template__expr_attr__exception(self):
-        main_template_string = self.__match_calls_template__main_template_str('expr="True"')
+        main_template_string = self.__match_calls_template__main_template_str('value="True"')
         sub_template_filepath = self._make_sub_template_filepath("match_file_template")
         sub_template_string = self.__match_calls_template__sub_template_str()
         project_root_dir = "match_calls_template"
@@ -213,7 +213,7 @@ class TestTemgenMatch(TestTemgenBase):
                                                                               project_root_dir,
                                                                               input_parameters)
         except RuntimeError as err:
-            self.assertEqual("The attribute 'expr' is unexpected when calling a 'match' template.", str(err))
+            self.assertEqual("The attribute 'value' is unexpected when calling a 'match' template.", str(err))
 
     def test__match_calls_template__child_statement__exception(self):
         match_children = '<case><dir path="bad" /></case>'

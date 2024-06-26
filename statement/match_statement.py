@@ -18,8 +18,9 @@ class MatchStatement(AbstractBranchStatement):
         expr_key, expr_value = next(iter(match_node.attrib.items()))
         match expr_key:
             case "expr":
-                self.logger.warning("DEPRECATED: In <match> statement, you should replace 'expr' attribute by 'value'.")
-                expr_attr = self.format_str(expr_value)
+                error_msg = "DEPRECATED: In <match> statement, you should replace 'expr' attribute by 'value'."
+                self.logger.error(error_msg)
+                raise RuntimeError(error_msg)
             case "value":
                 expr_attr = self.format_str(expr_value)
             case "eval":
@@ -52,8 +53,9 @@ class MatchStatement(AbstractBranchStatement):
             if case_regex is None:
                 case_regex = case_node.attrib.get('expr', None)
                 if case_regex is not None:
-                    self.logger.warning("DEPRECATED: "
-                                        "In <case> statement, you should replace 'expr' attribute by 'regex'.")
+                    error_msg = "DEPRECATED: In <case> statement, you should replace 'expr' attribute by 'regex'."
+                    self.logger.error(error_msg)
+                    raise RuntimeError(error_msg)
             if case_regex is not None:
                 if re.fullmatch(self.format_str(case_regex), expr_attr):
                     found_case_node = case_node

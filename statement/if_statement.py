@@ -53,8 +53,9 @@ class IfStatement(AbstractBranchStatement):
         from pathlib import Path
         match key_value:
             case "expr":
-                self.logger.warning("DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'.")
-                return bool(eval(attr_value))
+                error_msg = "DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'."
+                self.logger.error(error_msg)
+                raise RuntimeError(error_msg)
             case "eval":
                 return bool(eval(attr_value))
             case "exists":

@@ -259,7 +259,7 @@ rand_alpha = '{rand_alpha}'
     <vars>
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
-        <if expr="'{choice}' == 'even'">
+        <if eval="'{choice}' == 'even'">
             <then>
                 <var name="number" value="86420" />
             </then>
@@ -286,7 +286,7 @@ rand_alpha = '{rand_alpha}'
     <vars>
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
-        <match expr="{choice}">
+        <match value="{choice}">
             <case value="normal">
                 <var name="value" value="value" />
             </case>
@@ -442,7 +442,7 @@ rand_alpha = '{rand_alpha}'
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
         <var name="text" type="gstr" strip="strip">
-            <if expr="'{choice}' == 'then'">
+            <if eval="'{choice}' == 'then'">
                 <then>
                     THEN
                 </then>
@@ -470,7 +470,7 @@ rand_alpha = '{rand_alpha}'
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
         <var name="text" type="gstr" strip="strip">
-            <match expr="{choice}">
+            <match value="{choice}">
                 <case value="one">
                     ONE
                 </case>
