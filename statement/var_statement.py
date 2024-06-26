@@ -61,7 +61,7 @@ class VarStatement(AbstractContentsStatement):
                         if self.__ui_variables is not None else None
                     if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
                         if len(var_node) == 0 and (var_node.text is None or len(var_node.text) == 0):
-                            self.__ask_var_value(var_node)
+                            self.__manage_unset_var_value(var_node)
                         else:
                             self.__resolve_var_value_with_text_or_children()
             else:
@@ -87,6 +87,21 @@ class VarStatement(AbstractContentsStatement):
                 case _:
                     raise RuntimeError(f"Unknown format for ui attribute: '{format_attr}'")
 
+    def __manage_unset_var_value(self, var_node):
+        if_unset_attr = var_node.get("if-unset", "ask")
+        if_unset_attr = self.format_str(if_unset_attr)
+        match if_unset_attr:
+            case "ask":
+                self.__ask_var_value(var_node)
+            case "use-default":
+                self.__use_default_value(var_node)
+            case "error":
+                assert self.__var_value is None
+                raise RuntimeError(f"The variable '{self.__var_name}' is not set.")
+            case _:
+                raise RuntimeError(f"Unknown action '{if_unset_attr}' to manage the unset variable "
+                                   f"'{self.__var_name}'.")
+
     def __resolve_var_value_with_file(self, copy_attr):
         self.__make_output_stream()
         self._copy_file_to_output(copy_attr, self)
@@ -94,8 +109,30 @@ class VarStatement(AbstractContentsStatement):
 
     def __ask_var_value(self, var_node):
         self.__var_default = var_node.attrib.get('default', None)
+        if self.__var_default is not None:
+            self.__var_default = self.format_str(self.__var_default)
         self.__var_value = self.temgen().basic_ui().ask_valid_var(self.__var_type, self.__var_name,
                                                                   self.__var_default, self.__var_regex)
+
+    def __use_default_value(self, var_node):
+        self.__var_default = var_node.attrib.get('default', None)
+        if self.__var_default is not None:
+            self.__var_default = self.format_str(self.__var_default)
+        else:
+            match self.__var_type:
+                case 'bool':
+                    self.__var_default = "False"
+                case 'int' | 'uint':
+                    self.__var_default = "0"
+                case 'float':
+                    self.__var_default = "0.0"
+                case 'str':
+                    self.__var_default = ""
+                case _:
+                    raise RuntimeError(f"Action 'use-default' is chosen for the unset variable '{self.__var_name} of "
+                                       f"type '{self.__var_type}', but the default value is missing "
+                                       f"(use attribute 'default').")
+        self.__var_value = self.__var_default
 
     def __resolve_var_value_with_text_or_children(self):
         self.__make_output_stream()

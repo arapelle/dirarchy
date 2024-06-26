@@ -746,6 +746,84 @@ rand_alpha = '{rand_alpha}'
         except RuntimeError as err:
             self.assertTrue(str(err).find("Execution of ui did not work well") != -1)
 
+    def test__if_unset__use_default_provided__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="vegetable" type="gstr" if-unset="ask" default="carrot" />
+    <var name="fruit" type="gstr" if-unset="use-default" default="ananas" />
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+vegetable='{vegetable}'
+fruit='{fruit}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "if_unset__use_default_provided"
+        input_parameters = ["potato"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__if_unset__use_default_not_provided__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="bool_val" type="bool" if-unset="use-default" />
+    <var name="int_val" type="int" if-unset="use-default" />
+    <var name="uint_val" type="uint" if-unset="use-default" />
+    <var name="float_val" type="float" if-unset="use-default" />
+    <var name="str_val" type="str" if-unset="use-default" />
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+bool_val='{bool_val}'
+int_val='{int_val}'
+uint_val='{uint_val}'
+float_val='{float_val}'
+str_val='{str_val}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "if_unset__use_default_not_provided"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    @staticmethod
+    def __if_unset_default_missing_template_str(var_type):
+        return f"""<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="str_val" type="{var_type}" if-unset="use-default" />
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt">
+str_val='{{str_val}}'
+        </file>
+    </dir>
+</template>
+        """
+
+    def test__if_unset__use_default_missing_pstr__exception(self):
+        var_type = "pstr"
+        template_string = self.__if_unset_default_missing_template_str(var_type)
+        project_root_dir = "if_unset__use_default_missing"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as error:
+            self.assertEqual(f"Action 'use-default' is chosen for the unset variable 'str_val of type '{var_type}', "
+                             "but the default value is missing (use attribute 'default').", str(error))
+
+    def test__if_unset__use_default_missing_gstr__exception(self):
+        var_type = "gstr"
+        template_string = self.__if_unset_default_missing_template_str(var_type)
+        project_root_dir = "if_unset__use_default_missing"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as error:
+            self.assertEqual(f"Action 'use-default' is chosen for the unset variable 'str_val of type '{var_type}', "
+                             "but the default value is missing (use attribute 'default').", str(error))
+
 
 if __name__ == '__main__':
     unittest.main()
