@@ -18,7 +18,8 @@ class AbstractStatement(ABC):
         self.__parent_statement = parent_statement
         if not isinstance(self, statement.template_statement.TemplateStatement):
             self.__template_statement = self.__parent_statement.template_statement()
-        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.template_statement().temgen().logger))
+        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL,
+                                     VariablesDict(self.template_statement().temgen().logger))
         assert self.template_statement() is not None and \
                isinstance(self.template_statement(), statement.template_statement.TemplateStatement)
         self.__was_template_called = False
@@ -68,10 +69,10 @@ class AbstractStatement(ABC):
             self.__parent_statement.__retrieve_variables_from_root(vars_dict)
         vars_dict |= self.__variables
 
-    def format_str(self, value_str: str):
+    def format_str(self, value_str: str, is_eval_context: bool = False):
         from variables.variables_map import VariablesMap
         from variables.variables_formatter import VariablesFormatter
-        return VariablesFormatter(self).vformat(value_str, [], VariablesMap(self))
+        return VariablesFormatter(self, is_eval_context).vformat(value_str, [], VariablesMap(self))
 
     def current_dir_statement(self):
         if self.__parent_statement is None:

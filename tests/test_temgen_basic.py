@@ -1,14 +1,10 @@
 import datetime
 import os
-import tempfile
 import unittest
 from pathlib import Path
 
-from ui.terminal_ui import TerminalBasicUi
-from ui.tkinter_ui import TkinterBasicUi
-from util.random_string import random_lower_sisy_string
+import temgen
 from statement.template_statement import TemplateStatement
-from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase
 
 
@@ -98,6 +94,10 @@ $TIME = {$TIME}
 $TIME:: = {$TIME::}
 $STRFTIME = {$STRFTIME:%Y%m%d_%H%M%S}
 $ENV:PATH = {$ENV:PATH}
+$TEMGEN_VERSION = {$TEMGEN_VERSION}
+$TEMGEN_VERSION:major = {$TEMGEN_VERSION:major}
+$TEMGEN_VERSION:minor = {$TEMGEN_VERSION:minor}
+$TEMGEN_VERSION:patch = {$TEMGEN_VERSION:patch}
         """.strip()
         project_root_dir = "template_xml_string__builtin_vars"
         input_parameters = []
@@ -117,9 +117,49 @@ $TIME = %H%M%S
 $TIME:: = %H:%M:%S
 $STRFTIME = %Y%m%d_%H%M%S
 $ENV:PATH = {os.environ["PATH"]}
+$TEMGEN_VERSION = {temgen.Temgen.VERSION}
+$TEMGEN_VERSION:major = {temgen.Temgen.VERSION.major}
+$TEMGEN_VERSION:minor = {temgen.Temgen.VERSION.minor}
+$TEMGEN_VERSION:patch = {temgen.Temgen.VERSION.patch}
         """
         expected_file_contents = datetime.datetime.now().strftime(expected_file_contents).strip()
         self.assertEqual(output_file_contents, expected_file_contents)
+
+    def test__eval_TEMGEM_VERSION__comparaisons__ok(self):
+        from temgen import Temgen
+        template_string = f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <if eval="{{$TEMGEN_VERSION}} == '{Temgen.VERSION}' and {{$TEMGEN_VERSION}} != '{Temgen.VERSION.major + 1}.0.0'">
+            <file path="version_eq_ne.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION}} &gt; '0.{Temgen.VERSION.minor - 1}.0' and {{$TEMGEN_VERSION}} &lt; '{Temgen.VERSION.major + 1}.0.0'">
+            <file path="version_gt_lt.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION}} &gt;= '0.{Temgen.VERSION.minor - 1}.0' and {{$TEMGEN_VERSION}} &lt;= '{Temgen.VERSION}'">
+            <file path="version_ge_le.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION}} == '{Temgen.VERSION}' and {{$TEMGEN_VERSION}} != '{Temgen.VERSION.major + 1}.0.0'">
+            <file path="version_eq_ne.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION:major}} == {Temgen.VERSION.major} and isinstance({{$TEMGEN_VERSION:major}}, int)">
+            <file path="eval_major.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION:minor}} == {Temgen.VERSION.minor} and isinstance({{$TEMGEN_VERSION:minor}}, int)">
+            <file path="eval_minor.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION:patch}} == {Temgen.VERSION.patch} and isinstance({{$TEMGEN_VERSION:patch}}, int)">
+            <file path="eval_patch.txt" />
+        </if>
+    </dir>
+</template>
+        """
+        project_root_dir = "eval_TEMGEM_VERSION__comparaisons"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
     @staticmethod
     def __builtin_fsys_vars__vars_list_str(current_working_dir, root_template_dir, template_dir, root_output_dir,

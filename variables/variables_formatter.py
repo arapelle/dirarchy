@@ -5,6 +5,26 @@ from pathlib import Path
 from string import Formatter
 
 
+class BuiltinTemgenVersion:
+    def __init__(self, is_eval_context: bool):
+        self.__is_eval_context = is_eval_context
+
+    def __format__(self, format_spec):
+        assert isinstance(format_spec, str)
+        from temgen import Temgen
+        match format_spec:
+            case "":
+                return f"Version.parse('{Temgen.VERSION}')" if self.__is_eval_context else str(Temgen.VERSION)
+            case "major":
+                return str(Temgen.VERSION.major)
+            case "minor":
+                return str(Temgen.VERSION.minor)
+            case "patch":
+                return str(Temgen.VERSION.patch)
+            case _:
+                raise RuntimeError(f"Format spec not handled for $TEMGEN_VERSION: '{format_spec}'.")
+
+
 class BuiltinDate:
     def __format__(self, format_spec):
         assert isinstance(format_spec, str)
@@ -36,8 +56,9 @@ class VariablesFormatter(Formatter):
 
     TEMPLATE_DIR_VARNAME = '$TEMPLATE_DIR'
 
-    def __init__(self, current_statement: AbstractStatement):
+    def __init__(self, current_statement: AbstractStatement, is_eval_context: bool):
         self.__statement = current_statement
+        self.__is_eval_context = is_eval_context
 
     def get_value(self, key, args, kwargs):
         if isinstance(key, str) and key[0] == '$':
@@ -46,6 +67,8 @@ class VariablesFormatter(Formatter):
 
     def __get_builtin_var_value(self, builtin_var_name):
         match builtin_var_name:
+            case "$TEMGEN_VERSION":
+                return BuiltinTemgenVersion(self.__is_eval_context)
             case "$TMP":
                 return tempfile.gettempdir()
             case "$CURRENT_WORKING_DIR":

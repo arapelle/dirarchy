@@ -48,16 +48,18 @@ class IfStatement(AbstractBranchStatement):
         if cond_attr_len != 1:
             raise RuntimeError(f"An 'if' statement expects only one condition attribute. ({cond_attr_len} provided)")
         key_value, attr_value = next(iter(node.attrib.items()))
-        attr_value = self.format_str(attr_value)
         from re import match, fullmatch
+        from semver import Version
         from pathlib import Path
+        if key_value == "eval":
+            attr_value = self.format_str(attr_value, True)
+            return bool(eval(attr_value))
+        attr_value = self.format_str(attr_value)
         match key_value:
             case "expr":
                 error_msg = "DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'."
                 self.logger.error(error_msg)
                 raise RuntimeError(error_msg)
-            case "eval":
-                return bool(eval(attr_value))
             case "exists":
                 return Path(attr_value).exists()
             case "not-exists":
