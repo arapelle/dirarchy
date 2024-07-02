@@ -53,7 +53,7 @@ class FileStatement(AbstractContentsStatement):
 
     def __resolve_output_filepath_and_ensure_output_dir(self):
         parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
-        self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
+        self.__output_filepath = Path(parent_output_dirpath / self.vformat(self.current_node().attrib['path']))
         output_file_parent_dirpath = self.__output_filepath.parent
         if output_file_parent_dirpath != parent_output_dirpath:
             self.logger.info(f"Make dir {output_file_parent_dirpath}")

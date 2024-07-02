@@ -18,7 +18,7 @@ class VarsStatement(AbstractMainStatement):
                 case "raw":
                     pass
                 case "format":
-                    ui = self.format_str(ui)
+                    ui = self.vformat(ui)
                 case _:
                     raise RuntimeError(f"Unknown format for ui attribute: '{ui_format_attr}'")
             self.__ui_variables = self.temgen().call_ui(ui, self)

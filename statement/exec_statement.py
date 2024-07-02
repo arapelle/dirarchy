@@ -25,20 +25,20 @@ class ExecStatement(AbstractMainStatement):
         node = self.current_node()
         self.__lang = node.get("lang", None)
         if self.__lang is not None:
-            self.__lang = self.format_str(self.__lang)
-        self.__format = self.format_str(node.get("format", "raw"))
+            self.__lang = self.vformat(self.__lang)
+        self.__format = self.vformat(node.get("format", "raw"))
         timeout_attr = node.get("timeout", None)
         if timeout_attr is not None:
-            self.__timeout = float(self.format_str(timeout_attr))
+            self.__timeout = float(self.vformat(timeout_attr))
         self.__on_timeout = node.get("on-timeout", "ERROR")
-        self.__on_timeout = self.format_str(self.__on_timeout)
+        self.__on_timeout = self.vformat(self.__on_timeout)
         script_filepath = node.attrib.get("path", None)
         if script_filepath is not None:
-            script_filepath = self.format_str(script_filepath)
+            script_filepath = self.vformat(script_filepath)
             self.__treat_script(script_filepath)
 
     def __treat_script(self, script_filepath):
-        script_filepath = Path(self.format_str(script_filepath))
+        script_filepath = Path(self.vformat(script_filepath))
         if self.__lang is None:
             self.__lang = self.__resolve_executable_from_ext(script_filepath.suffix)
         match self.__format:
@@ -47,7 +47,7 @@ class ExecStatement(AbstractMainStatement):
             case "format":
                 with open(script_filepath) as script_file:
                     text = script_file.read()
-                    text = self.format_str(text)
+                    text = self.vformat(text)
                     self.__exec_script_text(text)
             case _:
                 raise RuntimeError(f"Format not handled: '{self.__format}'.")
@@ -97,7 +97,7 @@ class ExecStatement(AbstractMainStatement):
             case "raw":
                 return text
             case "format":
-                return self.format_str(text)
+                return self.vformat(text)
             case _:
                 raise RuntimeError(f"Format not handled: '{self.__format}'.")
 

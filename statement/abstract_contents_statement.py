@@ -35,9 +35,9 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
 
     def _copy_file_to_output(self, copy_attr: str, input_statement: AbstractStatement):
         copy_encoding_attr: str = input_statement.current_node().get("copy-encoding", None)
-        copied_file_path = self.format_str(copy_attr)
+        copied_file_path = self.vformat(copy_attr)
         if copy_encoding_attr is not None:
-            input_encoding = self.format_str(copy_encoding_attr)
+            input_encoding = self.vformat(copy_encoding_attr)
         else:
             input_encoding = self._output_encoding
         if input_encoding == "binary":

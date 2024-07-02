@@ -22,9 +22,9 @@ class MatchStatement(AbstractBranchStatement):
                 self.logger.error(error_msg)
                 raise RuntimeError(error_msg)
             case "value":
-                expr_attr = self.format_str(expr_value)
+                expr_attr = self.vformat(expr_value)
             case "eval":
-                expr_attr = eval(self.format_str(expr_value))
+                expr_attr = eval(self.vformat(expr_value))
             case _:
                 raise RuntimeError(f"Bad expression attribute: '{expr_key}'")
         assert match_node.text is None or len(match_node.text.strip()) == 0
@@ -37,14 +37,14 @@ class MatchStatement(AbstractBranchStatement):
                 raise RuntimeError(f"In 'match', bad child node type: {case_node.tag}.")
             case_value = case_node.attrib.get('value', None)
             if case_value is not None:
-                formatted_case_value = self.format_str(case_value)
+                formatted_case_value = self.vformat(case_value)
                 if expr_attr == formatted_case_value:
                     found_case_node = case_node
                     break
                 continue
             case_eval = case_node.attrib.get('eval', None)
             if case_eval is not None:
-                eval_formatted_case_value = eval(self.format_str(case_eval))
+                eval_formatted_case_value = eval(self.vformat(case_eval))
                 if expr_attr == eval_formatted_case_value:
                     found_case_node = case_node
                     break
@@ -57,7 +57,7 @@ class MatchStatement(AbstractBranchStatement):
                     self.logger.error(error_msg)
                     raise RuntimeError(error_msg)
             if case_regex is not None:
-                if re.fullmatch(self.format_str(case_regex), expr_attr):
+                if re.fullmatch(self.vformat(case_regex), expr_attr):
                     found_case_node = case_node
                     break
                 continue

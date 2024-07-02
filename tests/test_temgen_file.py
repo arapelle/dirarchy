@@ -143,7 +143,7 @@ Ve-_vQ==
             input_parameters = []
             self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
         except RuntimeError as err:
-            self.assertEqual(str(err), "Format action not handled when copying text to text stream: base64.")
+            self.assertEqual(str(err), "Format action not handled for text to text formatting: base64.")
 
     @staticmethod
     def __copy_binary_file_to_binary_file__format__str(copy_format_attr: str, strip_action_attr: str = ""):

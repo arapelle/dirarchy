@@ -1,4 +1,5 @@
 from enum import StrEnum
+from statement.abstract_statement import AbstractStatement
 
 
 class FormatAction(StrEnum):

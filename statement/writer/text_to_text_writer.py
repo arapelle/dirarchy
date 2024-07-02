@@ -14,18 +14,7 @@ class TextToTextWriter(Writer):
     def execute(self):
         default_strip_attr = StripAction.STRIP_HS
         strip_attr = self.__statement.current_node().get("strip", default_strip_attr)
-        strip_action = StripAction(self.__statement.format_str(strip_attr))
+        strip_action = StripAction(self.__statement.vformat(strip_attr))
         self.__input_contents = apply_strip(self.__input_contents, strip_action)
-        self.__input_contents = self.__apply_format()
+        self.__input_contents = self.__statement.vformat_with_format_attr(self.__input_contents)
         self.__output_stream.write(self.__input_contents)
-
-    def __apply_format(self):
-        format_actions = self._get_format_actions(FormatAction.FORMAT)
-        for format_action in format_actions:
-            match format_action:
-                case FormatAction.RAW:
-                    return self.__input_contents
-                case FormatAction.FORMAT:
-                    return self.__statement.format_str(self.__input_contents)
-                case _:
-                    raise RuntimeError(f"Format action not handled when copying text to text stream: {format_action}.")

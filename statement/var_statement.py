@@ -2,7 +2,7 @@ import locale
 import re
 import xml.etree.ElementTree as XMLTree
 from builtins import RuntimeError
-from io import StringIO, BytesIO
+from io import StringIO
 
 from constants import regex
 from statement.abstract_contents_statement import AbstractContentsStatement
@@ -69,27 +69,13 @@ class VarStatement(AbstractContentsStatement):
                     raise RuntimeError("For 'var', you cannot provide value and text at the same time.")
                 if len(var_node) > 0:
                     raise RuntimeError("No child statement is expected when using value attribute.")
-                format_attr = self.current_node().get("format", "format")
-                match format_attr:
-                    case "raw":
-                        pass
-                    case "format":
-                        self.__var_value = self.format_str(self.__var_value)
-                    case _:
-                        raise RuntimeError(f"Unknown format for ui attribute: '{format_attr}'")
+                self.__var_value = self.vformat_with_format_attr(self.__var_value)
         else:
-            format_attr = self.current_node().get("format", "format")
-            match format_attr:
-                case "raw":
-                    pass
-                case "format":
-                    self.__var_value = self.format_str(self.__var_value)
-                case _:
-                    raise RuntimeError(f"Unknown format for ui attribute: '{format_attr}'")
+            self.__var_value = self.vformat_with_format_attr(self.__var_value)
 
     def __manage_unset_var_value(self, var_node):
         if_unset_attr = var_node.get("if-unset", "ask")
-        if_unset_attr = self.format_str(if_unset_attr)
+        if_unset_attr = self.vformat(if_unset_attr)
         match if_unset_attr:
             case "ask":
                 self.__ask_var_value(var_node)
@@ -110,14 +96,14 @@ class VarStatement(AbstractContentsStatement):
     def __ask_var_value(self, var_node):
         self.__var_default = var_node.attrib.get('default', None)
         if self.__var_default is not None:
-            self.__var_default = self.format_str(self.__var_default)
+            self.__var_default = self.vformat(self.__var_default)
         self.__var_value = self.temgen().basic_ui().ask_valid_var(self.__var_type, self.__var_name,
                                                                   self.__var_default, self.__var_regex)
 
     def __use_default_value(self, var_node):
         self.__var_default = var_node.attrib.get('default', None)
         if self.__var_default is not None:
-            self.__var_default = self.format_str(self.__var_default)
+            self.__var_default = self.vformat(self.__var_default)
         else:
             match self.__var_type:
                 case 'bool':

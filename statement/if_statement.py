@@ -52,9 +52,9 @@ class IfStatement(AbstractBranchStatement):
         from semver import Version
         from pathlib import Path
         if key_value == "eval":
-            attr_value = self.format_str(attr_value, True)
+            attr_value = self.vformat(attr_value, True)
             return bool(eval(attr_value))
-        attr_value = self.format_str(attr_value)
+        attr_value = self.vformat(attr_value)
         match key_value:
             case "expr":
                 error_msg = "DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'."
