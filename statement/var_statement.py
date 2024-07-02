@@ -52,26 +52,28 @@ class VarStatement(AbstractContentsStatement):
         if "copy-encoding" in self.current_node().attrib:
             raise RuntimeError("'copy-encoding is provided but copy is missing.")
         self.__var_value = self.variables().get(self.__var_name, None)
-        if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
-            self.__var_value = var_node.attrib.get('value', None)
-            if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
-                self.__var_value = self.get_variable_value(self.__var_name)
-                if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
-                    self.__var_value = self.__ui_variables.get(self.__var_name, None) \
-                        if self.__ui_variables is not None else None
-                    if self.__var_value is None:  # or if value is not compatible with requirements (type, regex, ...).
-                        if len(var_node) == 0 and (var_node.text is None or len(var_node.text) == 0):
-                            self.__manage_unset_var_value(var_node)
-                        else:
-                            self.__resolve_var_value_with_text_or_children()
-            else:
-                if var_node.text is not None and len(var_node.text) > 0:
-                    raise RuntimeError("For 'var', you cannot provide value and text at the same time.")
-                if len(var_node) > 0:
-                    raise RuntimeError("No child statement is expected when using value attribute.")
-                self.__var_value = self.vformat_with_format_attr(self.__var_value)
-        else:
+        if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
             self.__var_value = self.vformat_with_format_attr(self.__var_value)
+            return
+        self.__var_value = var_node.attrib.get('value', None)
+        if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
+            if var_node.text is not None and len(var_node.text) > 0:
+                raise RuntimeError("For 'var', you cannot provide value and text at the same time.")
+            if len(var_node) > 0:
+                raise RuntimeError("No child statement is expected when using value attribute.")
+            self.__var_value = self.vformat_with_format_attr(self.__var_value)
+            return
+        self.__var_value = self.get_variable_value(self.__var_name)
+        if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
+            return
+        if self.__ui_variables is not None:
+            self.__var_value = self.__ui_variables.get(self.__var_name, None)
+            if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
+                return
+        if len(var_node) == 0 and (var_node.text is None or len(var_node.text) == 0):
+            self.__manage_unset_var_value(var_node)
+        else:
+            self.__resolve_var_value_with_text_or_children()
 
     def __manage_unset_var_value(self, var_node):
         if_unset_attr = var_node.get("if-unset", "ask")
