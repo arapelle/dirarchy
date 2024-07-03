@@ -150,6 +150,26 @@ class TestTemgenBase(DirCmpTestCase):
             main_template_filepath.unlink(missing_ok=True)
             sub_template_filepath.unlink(missing_ok=True)
 
+    def _test__treat_template_xml_file__ok(self,
+                                           template_filepath: Path,
+                                           template_string: str,
+                                           project_root_dir: str,
+                                           input_parameters: list,
+                                           **kargs):
+        self._run__treat_template_xml_file__ok(template_filepath, template_string, project_root_dir,
+                                               input_parameters, **kargs)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__treat_template_xml_file__exception(self,
+                                                  template_filepath: Path,
+                                                  template_string: str,
+                                                  project_root_dir: str,
+                                                  input_parameters: list,
+                                                  **kargs):
+        self._run__treat_template_xml_file__ok(template_filepath, template_string, project_root_dir,
+                                               input_parameters, **kargs)
+        self.fail()
+
     def _compare_file_lines_with_expected_lines(self, output_filepath: Path, expected_file_contents: str):
         expected_file_contents_lines = expected_file_contents.split('\n')
         result_file_contents_lines = self._read_output_file_contents(output_filepath).split('\n')
