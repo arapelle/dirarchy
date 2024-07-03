@@ -170,6 +170,40 @@ class TestTemgenBase(DirCmpTestCase):
                                                input_parameters, **kargs)
         self.fail()
 
+    def _test__treat_template_xml_file_calling_template__ok(self,
+                                                            main_template_filepath: Path,
+                                                            main_template_string: str,
+                                                            sub_template_filepath: Path,
+                                                            sub_template_string: str,
+                                                            project_root_dir: str,
+                                                            input_parameters: list,
+                                                            **kargs):
+        self._run__treat_template_xml_file_calling_template__ok(main_template_filepath,
+                                                                main_template_string,
+                                                                sub_template_filepath,
+                                                                sub_template_string,
+                                                                project_root_dir,
+                                                                input_parameters,
+                                                                **kargs)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__treat_template_xml_file_calling_template__exception(self,
+                                                                   main_template_filepath: Path,
+                                                                   main_template_string: str,
+                                                                   sub_template_filepath: Path,
+                                                                   sub_template_string: str,
+                                                                   project_root_dir: str,
+                                                                   input_parameters: list,
+                                                                   **kargs):
+        self._run__treat_template_xml_file_calling_template__ok(main_template_filepath,
+                                                                main_template_string,
+                                                                sub_template_filepath,
+                                                                sub_template_string,
+                                                                project_root_dir,
+                                                                input_parameters,
+                                                                **kargs)
+        self.fail()
+
     def _compare_file_lines_with_expected_lines(self, output_filepath: Path, expected_file_contents: str):
         expected_file_contents_lines = expected_file_contents.split('\n')
         result_file_contents_lines = self._read_output_file_contents(output_filepath).split('\n')
