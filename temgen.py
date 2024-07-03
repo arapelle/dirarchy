@@ -52,9 +52,11 @@ class Temgen:
             self.__config = dict()
 
     def __init_variables(self, kargs):
+        config_variables = self.__config.setdefault("variables", dict())
+        self.__variables.update_vars_from_dict(config_variables)
         var_files = kargs.get("var_files", [])
-        var_dict = kargs.get("var_dict", [])
         self.__variables.update_vars_from_files(var_files)
+        var_dict = kargs.get("var_dict", [])
         self.__variables.update_vars_from_dict(var_dict)
         self.__config.setdefault("ui", dict()).setdefault("extra", dict())
 
