@@ -1,6 +1,4 @@
-import datetime
 import io
-import os
 import sys
 import tempfile
 import unittest
@@ -9,7 +7,6 @@ from pathlib import Path
 from ui.terminal_ui import TerminalBasicUi
 from ui.tkinter_ui import TkinterBasicUi
 from util.random_string import random_lower_sisy_string
-from statement.template_statement import TemplateStatement
 from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase
 
@@ -37,6 +34,29 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
         self.assertGreater(len(dirpaths), 2)
         config_filepath.unlink(missing_ok=True)
 
+    def test__config__missing_check_template__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_file.write("")
+            config_file.flush()
+        temgen = Temgen(TerminalBasicUi(), config_path=config_filepath)
+        check_template_activated = temgen.check_template_activated()
+        self.assertFalse(check_template_activated)
+        config_filepath.unlink(missing_ok=True)
+
+    def test__config__check_template__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+check_template = true
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        temgen = Temgen(TerminalBasicUi(), config_path=config_filepath)
+        check_template_activated = temgen.check_template_activated()
+        self.assertTrue(check_template_activated)
+        config_filepath.unlink(missing_ok=True)
+
     def test__config__ui_basic_TERMINAL__ok(self):
         config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
         with open(config_filepath, "w") as config_file:
@@ -47,7 +67,7 @@ basic = "TERMINAL"
             config_file.write(config_contents)
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
-        self.assertTrue(isinstance(temgen.ui(), TerminalBasicUi))
+        self.assertTrue(isinstance(temgen.basic_ui(), TerminalBasicUi))
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_basic_TKINTER__ok(self):
@@ -60,7 +80,7 @@ basic = "TKINTER"
             config_file.write(config_contents)
             config_file.flush()
         temgen = Temgen(None, config_path=config_filepath)
-        self.assertTrue(isinstance(temgen.ui(), TkinterBasicUi))
+        self.assertTrue(isinstance(temgen.basic_ui(), TkinterBasicUi))
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_extra__ok(self):
@@ -88,10 +108,41 @@ myui = "{python} ./input/extra_ui/myui.py {output_file} {input_file}"
         project_root_dir = "extra_ui__valid_config_cmd"
         sys.stdin = io.StringIO(f"{project_root_dir}\n")
         template_generator = Temgen(TerminalBasicUi(), config_path=config_filepath,
-                                    ui="myui", var_dict=[("text", "coucou")])
+                                    var_dict=[("text", "coucou")])
         template_generator.treat_template_xml_string(template_string,
-                                                     output_dir=Path(self._output_dirpath))
+                                                     output_dir=Path(self._output_dirpath),
+                                                     ui="myui")
         self._compare_output_and_expected(project_root_dir)
+        config_filepath.unlink(missing_ok=True)
+
+    def test__config__variables__any_template__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+[variables]
+message = "banana"
+surprise = "chocolate"
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="str" value="" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+'{message}'
+'{surprise}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "variables__any_template"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  config_path=config_filepath)
         config_filepath.unlink(missing_ok=True)
 
     def test__config__logging__ok(self):

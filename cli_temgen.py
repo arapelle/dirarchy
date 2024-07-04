@@ -13,9 +13,9 @@ class CliTemgen(temgen.Temgen):
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
         super().__init__(make_ui_from_name(self.args.basic_ui),
-                         var_dict=self.args.var if self.args.var else [],
                          var_files=self.args.var_file if self.args.var_file else [],
-                         ui=self.args.ui)
+                         var_dict=self.args.var if self.args.var else [],
+                         check_template=self._args.check_template)
 
     @property
     def args(self):
@@ -41,8 +41,10 @@ class CliTemgen(temgen.Temgen):
         argparser.add_argument('-v', '--var', metavar='key=value', nargs='+',
                                type=CliTemgen.__var_from_key_value_str,
                                help='Set variables.')
-        argparser.add_argument('--var-file', metavar='var_json_files', nargs='+',
+        argparser.add_argument('--var-file', metavar='var_json_file', nargs='+',
                                help='Set variables from a JSON files.')
+        argparser.add_argument("--check-template", help="Check the names of all statements and their attributes.",
+                               action="store_true")
         argparser.add_argument('template_path',
                                help='The template path of the file to find then to process.')
         argparser.add_argument('template_version', nargs='?',
@@ -61,7 +63,8 @@ class CliTemgen(temgen.Temgen):
     def run(self):
         self.find_and_treat_template_file(Path(self.args.template_path),
                                           self.args.template_version,
-                                          output_dir=self.args.output_dir)
+                                          output_dir=self.args.output_dir,
+                                          ui=self.args.ui)
 
 
 if __name__ == '__main__':

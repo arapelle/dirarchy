@@ -205,23 +205,67 @@ with open("data.txt", "w") as data_file:
 </template>
         """
 
-    def test__exec_python__path__lang_from_ext__exception(self):
+    def test__exec_python__path__lang_from_ext__ok(self):
         template_string = self.__exec_python__path__string()
         project_root_dir = "exec_python__path__lang_from_ext"
         input_parameters = ["{$CURRENT_WORKING_DIR}/input/python/create_data.py"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
-    def test__exec_python__path__lang__exception(self):
+    def test__exec_python__path__lang__ok(self):
         template_string = self.__exec_python__path__string('lang="python"')
         project_root_dir = "exec_python__path__lang"
         input_parameters = ["{$CURRENT_WORKING_DIR}/input/python/create_data.py"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
-    def test__exec_python__path__format__exception(self):
+    def test__exec_python__path__format__ok(self):
         template_string = self.__exec_python__path__string('format="format"')
         project_root_dir = "exec_python__path__format"
         input_parameters = ["{$CURRENT_WORKING_DIR}/input/python/fmt_create_data.py"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__exec_python__vars__exception(self):
+        # exec, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="script_path" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <exec path="{script_path}">
+            <vars />
+        </exec>
+    </dir>
+</template>
+        """
+        project_root_dir = "exec_python__vars"
+        input_parameters = ["{$CURRENT_WORKING_DIR}/input/python/create_data.py"]
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'exec', bad child node type: vars.", str(err))
+
+    def test__exec_python__var__exception(self):
+        # exec, var -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="script_path" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <exec path="{script_path}">
+            <var />
+        </exec>
+    </dir>
+</template>
+        """
+        project_root_dir = "exec_python__var"
+        input_parameters = ["{$CURRENT_WORKING_DIR}/input/python/create_data.py"]
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'exec', bad child node type: var.", str(err))
 
 
 if __name__ == '__main__':

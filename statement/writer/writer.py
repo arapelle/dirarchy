@@ -12,5 +12,5 @@ class Writer:
 
     def _get_format_actions(self, default_format_attr):
         node = self.statement.current_node()
-        format_attr = self.statement.format_str(node.get("format", default_format_attr))
+        format_attr = self.statement.vformat(node.get("format", default_format_attr))
         return [FormatAction(format_action) for format_action in format_attr.split('|')]

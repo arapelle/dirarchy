@@ -31,12 +31,17 @@ class TemplateStatement(AbstractDirStatement):
             self.__parent_template_statement = None
             self.__temgen = kargs[TemplateStatement.TEMGEN_LABEL]
             self.__output_dirpath = kargs[TemplateStatement.OUTPUT_DIRPATH_LABEL]
+        if self.__temgen.check_template_activated():
+            self.__temgen.check_template(current_node)
         super().__init__(current_node, parent_statement, **kargs)
         assert self.parent_statement() == parent_statement
         self.__template_filepath = kargs.get(TemplateStatement.TEMPLATE_FILEPATH_LABEL, None)
         assert isinstance(self.__template_filepath, Path) or self.__template_filepath is None
         self.__current_child_statement = None
         self.__expected_statement = None
+        ui = kargs.get("ui")
+        if ui is not None:
+            self.variables().update_vars_from_dict(self.temgen().call_ui(ui, self))
 
     def parent_template_statement(self):
         return self.__parent_template_statement
@@ -78,10 +83,6 @@ class TemplateStatement(AbstractDirStatement):
         if self.__template_filepath is not None:
             self.logger.info(f"Template file: {self.__template_filepath}")
         self.__check_temgen_version()
-        vars_node = self.current_node().find("vars")
-        if vars_node is not None:
-            self.__current_child_statement = VarsStatement(vars_node, self)
-            self.__current_child_statement.run()
         self.treat_children_nodes()
         self.__current_child_statement = None
 
@@ -111,67 +112,77 @@ class TemplateStatement(AbstractDirStatement):
     def check_number_of_children_nodes_of(self, node: XMLTree.Element):
         if node == self.current_node():
             limit = 2 if node.find("vars") is not None else 1
+            limit += len(node.findall("var"))
             if len(node) > limit:
                 raise RuntimeError("Too many nodes under <template>.")
 
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         if node == self.current_node():
-            if child_node.tag == "vars":
-                return
-            if self.__caller_statement is not None:
+            if self.__caller_statement is not None and child_node.tag != "vars" and child_node.tag != "var":
                 expected_tag = self.__caller_statement.current_node().tag
                 if child_node.tag != expected_tag:
                     raise RuntimeError(f"Unexpected node ({child_node.tag}) under <template>. "
                                        f"Expected: {expected_tag}.")
                 if child_node.tag == "contents":
-                    contents_statement = self._create_contents_statement(node, child_node)
+                    contents_statement = self._create_contents_statement(node, child_node, current_statement)
                     contents_statement.run()
-                    self.__post_treat_child_node(node)
+                    self.__post_treat_child_node(node, child_node)
                     return
-        super().treat_child_node(node, child_node)
-        self.__post_treat_child_node(node)
+        super().treat_child_node(node, child_node, current_statement)
+        self.__post_treat_child_node(node, child_node)
 
-    def __post_treat_child_node(self, node):
+    def __post_treat_child_node(self, node, child_node):
         if node == self.current_node():
             assert self.__current_child_statement is not None
-            if self.__caller_statement is not None:
+            if self.__caller_statement is not None and child_node.tag != "vars" and child_node.tag != "var":
                 self.__expected_statement = self.__current_child_statement
             self.__current_child_statement = None
 
-    def _create_dir_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        dir_statement = super()._create_dir_statement(node, child_node)
+    def _create_dir_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        dir_statement = super()._create_dir_statement(node, child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = dir_statement
         return dir_statement
 
-    def _create_file_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        file_statement = super()._create_file_statement(node, child_node)
+    def _create_file_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        file_statement = super()._create_file_statement(node, child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = file_statement
         return file_statement
 
-    def _create_if_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        if_statement = super()._create_if_statement(node, child_node)
+    def _create_if_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        if_statement = super()._create_if_statement(node, child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = if_statement
         return if_statement
 
-    def _create_match_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        match_statement = super()._create_match_statement(node, child_node)
+    def _create_match_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        match_statement = super()._create_match_statement(node, child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = match_statement
         return match_statement
 
-    def _create_contents_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
+    def _create_contents_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         from statement.contents_statement import ContentsStatement
-        contents_statement = ContentsStatement(child_node, self)
+        contents_statement = ContentsStatement(child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = contents_statement
         return contents_statement
 
-    def _create_exec_statement(self, node: XMLTree.Element, child_node: XMLTree.Element):
-        from statement.exec_statement import ExecStatement
-        exec_statement = ExecStatement(child_node, self)
+    def _create_exec_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        exec_statement = super()._create_exec_statement(node, child_node, current_statement)
         if node == self.current_node():
             self.__current_child_statement = exec_statement
         return exec_statement
+
+    def _create_vars_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        vars_statement = super()._create_vars_statement(node, child_node, current_statement)
+        if node == self.current_node():
+            self.__current_child_statement = vars_statement
+        return vars_statement
+
+    def _create_var_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        vars_statement = super()._create_var_statement(node, child_node, current_statement)
+        if node == self.current_node():
+            self.__current_child_statement = vars_statement
+        return vars_statement

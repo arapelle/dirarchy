@@ -111,7 +111,7 @@ class TestTemgenProgramBase(DirCmpTestCase):
         self._run_template_file(template_filestem, argv, stdin_str, context_argv)
         self._compare_output_and_expected(project_root_dir)
 
-    def _run_template_path_template_versoin(self, template_path, template_version, argv=None, stdin_str=None,
+    def _run_template_path_template_version(self, template_path, template_version, argv=None, stdin_str=None,
                                             context_argv=None):
         if argv is None:
             argv = ['--', template_path, template_version]
@@ -126,5 +126,5 @@ class TestTemgenProgramBase(DirCmpTestCase):
 
     def _test_template_path_template_version(self, template_path, template_version, project_root_dir,
                                              argv=None, stdin_str=None, context_argv=None):
-        self._run_template_path_template_versoin(template_path, template_version, argv, stdin_str, context_argv)
+        self._run_template_path_template_version(template_path, template_version, argv, stdin_str, context_argv)
         self._compare_output_and_expected(project_root_dir)

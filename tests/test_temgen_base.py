@@ -2,6 +2,7 @@ import io
 import sys
 from pathlib import Path
 
+from cli_temgen import CliTemgen
 from util import random_string
 from ui.terminal_ui import TerminalBasicUi
 from temgen import Temgen
@@ -46,20 +47,22 @@ class TestTemgenBase(DirCmpTestCase):
     def _test__treat_template_xml_string__ok(self,
                                              template_string: str,
                                              project_root_dir: str,
-                                             input_parameters):
+                                             input_parameters: list,
+                                             **kargs):
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        template_generator = Temgen(TerminalBasicUi())
+        template_generator = Temgen(TerminalBasicUi(), **kargs)
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         self._compare_output_and_expected(project_root_dir)
 
     def _test__treat_template_xml_string__exception(self,
                                                     template_string: str,
                                                     project_root_dir: str,
-                                                    input_parameters):
+                                                    input_parameters: list,
+                                                    **kargs):
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        template_generator = Temgen(TerminalBasicUi())
+        template_generator = Temgen(TerminalBasicUi(), **kargs)
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         self.fail()
 
@@ -68,10 +71,11 @@ class TestTemgenBase(DirCmpTestCase):
                                                               sub_template_filepath: Path,
                                                               sub_template_string: str,
                                                               project_root_dir: str,
-                                                              input_parameters):
+                                                              input_parameters: list,
+                                                              **kargs):
         try:
             self._make_template_file(sub_template_filepath, sub_template_string)
-            self._test__treat_template_xml_string__ok(main_template_string, project_root_dir, input_parameters)
+            self._test__treat_template_xml_string__ok(main_template_string, project_root_dir, input_parameters, **kargs)
         finally:
             sub_template_filepath.unlink(missing_ok=True)
 
@@ -80,17 +84,20 @@ class TestTemgenBase(DirCmpTestCase):
                                                                      sub_template_filepath: Path,
                                                                      sub_template_string: str,
                                                                      project_root_dir: str,
-                                                                     input_parameters):
+                                                                     input_parameters: list,
+                                                                     **kargs):
         try:
             self._make_template_file(sub_template_filepath, sub_template_string)
-            self._test__treat_template_xml_string__exception(main_template_string, project_root_dir, input_parameters)
+            self._test__treat_template_xml_string__exception(main_template_string, project_root_dir, input_parameters,
+                                                             **kargs)
         finally:
             sub_template_filepath.unlink(missing_ok=True)
 
     def _run__treat_template_xml_string__file_contents__ok(self,
                                                            file_contents: str,
                                                            project_root_dir: str,
-                                                           input_parameters):
+                                                           input_parameters: list,
+                                                           **kargs):
         template_string = f"""<?xml version="1.0"?>
 <template>
     <vars>
@@ -105,7 +112,7 @@ class TestTemgenBase(DirCmpTestCase):
         """
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        template_generator = Temgen(TerminalBasicUi())
+        template_generator = Temgen(TerminalBasicUi(), **kargs)
         template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
         with open(f"{self._output_dirpath}/{project_root_dir}/data.txt") as output_file:
             return output_file.read().strip()
@@ -114,12 +121,13 @@ class TestTemgenBase(DirCmpTestCase):
                                           template_filepath: Path,
                                           template_string: str,
                                           project_root_dir: str,
-                                          input_parameters):
+                                          input_parameters: list,
+                                          **kargs):
         try:
             self._make_template_file(template_filepath, template_string)
             input_parameters_str = "\n".join(input_parameters)
             sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-            template_generator = Temgen(TerminalBasicUi())
+            template_generator = Temgen(TerminalBasicUi(), **kargs)
             template_generator.treat_template_file(template_filepath, output_dir=Path(self._output_dirpath))
         finally:
             template_filepath.unlink(missing_ok=True)
@@ -130,17 +138,124 @@ class TestTemgenBase(DirCmpTestCase):
                                                            sub_template_filepath: Path,
                                                            sub_template_string: str,
                                                            project_root_dir: str,
-                                                           input_parameters):
+                                                           input_parameters: list,
+                                                           **kargs):
         try:
             self._make_template_file(main_template_filepath, main_template_string)
             self._make_template_file(sub_template_filepath, sub_template_string)
             input_parameters_str = "\n".join(input_parameters)
             sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-            template_generator = Temgen(TerminalBasicUi())
+            template_generator = Temgen(TerminalBasicUi(), **kargs)
             template_generator.treat_template_file(main_template_filepath, output_dir=Path(self._output_dirpath))
         finally:
             main_template_filepath.unlink(missing_ok=True)
             sub_template_filepath.unlink(missing_ok=True)
+
+    def _test__treat_template_xml_file__ok(self,
+                                           template_filepath: Path,
+                                           template_string: str,
+                                           project_root_dir: str,
+                                           input_parameters: list,
+                                           **kargs):
+        self._run__treat_template_xml_file__ok(template_filepath, template_string, project_root_dir,
+                                               input_parameters, **kargs)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__treat_template_xml_file__exception(self,
+                                                  template_filepath: Path,
+                                                  template_string: str,
+                                                  project_root_dir: str,
+                                                  input_parameters: list,
+                                                  **kargs):
+        self._run__treat_template_xml_file__ok(template_filepath, template_string, project_root_dir,
+                                               input_parameters, **kargs)
+        self.fail()
+
+    def _test__treat_template_xml_file_calling_template__ok(self,
+                                                            main_template_filepath: Path,
+                                                            main_template_string: str,
+                                                            sub_template_filepath: Path,
+                                                            sub_template_string: str,
+                                                            project_root_dir: str,
+                                                            input_parameters: list,
+                                                            **kargs):
+        self._run__treat_template_xml_file_calling_template__ok(main_template_filepath,
+                                                                main_template_string,
+                                                                sub_template_filepath,
+                                                                sub_template_string,
+                                                                project_root_dir,
+                                                                input_parameters,
+                                                                **kargs)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__treat_template_xml_file_calling_template__exception(self,
+                                                                   main_template_filepath: Path,
+                                                                   main_template_string: str,
+                                                                   sub_template_filepath: Path,
+                                                                   sub_template_string: str,
+                                                                   project_root_dir: str,
+                                                                   input_parameters: list,
+                                                                   **kargs):
+        self._run__treat_template_xml_file_calling_template__ok(main_template_filepath,
+                                                                main_template_string,
+                                                                sub_template_filepath,
+                                                                sub_template_string,
+                                                                project_root_dir,
+                                                                input_parameters,
+                                                                **kargs)
+        self.fail()
+
+    def _run__cli_temgen__treat_template_file__ok(self,
+                                                  template_filepath: Path,
+                                                  argv: list[str],
+                                                  project_root_dir: str,
+                                                  input_parameters: list):
+        argv.extend(["--", template_filepath])
+        cli_temgen = CliTemgen(argv)
+        input_parameters_str = "\n".join(input_parameters)
+        sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
+        cli_temgen.run()
+
+    def _run__cli_temgen__treat_template_string__ok(self,
+                                                    template_string: str,
+                                                    argv: list[str],
+                                                    project_root_dir: str,
+                                                    input_parameters: list):
+        template_filepath = self._make_main_template_filepath()
+        self._make_template_file(template_filepath, template_string)
+        self._run__cli_temgen__treat_template_file__ok(template_filepath, argv, project_root_dir, input_parameters)
+
+    def _test__cli_temgen__treat_template_file__ok(self,
+                                                   template_filepath: Path,
+                                                   argv: list[str],
+                                                   project_root_dir: str,
+                                                   input_parameters: list):
+        self._run__cli_temgen__treat_template_file__ok(template_filepath, argv, project_root_dir, input_parameters)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__cli_temgen__treat_template_file__exception(self,
+                                                          template_filepath: Path,
+                                                          argv: list[str],
+                                                          project_root_dir: str,
+                                                          input_parameters: list):
+        self._run__cli_temgen__treat_template_file__ok(template_filepath, argv, project_root_dir, input_parameters)
+        self.fail()
+
+    def _test__cli_temgen__treat_template_string__ok(self,
+                                                     template_string: str,
+                                                     argv: list[str],
+                                                     project_root_dir: str,
+                                                     input_parameters: list):
+        self._run__cli_temgen__treat_template_string__ok(template_string, argv, project_root_dir, input_parameters)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__cli_temgen__treat_template_string__exception(self,
+                                                            template_string: str,
+                                                            argv: list[str],
+                                                            project_root_dir: str,
+                                                            input_parameters: list):
+        self._run__cli_temgen__treat_template_string__ok(template_string, argv, project_root_dir, input_parameters)
+        self.fail()
 
     def _compare_file_lines_with_expected_lines(self, output_filepath: Path, expected_file_contents: str):
         expected_file_contents_lines = expected_file_contents.split('\n')

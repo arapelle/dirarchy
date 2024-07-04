@@ -75,10 +75,11 @@ class TestTemgenProgram(TestTemgenProgramBase):
 
     def test__var_file__valid_var_file__ok(self):
         output_root_dir = "var_file__valid_var_file"
-        args = ['--var-file', 'input/var_files/texts.json']
+        args = ['--var-file', 'input/var_files/texts.json', 'input/var_files/fruits.json']
         var_defs = '<var name="text" />\n<var name="other_text" />'
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
+                                                   var_definitions=var_defs,
+                                                   file_contents=":{text}:{other_text}:{a_fruit}:")
 
     def test__var_file__unknown_var_file__exception(self):
         json_fpath = 'input/var_files/not_found.json'
@@ -144,7 +145,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
             self._run_generated_trivial_template_file(output_root_dir, argv=args,
                                                       var_definitions=var_defs, file_contents=":{text}:{other_text}:")
         except RuntimeError as err:
-            self.assertTrue(str(err).find("Execution of custom ui did not work well") != -1)
+            self.assertTrue(str(err).find("Execution of ui did not work well") != -1)
 
     def test__file_fdirtree__format_raw__ok(self):
         output_root_dir = "file_fdirtree__format_raw"

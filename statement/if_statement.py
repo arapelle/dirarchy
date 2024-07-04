@@ -36,11 +36,11 @@ class IfStatement(AbstractBranchStatement):
         bool_value = self.eval_condition()
         if bool_value:
             if then_node is None:
-                self.current_main_statement().treat_children_nodes_of(self.current_node())
+                self.current_main_statement().treat_children_nodes_of(self.current_node(), self)
             else:
-                self.current_main_statement().treat_children_nodes_of(then_node)
+                self.current_main_statement().treat_children_nodes_of(then_node, self)
         elif else_node is not None:
-            self.current_main_statement().treat_children_nodes_of(else_node)
+            self.current_main_statement().treat_children_nodes_of(else_node, self)
 
     def eval_condition(self):
         node = self.current_node()
@@ -48,15 +48,18 @@ class IfStatement(AbstractBranchStatement):
         if cond_attr_len != 1:
             raise RuntimeError(f"An 'if' statement expects only one condition attribute. ({cond_attr_len} provided)")
         key_value, attr_value = next(iter(node.attrib.items()))
-        attr_value = self.format_str(attr_value)
         from re import match, fullmatch
+        from semver import Version
         from pathlib import Path
+        if key_value == "eval":
+            attr_value = self.vformat(attr_value, True)
+            return bool(eval(attr_value))
+        attr_value = self.vformat(attr_value)
         match key_value:
             case "expr":
-                self.logger.warning("DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'.")
-                return bool(eval(attr_value))
-            case "eval":
-                return bool(eval(attr_value))
+                error_msg = "DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'."
+                self.logger.error(error_msg)
+                raise RuntimeError(error_msg)
             case "exists":
                 return Path(attr_value).exists()
             case "not-exists":

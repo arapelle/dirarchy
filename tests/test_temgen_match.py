@@ -16,10 +16,10 @@ class TestTemgenMatch(TestTemgenBase):
             <case value="value">
                 <file path="value.md" />
             </case>
-            <case expr="[a-z]+">
+            <case regex="[a-z]+">
                 <file path="expr_az.md" />
             </case>
-            <case expr="[0-9]+">
+            <case regex="[0-9]+">
                 <file path="expr_09.md" />
             </case>
             """
@@ -30,7 +30,7 @@ class TestTemgenMatch(TestTemgenBase):
         <var name="expr" type="gstr" />
     </vars>
     <dir path="{{project_root_dir}}">
-        <match expr="{{expr}}">
+        <match value="{{expr}}">
             {cases}
             {default_case}
         </match>
@@ -136,7 +136,7 @@ class TestTemgenMatch(TestTemgenBase):
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
         <var name="choice" type="gstr" />
     </vars>
-    <match expr="{choice}">
+    <match value="{choice}">
         <case value="yes">
             <dir path="{project_root_dir}">
                 <file path="data.txt">yes</file>
@@ -177,7 +177,7 @@ class TestTemgenMatch(TestTemgenBase):
     <vars>
         <var name="choice" type="gstr" />
     </vars>
-    <match expr="{choice}">
+    <match value="{choice}">
         <case value="yes">
             <file path="data.txt">yes</file>
         </case>
@@ -201,7 +201,7 @@ class TestTemgenMatch(TestTemgenBase):
                                                                    input_parameters)
 
     def test__match_calls_template__expr_attr__exception(self):
-        main_template_string = self.__match_calls_template__main_template_str('expr="True"')
+        main_template_string = self.__match_calls_template__main_template_str('value="True"')
         sub_template_filepath = self._make_sub_template_filepath("match_file_template")
         sub_template_string = self.__match_calls_template__sub_template_str()
         project_root_dir = "match_calls_template"
@@ -213,7 +213,7 @@ class TestTemgenMatch(TestTemgenBase):
                                                                               project_root_dir,
                                                                               input_parameters)
         except RuntimeError as err:
-            self.assertEqual("The attribute 'expr' is unexpected when calling a 'match' template.", str(err))
+            self.assertEqual("The attribute 'value' is unexpected when calling a 'match' template.", str(err))
 
     def test__match_calls_template__child_statement__exception(self):
         match_children = '<case><dir path="bad" /></case>'
@@ -230,6 +230,50 @@ class TestTemgenMatch(TestTemgenBase):
                                                                               input_parameters)
         except RuntimeError as err:
             self.assertEqual("No child statement is expected when calling a 'match' template.", str(err))
+
+    def test__local_vars__match_vars__ok(self):
+        # template, match, vars -> ok (leaf)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" type="gstr" />
+        <var name="fruit" type="gstr" value="orange" />
+    </vars>
+    <match value="a">
+        <case value="a">
+            <vars>
+                <var name="message" type="gstr" value="leaf" />
+                <var name="fruit" type="gstr" />
+            </vars>
+            <file path="{project_root_dir}/leaf/data.txt">{message}: {fruit}</file>
+        </case>
+    </match>
+</template>
+        """
+        project_root_dir = "local_vars__match_vars"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__local_vars__match_var__ok(self):
+        # template, match, var -> ok (leaf)
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="message" type="gstr" />
+    <var name="fruit" type="gstr" value="orange" />
+    <match value="a">
+        <case value="a">
+            <var name="message" type="gstr" value="leaf" />
+            <var name="fruit" type="gstr" />
+            <file path="{project_root_dir}/leaf/data.txt">{message}: {fruit}</file>
+        </case>
+    </match>
+</template>
+        """
+        project_root_dir = "local_vars__match_var"
+        input_parameters = ["root"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
 
 if __name__ == '__main__':

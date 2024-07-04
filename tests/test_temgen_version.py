@@ -13,7 +13,7 @@ from ui.terminal_ui import TerminalBasicUi
 class TestTemgenVersion(DirCmpTestCase):
     def test__temgen_version__ok(self):
         major = 0
-        minor = 6
+        minor = 7
         patch = 0
         expected_version = semver.Version(major, minor, patch)
         self.assertEqual(Temgen.VERSION.to_tuple()[0:3], expected_version.to_tuple()[0:3])

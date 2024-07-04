@@ -19,7 +19,7 @@ class TextToBinaryWriter(Writer):
         format_actions_are_base64 = FormatAction.BASE64 in format_actions or FormatAction.BASE64_URL in format_actions
         default_strip_attr = StripAction.STRIP if format_actions_are_base64 else StripAction.STRIP_HS
         strip_attr = self.statement.current_node().get("strip", default_strip_attr)
-        strip_action = StripAction(self.statement.format_str(strip_attr))
+        strip_action = StripAction(self.statement.vformat(strip_attr))
         self.__input_contents = apply_strip(self.__input_contents, strip_action)
         for format_action in format_actions:
             self.__input_contents = self.__apply_format(format_action)
@@ -30,7 +30,7 @@ class TextToBinaryWriter(Writer):
             case FormatAction.RAW:
                 return bytes(self.__input_contents, self.__input_encoding)
             case FormatAction.FORMAT:
-                return bytes(self.statement.format_str(self.__input_contents), self.__input_encoding)
+                return bytes(self.statement.vformat(self.__input_contents), self.__input_encoding)
             case FormatAction.BASE64:
                 return base64.standard_b64decode(self.__input_contents)
             case FormatAction.BASE64_URL:

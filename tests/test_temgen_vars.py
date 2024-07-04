@@ -259,7 +259,7 @@ rand_alpha = '{rand_alpha}'
     <vars>
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
-        <if expr="'{choice}' == 'even'">
+        <if eval="'{choice}' == 'even'">
             <then>
                 <var name="number" value="86420" />
             </then>
@@ -286,7 +286,7 @@ rand_alpha = '{rand_alpha}'
     <vars>
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
-        <match expr="{choice}">
+        <match value="{choice}">
             <case value="normal">
                 <var name="value" value="value" />
             </case>
@@ -442,7 +442,7 @@ rand_alpha = '{rand_alpha}'
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
         <var name="text" type="gstr" strip="strip">
-            <if expr="'{choice}' == 'then'">
+            <if eval="'{choice}' == 'then'">
                 <then>
                     THEN
                 </then>
@@ -470,7 +470,7 @@ rand_alpha = '{rand_alpha}'
         <var name="output_root_dir" type="gstr" />
         <var name="choice" type="gstr" />
         <var name="text" type="gstr" strip="strip">
-            <match expr="{choice}">
+            <match value="{choice}">
                 <case value="one">
                     ONE
                 </case>
@@ -493,6 +493,336 @@ rand_alpha = '{rand_alpha}'
         project_root_dir = "var_match_text"
         input_parameters = ["two"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__vars_vars__exception(self):
+        # vars, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <vars />
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "vars_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'vars', bad child node type: vars.", str(err))
+
+    def test__vars_if_vars__exception(self):
+        # vars, if, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <if eval="True">
+            <vars />
+        </if>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "vars_if_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'if', bad child node type: vars.", str(err))
+
+    def test__vars_match_case_vars__exception(self):
+        # vars, match, case, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <match value="a">
+            <case value="a">
+                <vars />
+            </case>
+        </match>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "vars_match_case_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'case', bad child node type: vars.", str(err))
+
+    def test__var_vars__exception(self):
+        # var, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <vars />
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'var', bad child node type: vars.", str(err))
+
+    def test__var_var__exception(self):
+        # var, var -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <var />
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'var', bad child node type: var.", str(err))
+
+    def test__var_if_vars__exception(self):
+        # var, if, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <if eval="True">
+                <vars />
+            </if>
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_if_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'if', bad child node type: vars.", str(err))
+
+        def test__var_if_var__exception(self):
+            # var, if, var -> exception
+            template_string = """<?xml version="1.0"?>
+    <template>
+        <vars>
+            <var name="output_root_dir" type="gstr" />
+            <var name="arg" type="gstr">
+                <if eval="True">
+                    <var />
+                </if>
+            </var>
+        </vars>
+        <file path="{output_root_dir}/data.txt" />
+    </template>
+    """
+            project_root_dir = "var_if_var"
+            input_parameters = []
+            try:
+                self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+            except RuntimeError as err:
+                self.assertEqual("In 'if', bad child node type: var.", str(err))
+
+    def test__var_match_case_vars__exception(self):
+        # var, match, case, vars -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <match value="a">
+                <case value="a">
+                    <vars />
+                </case>
+            </match>
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_match_case_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'case', bad child node type: vars.", str(err))
+
+    def test__var_match_case_var__exception(self):
+        # var, match, case, var -> exception
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="arg" type="gstr">
+            <match value="a">
+                <case value="a">
+                    <var />
+                </case>
+            </match>
+        </var>
+    </vars>
+    <file path="{output_root_dir}/data.txt" />
+</template>
+"""
+        project_root_dir = "var_match_case_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("In 'case', bad child node type: var.", str(err))
+
+    def test__vars_calls_ui__valid_ui__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="text" value="novel" />
+    <dir path="{project_root_dir}">
+        <vars ui="{python} ./input/extra_ui/myui.py {output_file} {input_file}">
+            <var name="message" type="str" />
+        </vars>
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__valid_ui"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__vars_calls_ui__valid_ui_no_input__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <dir path="{project_root_dir}">
+        <vars ui="{python} ./input/extra_ui/myui_no_input.py {1}">
+            <var name="message" />
+        </vars>
+        <var name="end_message" />
+        <file path="data.txt">
+'{message}'
+'{end_message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__valid_ui_no_input"
+        input_parameters = ["default_end_message"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__vars_calls_ui__not_found_ui__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <dir path="{project_root_dir}">
+        <vars ui="{python} ./input/extra_ui/unknown.py {1}">
+            <var name="message" type="str" />
+        </vars>
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__not_found_ui"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+        except RuntimeError as err:
+            self.assertTrue(str(err).find("Execution of ui did not work well") != -1)
+
+    def test__if_unset__use_default_provided__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="vegetable" type="gstr" if-unset="ask" default="carrot" />
+    <var name="fruit" type="gstr" if-unset="use-default" default="ananas" />
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+vegetable='{vegetable}'
+fruit='{fruit}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "if_unset__use_default_provided"
+        input_parameters = ["potato"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__if_unset__use_default_not_provided__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="bool_val" type="bool" if-unset="use-default" />
+    <var name="int_val" type="int" if-unset="use-default" />
+    <var name="uint_val" type="uint" if-unset="use-default" />
+    <var name="float_val" type="float" if-unset="use-default" />
+    <var name="str_val" type="str" if-unset="use-default" />
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+bool_val='{bool_val}'
+int_val='{int_val}'
+uint_val='{uint_val}'
+float_val='{float_val}'
+str_val='{str_val}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "if_unset__use_default_not_provided"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    @staticmethod
+    def __if_unset_default_missing_template_str(var_type):
+        return f"""<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="str_val" type="{var_type}" if-unset="use-default" />
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt">
+str_val='{{str_val}}'
+        </file>
+    </dir>
+</template>
+        """
+
+    def test__if_unset__use_default_missing_pstr__exception(self):
+        var_type = "pstr"
+        template_string = self.__if_unset_default_missing_template_str(var_type)
+        project_root_dir = "if_unset__use_default_missing"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as error:
+            self.assertEqual(f"Action 'use-default' is chosen for the unset variable 'str_val of type '{var_type}', "
+                             "but the default value is missing (use attribute 'default').", str(error))
+
+    def test__if_unset__use_default_missing_gstr__exception(self):
+        var_type = "gstr"
+        template_string = self.__if_unset_default_missing_template_str(var_type)
+        project_root_dir = "if_unset__use_default_missing"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
+        except RuntimeError as error:
+            self.assertEqual(f"Action 'use-default' is chosen for the unset variable 'str_val of type '{var_type}', "
+                             "but the default value is missing (use attribute 'default').", str(error))
 
 
 if __name__ == '__main__':

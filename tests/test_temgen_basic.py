@@ -1,14 +1,10 @@
 import datetime
 import os
-import tempfile
 import unittest
 from pathlib import Path
 
-from ui.terminal_ui import TerminalBasicUi
-from ui.tkinter_ui import TkinterBasicUi
-from util.random_string import random_lower_sisy_string
+import temgen
 from statement.template_statement import TemplateStatement
-from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase
 
 
@@ -98,6 +94,10 @@ $TIME = {$TIME}
 $TIME:: = {$TIME::}
 $STRFTIME = {$STRFTIME:%Y%m%d_%H%M%S}
 $ENV:PATH = {$ENV:PATH}
+$TEMGEN_VERSION = {$TEMGEN_VERSION}
+$TEMGEN_VERSION:major = {$TEMGEN_VERSION:major}
+$TEMGEN_VERSION:minor = {$TEMGEN_VERSION:minor}
+$TEMGEN_VERSION:patch = {$TEMGEN_VERSION:patch}
         """.strip()
         project_root_dir = "template_xml_string__builtin_vars"
         input_parameters = []
@@ -117,9 +117,49 @@ $TIME = %H%M%S
 $TIME:: = %H:%M:%S
 $STRFTIME = %Y%m%d_%H%M%S
 $ENV:PATH = {os.environ["PATH"]}
+$TEMGEN_VERSION = {temgen.Temgen.VERSION}
+$TEMGEN_VERSION:major = {temgen.Temgen.VERSION.major}
+$TEMGEN_VERSION:minor = {temgen.Temgen.VERSION.minor}
+$TEMGEN_VERSION:patch = {temgen.Temgen.VERSION.patch}
         """
         expected_file_contents = datetime.datetime.now().strftime(expected_file_contents).strip()
         self.assertEqual(output_file_contents, expected_file_contents)
+
+    def test__eval_TEMGEM_VERSION__comparaisons__ok(self):
+        from temgen import Temgen
+        template_string = f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <if eval="{{$TEMGEN_VERSION}} == '{Temgen.VERSION}' and {{$TEMGEN_VERSION}} != '{Temgen.VERSION.major + 1}.0.0'">
+            <file path="version_eq_ne.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION}} &gt; '0.{Temgen.VERSION.minor - 1}.0' and {{$TEMGEN_VERSION}} &lt; '{Temgen.VERSION.major + 1}.0.0'">
+            <file path="version_gt_lt.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION}} &gt;= '0.{Temgen.VERSION.minor - 1}.0' and {{$TEMGEN_VERSION}} &lt;= '{Temgen.VERSION}'">
+            <file path="version_ge_le.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION}} == '{Temgen.VERSION}' and {{$TEMGEN_VERSION}} != '{Temgen.VERSION.major + 1}.0.0'">
+            <file path="version_eq_ne.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION:major}} == {Temgen.VERSION.major} and isinstance({{$TEMGEN_VERSION:major}}, int)">
+            <file path="eval_major.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION:minor}} == {Temgen.VERSION.minor} and isinstance({{$TEMGEN_VERSION:minor}}, int)">
+            <file path="eval_minor.txt" />
+        </if>
+        <if eval="{{$TEMGEN_VERSION:patch}} == {Temgen.VERSION.patch} and isinstance({{$TEMGEN_VERSION:patch}}, int)">
+            <file path="eval_patch.txt" />
+        </if>
+    </dir>
+</template>
+        """
+        project_root_dir = "eval_TEMGEM_VERSION__comparaisons"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
     @staticmethod
     def __builtin_fsys_vars__vars_list_str(current_working_dir, root_template_dir, template_dir, root_output_dir,
@@ -355,6 +395,123 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
                                                                          expected_output_filepath.suffix,
                                                                          "".join(expected_output_filepath.suffixes))
         self._compare_file_lines_with_expected_lines(expected_output_filepath, expected_file_contents.strip())
+
+    def test__check_template__no_error__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" />
+    </dir>
+</template>
+        """
+        project_root_dir = "check_template__no_error"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  check_template=True)
+
+    def test__check_template__bad_statement_name__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <bad-statement />
+</template>
+        """
+        project_root_dir = "check_template__bad_statement_name"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters,
+                                                             check_template=True)
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Unexpected statement in template: 'bad-statement'.")
+
+    @staticmethod
+    def check_template__bad_attribute_name__str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" if_unset="error" />
+    </vars>
+</template>
+        """
+
+    def test__check_template__bad_attribute_name__exception(self):
+        template_string = self.check_template__bad_attribute_name__str()
+        project_root_dir = "check_template__bad_attribute_name"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters,
+                                                             check_template=True)
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Bad attribute name in var statement: 'if_unset'.")
+
+    def test__cli_temgen__check_template__bad_attribute_name__exception(self):
+        template_string = self.check_template__bad_attribute_name__str()
+        argv = ["--check-template"]
+        project_root_dir = "cli_temgen__check_template__bad_attribute_name"
+        input_parameters = []
+        try:
+            self._test__cli_temgen__treat_template_string__exception(template_string, argv, project_root_dir,
+                                                                     input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Bad attribute name in var statement: 'if_unset'.")
+
+    @staticmethod
+    def __check_template__when_template_called__str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="template_path" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="{template_path}" />
+    </dir>
+</template>
+        """
+
+    def test__check_template__bad_statement_name_in_called_template__exception(self):
+        main_template_string = self.__check_template__when_template_called__str()
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <file path="data.txt">
+        <randoom />
+    </file>
+</template>
+        """
+        project_root_dir = "check_template__bad_statement_name_in_called_template"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters,
+                                                                              check_template=True)
+        except RuntimeError as err:
+            self.assertEqual("Unexpected statement in template: 'randoom'.", str(err))
+
+    def test__check_template__bad_attribute_name_in_called_template__exception(self):
+        main_template_string = self.__check_template__when_template_called__str()
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <file path="data.txt" copy_encoding="binary" />
+</template>
+        """
+        project_root_dir = "check_template__bad_attribute_name_in_called_template"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters,
+                                                                              check_template=True)
+        except RuntimeError as err:
+            self.assertEqual("Bad attribute name in file statement: 'copy_encoding'.", str(err))
 
 
 if __name__ == '__main__':

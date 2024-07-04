@@ -1,17 +1,20 @@
-import copy
 import errno
 import glob
+import json
 import os
 import re
+import sys
+import tempfile
 import tomllib
-import xml.etree.ElementTree as XMLTree
-from pathlib import Path
-
 import semver
+import xml.etree.ElementTree as XMLTree
+from xml.etree.ElementTree import Element as XMLElement
+from pathlib import Path
 
 from constants import regex, names
 from ui.make_ui_from_name import make_ui_from_name
 from ui.tkinter_ui import TkinterBasicUi
+from util import random_string
 from util.application_directories import ApplicationDirectories
 from ui.abstract_ui import AbstractBasicUi
 from util.log import make_logger_from_config
@@ -19,7 +22,7 @@ from variables.variables_dict import VariablesDict
 
 
 class Temgen:
-    VERSION = semver.Version.parse('0.6.0')
+    VERSION = semver.Version.parse('0.7.0')
     APPLICATION_DIRECTORIES = ApplicationDirectories(names.LOWER_PROGRAM_NAME)
 
     def __init__(self, basic_ui: AbstractBasicUi | None, logger=None, **kargs):
@@ -38,6 +41,7 @@ class Temgen:
         assert isinstance(template_dirpaths, list)
         self.__templates_dirpaths.extend([Path(template_dirpath) for template_dirpath in template_dirpaths])
         self.__templates_dirpaths.append(Path("."))
+        self.__check_template_activated = bool(kargs.get("check_template",  self.__config.get("check_template", False)))
 
     def __load_config(self, kargs):
         default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config.toml"
@@ -49,15 +53,13 @@ class Temgen:
             self.__config = dict()
 
     def __init_variables(self, kargs):
-        var_dict = kargs.get("var_dict", [])
+        config_variables = self.__config.setdefault("variables", dict())
+        self.__variables.update_vars_from_dict(config_variables)
         var_files = kargs.get("var_files", [])
-        ui = kargs.get("ui", None)
-        self.init_variables().update_vars_from_dict(var_dict)
-        self.init_variables().update_vars_from_files(var_files)
-        if ui is not None:
-            assert isinstance(ui, str)
-            ui = self.__config.get("ui", dict()).get("extra", dict()).get(ui, ui)
-            self.init_variables().update_vars_from_extra_ui(ui)
+        self.__variables.update_vars_from_files(var_files)
+        var_dict = kargs.get("var_dict", [])
+        self.__variables.update_vars_from_dict(var_dict)
+        self.__config.setdefault("ui", dict()).setdefault("extra", dict())
 
     @property
     def logger(self):
@@ -66,14 +68,48 @@ class Temgen:
     def config(self):
         return self.__config
 
-    def ui(self):
+    def basic_ui(self):
         return self.__basic_ui
+
+    def ui_cmd(self, ui: str):
+        return self.__config["ui"]["extra"].get(ui, ui)
 
     def init_variables(self):
         return self.__variables
 
     def templates_dirpaths(self):
         return self.__templates_dirpaths
+
+    def check_template_activated(self):
+        return self.__check_template_activated
+
+    def call_ui(self, ui: str, statement):
+        with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
+            input_var_filepath = Path(vars_file.name)
+            app_dirpath = Temgen.APPLICATION_DIRECTORIES.tmp_dirpath()
+            output_var_filepath = app_dirpath / f"{random_string.random_lower_sisy_string(8)}.json"
+            cmd = self.ui_cmd(ui)
+            formatted_cmd: str = cmd.format(input_var_filepath, output_var_filepath,
+                                            input_file=input_var_filepath,
+                                            output_file=output_var_filepath,
+                                            python=sys.executable)
+            if formatted_cmd.find(str(input_var_filepath)) != -1:
+                parent_statement = statement.parent_statement()
+                if parent_statement is not None:
+                    variables = parent_statement.get_variables_from_root()
+                else:
+                    variables = statement.variables().clone()
+            else:
+                variables = VariablesDict(self.logger)
+            json.dump(variables, vars_file)
+        cmd_res = os.system(formatted_cmd)
+        if cmd_res != 0:
+            raise RuntimeError(f"Execution of ui did not work well (returned {cmd_res}). "
+                               f"command: {formatted_cmd}")
+        variables.update_vars_from_files([output_var_filepath])
+        input_var_filepath.unlink(missing_ok=True)
+        output_var_filepath.unlink(missing_ok=True)
+        return variables
 
     def find_template_file(self, template_path: Path, version_attr) -> Path:
         template_dpath = template_path.parent
@@ -155,7 +191,7 @@ class Temgen:
                                f"in {template_dpath}.")
         return Path(template_fpath)
 
-    def treat_template_file(self, template_filepath: Path, output_dir=None):
+    def treat_template_file(self, template_filepath: Path, output_dir=None, ui=None):
         from statement.template_statement import TemplateStatement
         with open(template_filepath, 'r') as template_file:
             element_tree = XMLTree.parse(template_file)
@@ -164,22 +200,44 @@ class Temgen:
                                                temgen=self,
                                                template_filepath=template_filepath,
                                                variables=self.init_variables().clone(),
-                                               output_dirpath=Path(output_dir))
+                                               output_dirpath=Path(output_dir),
+                                               ui=ui)
         template_statement.run()
 
-    def find_and_treat_template_file(self, template_path: Path, version: str | None = None, output_dir=None):
+    def find_and_treat_template_file(self, template_path: Path, version: str | None = None, output_dir=None, ui=None):
         template_filepath = self.find_template_file(template_path, version)
-        self.treat_template_file(template_filepath, output_dir)
+        self.treat_template_file(template_filepath, output_dir, ui)
 
-    def treat_template_xml_string(self, template_str: str, output_dir=None):
+    def treat_template_xml_string(self, template_str: str, output_dir=None, ui=None):
         from statement.template_statement import TemplateStatement
         root_element = XMLTree.fromstring(template_str)
         output_dir = self.__resolve_output_dir(output_dir)
         template_statement = TemplateStatement(root_element, None,
                                                temgen=self,
                                                variables=self.init_variables().clone(),
-                                               output_dirpath=Path(output_dir))
+                                               output_dirpath=Path(output_dir),
+                                               ui=ui)
         template_statement.run()
+
+    @staticmethod
+    def check_template(root_element: XMLElement):
+        valid_statement_names = ["dir", "file", "contents",
+                                 "if", "then", "else", "match", "case",
+                                 "vars", "var",
+                                 "exec", "random",
+                                 "template"]
+        attr_regex = re.compile(r"[a-z]+(-[a-z]+)*")
+        Temgen.__check_template_xml_element(root_element, valid_statement_names, attr_regex)
+
+    @staticmethod
+    def __check_template_xml_element(element: XMLElement, valid_statement_names: list[str], attr_regex: re.Pattern):
+        if element.tag not in valid_statement_names:
+            raise RuntimeError(f"Unexpected statement in template: '{element.tag}'.")
+        for attr in element.attrib.keys():
+            if not re.fullmatch(attr_regex, attr):
+                raise RuntimeError(f"Bad attribute name in {element.tag} statement: '{attr}'.")
+        for child in element:
+            Temgen.__check_template_xml_element(child, valid_statement_names, attr_regex)
 
     @staticmethod
     def __resolve_output_dir(output_dir):

@@ -1,0 +1,2 @@
+'coucou'
+'default_end_message'

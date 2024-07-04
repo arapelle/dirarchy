@@ -35,9 +35,9 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
 
     def _copy_file_to_output(self, copy_attr: str, input_statement: AbstractStatement):
         copy_encoding_attr: str = input_statement.current_node().get("copy-encoding", None)
-        copied_file_path = self.format_str(copy_attr)
+        copied_file_path = self.vformat(copy_attr)
         if copy_encoding_attr is not None:
-            input_encoding = self.format_str(copy_encoding_attr)
+            input_encoding = self.vformat(copy_encoding_attr)
         else:
             input_encoding = self._output_encoding
         if input_encoding == "binary":
@@ -76,24 +76,24 @@ class AbstractContentsStatement(AbstractMainStatement, ABC):
         if "copy" in self.current_node().attrib and len(node) > 0:
             raise RuntimeError("No child statement is expected when copying a file.")
 
-    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element):
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         match child_node.tag:
             case "if":
                 from statement.if_statement import IfStatement
-                if_statement = IfStatement(child_node, self)
+                if_statement = IfStatement(child_node, current_statement)
                 if_statement.run()
             case "match":
                 from statement.match_statement import MatchStatement
-                match_statement = MatchStatement(child_node, self)
+                match_statement = MatchStatement(child_node, current_statement)
                 match_statement.run()
             case "random":
                 from statement.random_statement import RandomStatement
-                random_statement = RandomStatement(child_node, self, self._output_stream)
+                random_statement = RandomStatement(child_node, current_statement, self._output_stream)
                 random_statement.run()
                 self._output_stream = random_statement.io_stream()
             case "contents":
                 from statement.contents_statement import ContentsStatement
-                contents_statement = ContentsStatement(child_node, self)
+                contents_statement = ContentsStatement(child_node, current_statement)
                 contents_statement.run()
             case _:
-                super().treat_child_node(node, child_node)
+                super().treat_child_node(node, child_node, current_statement)

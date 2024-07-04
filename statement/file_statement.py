@@ -14,7 +14,8 @@ class FileStatement(AbstractContentsStatement):
 
     def __del__(self):
         if self._output_stream is not None:
-            self._output_stream.close()
+            if not self._output_stream.closed:
+                self._output_stream.close()
             self._output_stream = None
 
     def current_file_statement(self):
@@ -30,7 +31,12 @@ class FileStatement(AbstractContentsStatement):
         return True
 
     def execute(self):
-        self.__make_output_file()
+        try:
+            self.__make_output_file()
+        except RuntimeError:
+            self._output_stream.flush()
+            self._output_stream.close()
+            raise
 
     def __make_output_file(self):
         self.__resolve_output_filepath_and_ensure_output_dir()
@@ -47,7 +53,7 @@ class FileStatement(AbstractContentsStatement):
 
     def __resolve_output_filepath_and_ensure_output_dir(self):
         parent_output_dirpath = self.parent_statement().current_dir_statement().current_output_dirpath()
-        self.__output_filepath = Path(parent_output_dirpath / self.format_str(self.current_node().attrib['path']))
+        self.__output_filepath = Path(parent_output_dirpath / self.vformat(self.current_node().attrib['path']))
         output_file_parent_dirpath = self.__output_filepath.parent
         if output_file_parent_dirpath != parent_output_dirpath:
             self.logger.info(f"Make dir {output_file_parent_dirpath}")
@@ -67,7 +73,22 @@ class FileStatement(AbstractContentsStatement):
         expected_statement = template_statement.extract_expected_statement()
         self.__output_filepath = expected_statement.current_output_filepath()
         self._output_stream = expected_statement.extract_current_output_stream()
-        self.treat_children_nodes()
-        self._output_stream.flush()
-        self._output_stream.close()
-        self._output_stream = None
+        try:
+            self.treat_children_nodes()
+        finally:
+            self._output_stream.flush()
+            self._output_stream.close()
+            self._output_stream = None
+
+    def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        match child_node.tag:
+            case "vars":
+                from statement.vars_statement import VarsStatement
+                vars_statement = VarsStatement(child_node, current_statement)
+                vars_statement.run()
+            case "var":
+                from statement.var_statement import VarStatement
+                var_statement = VarStatement(child_node, current_statement)
+                var_statement.run()
+            case _:
+                super().treat_child_node(node, child_node, current_statement)

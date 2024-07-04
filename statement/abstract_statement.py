@@ -18,7 +18,8 @@ class AbstractStatement(ABC):
         self.__parent_statement = parent_statement
         if not isinstance(self, statement.template_statement.TemplateStatement):
             self.__template_statement = self.__parent_statement.template_statement()
-        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL, VariablesDict(self.template_statement().temgen().logger))
+        self.__variables = kargs.get(AbstractStatement.VARIABLES_LABEL,
+                                     VariablesDict(self.template_statement().temgen().logger))
         assert self.template_statement() is not None and \
                isinstance(self.template_statement(), statement.template_statement.TemplateStatement)
         self.__was_template_called = False
@@ -58,10 +59,44 @@ class AbstractStatement(ABC):
             return default_value
         return self.__parent_statement.get_variable_value(variable_name, default_value)
 
-    def format_str(self, value_str: str):
+    def get_variables_from_root(self) -> VariablesDict:
+        vars_dict = VariablesDict(self.logger)
+        self.__retrieve_variables_from_root(vars_dict)
+        return vars_dict
+
+    def __retrieve_variables_from_root(self, vars_dict):
+        if self.__parent_statement is not None:
+            self.__parent_statement.__retrieve_variables_from_root(vars_dict)
+        vars_dict |= self.__variables
+
+    def vformat(self, value_str: str, is_eval_context: bool = False):
         from variables.variables_map import VariablesMap
         from variables.variables_formatter import VariablesFormatter
-        return VariablesFormatter(self).vformat(value_str, [], VariablesMap(self))
+        return VariablesFormatter(self, is_eval_context).vformat(value_str, [], VariablesMap(self))
+
+    def vformat_with_format_actions(self, value_str: str, format_actions: list):
+        from statement.writer.format_action import FormatAction
+        for format_action in format_actions:
+            match format_action:
+                case FormatAction.FORMAT:
+                    return self.vformat(value_str)
+                case FormatAction.RAW:
+                    return value_str
+                case _:
+                    raise RuntimeError(f"Format action not handled for text to text formatting: {format_action}.")
+
+    def vformat_with_format_attr(self, value_str: str, default_format=None, is_eval_context: bool = False):
+        format_actions = self.get_format_actions(default_format, is_eval_context)
+        return self.vformat_with_format_actions(value_str, format_actions)
+
+    def get_format_actions(self, default_format=None, is_eval_context: bool = False):
+        from statement.writer.format_action import FormatAction
+        if default_format is None:
+            default_format = FormatAction.FORMAT
+        format_attr = self.current_node().get("format", default_format)
+        format_attr = self.vformat(format_attr, is_eval_context)
+        format_actions = [FormatAction(format_action) for format_action in format_attr.split('|')]
+        return format_actions
 
     def current_dir_statement(self):
         if self.__parent_statement is None:
@@ -133,10 +168,10 @@ class AbstractStatement(ABC):
                 self.execute()
             else:
                 nb_template_attributes = 1
-                template_attr = self.format_str(template_attr)
+                template_attr = self.vformat(template_attr)
                 if version_attr is not None:
                     nb_template_attributes += 1
-                    version_attr = self.format_str(version_attr)
+                    version_attr = self.vformat(version_attr)
                 self.check_not_template_attributes(nb_template_attributes)
                 template_path = self.temgen().find_template_file(Path(template_attr), version_attr)
                 self.__call_template(template_path)
