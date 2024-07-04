@@ -10,6 +10,12 @@ class VarsStatement(AbstractMainStatement):
         super().__init__(current_node, parent_statement, variables=parent_statement.variables(), **kargs)
         self.__ui_variables = None
 
+    def allows_template(self):
+        return True
+
+    def extends_template(self):
+        return True
+
     def execute(self):
         ui = self.current_node().get("ui")
         if ui:
