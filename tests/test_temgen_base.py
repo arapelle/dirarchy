@@ -2,6 +2,7 @@ import io
 import sys
 from pathlib import Path
 
+from cli_temgen import CliTemgen
 from util import random_string
 from ui.terminal_ui import TerminalBasicUi
 from temgen import Temgen
@@ -202,6 +203,58 @@ class TestTemgenBase(DirCmpTestCase):
                                                                 project_root_dir,
                                                                 input_parameters,
                                                                 **kargs)
+        self.fail()
+
+    def _run__cli_temgen__treat_template_file__ok(self,
+                                                  template_filepath: Path,
+                                                  argv: list[str],
+                                                  project_root_dir: str,
+                                                  input_parameters: list):
+        argv.extend(["--", template_filepath])
+        cli_temgen = CliTemgen(argv)
+        input_parameters_str = "\n".join(input_parameters)
+        sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
+        cli_temgen.run()
+
+    def _run__cli_temgen__treat_template_string__ok(self,
+                                                    template_string: str,
+                                                    argv: list[str],
+                                                    project_root_dir: str,
+                                                    input_parameters: list):
+        template_filepath = self._make_main_template_filepath()
+        self._make_template_file(template_filepath, template_string)
+        self._run__cli_temgen__treat_template_file__ok(template_filepath, argv, project_root_dir, input_parameters)
+
+    def _test__cli_temgen__treat_template_file__ok(self,
+                                                   template_filepath: Path,
+                                                   argv: list[str],
+                                                   project_root_dir: str,
+                                                   input_parameters: list):
+        self._run__cli_temgen__treat_template_file__ok(template_filepath, argv, project_root_dir, input_parameters)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__cli_temgen__treat_template_file__exception(self,
+                                                          template_filepath: Path,
+                                                          argv: list[str],
+                                                          project_root_dir: str,
+                                                          input_parameters: list):
+        self._run__cli_temgen__treat_template_file__ok(template_filepath, argv, project_root_dir, input_parameters)
+        self.fail()
+
+    def _test__cli_temgen__treat_template_string__ok(self,
+                                                     template_string: str,
+                                                     argv: list[str],
+                                                     project_root_dir: str,
+                                                     input_parameters: list):
+        self._run__cli_temgen__treat_template_string__ok(template_string, argv, project_root_dir, input_parameters)
+        self._compare_output_and_expected(project_root_dir)
+
+    def _test__cli_temgen__treat_template_string__exception(self,
+                                                            template_string: str,
+                                                            argv: list[str],
+                                                            project_root_dir: str,
+                                                            input_parameters: list):
+        self._run__cli_temgen__treat_template_string__ok(template_string, argv, project_root_dir, input_parameters)
         self.fail()
 
     def _compare_file_lines_with_expected_lines(self, output_filepath: Path, expected_file_contents: str):
