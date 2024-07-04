@@ -396,6 +396,123 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
                                                                          "".join(expected_output_filepath.suffixes))
         self._compare_file_lines_with_expected_lines(expected_output_filepath, expected_file_contents.strip())
 
+    def test__check_template__no_error__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt" />
+    </dir>
+</template>
+        """
+        project_root_dir = "check_template__no_error"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  check_template=True)
+
+    def test__check_template__bad_statement_name__exception(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <bad-statement />
+</template>
+        """
+        project_root_dir = "check_template__bad_statement_name"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters,
+                                                             check_template=True)
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Unexpected statement in template: 'bad-statement'.")
+
+    @staticmethod
+    def check_template__bad_attribute_name__str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" if_unset="error" />
+    </vars>
+</template>
+        """
+
+    def test__check_template__bad_attribute_name__exception(self):
+        template_string = self.check_template__bad_attribute_name__str()
+        project_root_dir = "check_template__bad_attribute_name"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters,
+                                                             check_template=True)
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Bad attribute name in var statement: 'if_unset'.")
+
+    def test__cli_temgen__check_template__bad_attribute_name__exception(self):
+        template_string = self.check_template__bad_attribute_name__str()
+        argv = ["--check-template"]
+        project_root_dir = "cli_temgen__check_template__bad_attribute_name"
+        input_parameters = []
+        try:
+            self._test__cli_temgen__treat_template_string__exception(template_string, argv, project_root_dir,
+                                                                     input_parameters)
+        except RuntimeError as err:
+            self.assertEqual(str(err), f"Bad attribute name in var statement: 'if_unset'.")
+
+    @staticmethod
+    def __check_template__when_template_called__str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="template_path" type="gstr" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file template="{template_path}" />
+    </dir>
+</template>
+        """
+
+    def test__check_template__bad_statement_name_in_called_template__exception(self):
+        main_template_string = self.__check_template__when_template_called__str()
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <file path="data.txt">
+        <randoom />
+    </file>
+</template>
+        """
+        project_root_dir = "check_template__bad_statement_name_in_called_template"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters,
+                                                                              check_template=True)
+        except RuntimeError as err:
+            self.assertEqual("Unexpected statement in template: 'randoom'.", str(err))
+
+    def test__check_template__bad_attribute_name_in_called_template__exception(self):
+        main_template_string = self.__check_template__when_template_called__str()
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <file path="data.txt" copy_encoding="binary" />
+</template>
+        """
+        project_root_dir = "check_template__bad_attribute_name_in_called_template"
+        input_parameters = [str(sub_template_filepath)]
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters,
+                                                                              check_template=True)
+        except RuntimeError as err:
+            self.assertEqual("Bad attribute name in file statement: 'copy_encoding'.", str(err))
+
 
 if __name__ == '__main__':
     unittest.main()

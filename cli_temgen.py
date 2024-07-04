@@ -14,7 +14,8 @@ class CliTemgen(temgen.Temgen):
         self._args = self._parse_args(argv)
         super().__init__(make_ui_from_name(self.args.basic_ui),
                          var_files=self.args.var_file if self.args.var_file else [],
-                         var_dict=self.args.var if self.args.var else [])
+                         var_dict=self.args.var if self.args.var else [],
+                         check_template=self._args.check_template)
 
     @property
     def args(self):
@@ -42,6 +43,8 @@ class CliTemgen(temgen.Temgen):
                                help='Set variables.')
         argparser.add_argument('--var-file', metavar='var_json_file', nargs='+',
                                help='Set variables from a JSON files.')
+        argparser.add_argument("--check-template", help="Check the names of all statements and their attributes.",
+                               action="store_true")
         argparser.add_argument('template_path',
                                help='The template path of the file to find then to process.')
         argparser.add_argument('template_version', nargs='?',

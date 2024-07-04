@@ -34,6 +34,29 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
         self.assertGreater(len(dirpaths), 2)
         config_filepath.unlink(missing_ok=True)
 
+    def test__config__missing_check_template__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_file.write("")
+            config_file.flush()
+        temgen = Temgen(TerminalBasicUi(), config_path=config_filepath)
+        check_template_activated = temgen.check_template_activated()
+        self.assertFalse(check_template_activated)
+        config_filepath.unlink(missing_ok=True)
+
+    def test__config__check_template__ok(self):
+        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        with open(config_filepath, "w") as config_file:
+            config_contents = """
+check_template = true
+"""
+            config_file.write(config_contents)
+            config_file.flush()
+        temgen = Temgen(TerminalBasicUi(), config_path=config_filepath)
+        check_template_activated = temgen.check_template_activated()
+        self.assertTrue(check_template_activated)
+        config_filepath.unlink(missing_ok=True)
+
     def test__config__ui_basic_TERMINAL__ok(self):
         config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
         with open(config_filepath, "w") as config_file:

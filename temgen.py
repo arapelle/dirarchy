@@ -6,10 +6,10 @@ import re
 import sys
 import tempfile
 import tomllib
-import xml.etree.ElementTree as XMLTree
-from pathlib import Path
-
 import semver
+import xml.etree.ElementTree as XMLTree
+from xml.etree.ElementTree import Element as XMLElement
+from pathlib import Path
 
 from constants import regex, names
 from ui.make_ui_from_name import make_ui_from_name
@@ -41,6 +41,7 @@ class Temgen:
         assert isinstance(template_dirpaths, list)
         self.__templates_dirpaths.extend([Path(template_dirpath) for template_dirpath in template_dirpaths])
         self.__templates_dirpaths.append(Path("."))
+        self.__check_template_activated = bool(kargs.get("check_template",  self.__config.get("check_template", False)))
 
     def __load_config(self, kargs):
         default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config.toml"
@@ -78,6 +79,9 @@ class Temgen:
 
     def templates_dirpaths(self):
         return self.__templates_dirpaths
+
+    def check_template_activated(self):
+        return self.__check_template_activated
 
     def call_ui(self, ui: str, statement):
         with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
@@ -214,6 +218,26 @@ class Temgen:
                                                output_dirpath=Path(output_dir),
                                                ui=ui)
         template_statement.run()
+
+    @staticmethod
+    def check_template(root_element: XMLElement):
+        valid_statement_names = ["dir", "file", "contents",
+                                 "if", "then", "else", "match", "case",
+                                 "vars", "var",
+                                 "exec", "random",
+                                 "template"]
+        attr_regex = re.compile(r"[a-z]+(-[a-z]+)*")
+        Temgen.__check_template_xml_element(root_element, valid_statement_names, attr_regex)
+
+    @staticmethod
+    def __check_template_xml_element(element: XMLElement, valid_statement_names: list[str], attr_regex: re.Pattern):
+        if element.tag not in valid_statement_names:
+            raise RuntimeError(f"Unexpected statement in template: '{element.tag}'.")
+        for attr in element.attrib.keys():
+            if not re.fullmatch(attr_regex, attr):
+                raise RuntimeError(f"Bad attribute name in {element.tag} statement: '{attr}'.")
+        for child in element:
+            Temgen.__check_template_xml_element(child, valid_statement_names, attr_regex)
 
     @staticmethod
     def __resolve_output_dir(output_dir):

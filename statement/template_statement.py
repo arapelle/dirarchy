@@ -31,6 +31,8 @@ class TemplateStatement(AbstractDirStatement):
             self.__parent_template_statement = None
             self.__temgen = kargs[TemplateStatement.TEMGEN_LABEL]
             self.__output_dirpath = kargs[TemplateStatement.OUTPUT_DIRPATH_LABEL]
+        if self.__temgen.check_template_activated():
+            self.__temgen.check_template(current_node)
         super().__init__(current_node, parent_statement, **kargs)
         assert self.parent_statement() == parent_statement
         self.__template_filepath = kargs.get(TemplateStatement.TEMPLATE_FILEPATH_LABEL, None)
