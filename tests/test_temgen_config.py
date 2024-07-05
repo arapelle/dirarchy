@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from ui.terminal_ui import TerminalBasicUi
-from ui.tkinter_ui import TkinterBasicUi
+from ui.basic.terminal_basic_ui import TerminalBasicUi
+from ui.basic.tkinter_basic_ui import TkinterBasicUi
 from util.random_string import random_lower_sisy_string
 from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase

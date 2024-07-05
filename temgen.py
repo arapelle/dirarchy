@@ -12,11 +12,11 @@ from xml.etree.ElementTree import Element as XMLElement
 from pathlib import Path
 
 from constants import regex, names
-from ui.make_ui_from_name import make_ui_from_name
-from ui.tkinter_ui import TkinterBasicUi
+from ui.basic.make_basic_ui_from_name import make_basic_ui_from_name
+from ui.basic.tkinter_basic_ui import TkinterBasicUi
 from util import random_string
 from util.application_directories import ApplicationDirectories
-from ui.abstract_ui import AbstractBasicUi
+from ui.basic.abstract_basic_ui import AbstractBasicUi
 from util.log import make_logger_from_config
 from variables.variables_dict import VariablesDict
 
@@ -32,7 +32,7 @@ class Temgen:
         self.__logger = logger
         if basic_ui is None:
             basic_ui_name = self.__config.get("ui", dict()).get("basic", TkinterBasicUi.NAME)
-            basic_ui = make_ui_from_name(basic_ui_name)
+            basic_ui = make_basic_ui_from_name(basic_ui_name)
         self.__basic_ui = basic_ui
         self.__variables = VariablesDict(self.__logger)
         self.__init_variables(kargs)

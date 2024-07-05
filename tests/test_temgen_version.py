@@ -1,5 +1,3 @@
-import io
-import sys
 import unittest
 from pathlib import Path
 
@@ -7,7 +5,7 @@ import semver
 
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
-from ui.terminal_ui import TerminalBasicUi
+from ui.basic.terminal_basic_ui import TerminalBasicUi
 
 
 class TestTemgenVersion(DirCmpTestCase):

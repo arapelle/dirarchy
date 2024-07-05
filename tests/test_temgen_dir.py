@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tests import config
 from tests.test_temgen_base import TestTemgenBase
-from ui.terminal_ui import TerminalBasicUi
+from ui.basic.terminal_basic_ui import TerminalBasicUi
 from temgen import Temgen
 
 

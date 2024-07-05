@@ -4,7 +4,7 @@ from pathlib import Path
 
 from cli_temgen import CliTemgen
 from util import random_string
-from ui.terminal_ui import TerminalBasicUi
+from ui.basic.terminal_basic_ui import TerminalBasicUi
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
 
