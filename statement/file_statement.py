@@ -56,7 +56,7 @@ class FileStatement(AbstractContentsStatement):
         self.__output_filepath = Path(parent_output_dirpath / self.vformat(self.current_node().attrib['path']))
         output_file_parent_dirpath = self.__output_filepath.parent
         if output_file_parent_dirpath != parent_output_dirpath:
-            self.logger.info(f"Make dir {output_file_parent_dirpath}")
+            self.logger.info(f"Make dir:  {output_file_parent_dirpath}")
             output_file_parent_dirpath.mkdir(parents=True, exist_ok=True)
 
     def __open_output_file(self):
