@@ -1039,6 +1039,26 @@ color='{{color}}'
         except RuntimeError as err:
             self.assertEqual("Unexpected node (var) under <template>. Expected: vars.", str(err))
 
+    def test__var__set_twice__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="color" value="green" />
+        <var name="color" value="orange" />
+        <var name="color" value="light_{color}" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+color = '{color}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "var__set_twice"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
 
 if __name__ == '__main__':
     unittest.main()
