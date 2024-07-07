@@ -1059,6 +1059,24 @@ color = '{color}'
         input_parameters = []
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__var__value_with_escape_chars__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" value="begin\\nend" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+message = '{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "var__value_with_escape_chars"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
 
 if __name__ == '__main__':
     unittest.main()

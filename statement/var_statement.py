@@ -57,8 +57,9 @@ class VarStatement(AbstractContentsStatement):
                 raise RuntimeError("For 'var', you cannot provide value and text at the same time.")
             if len(var_node) > 0:
                 raise RuntimeError("No child statement is expected when using value attribute.")
-            var_value = self.vformat_with_format_attr(self.__var_value)
-            self.__var_value = var_value
+            import ast
+            self.__var_value = self.vformat_with_format_attr(self.__var_value)
+            self.__var_value = ast.literal_eval(f'"{self.__var_value}"')
             return
         if len(var_node) > 0 or (var_node.text is not None and len(var_node.text) > 0):
             self.__resolve_var_value_with_text_or_children()
