@@ -125,6 +125,50 @@ $TEMGEN_VERSION:patch = {temgen.Temgen.VERSION.patch}
         expected_file_contents = datetime.datetime.now().strftime(expected_file_contents).strip()
         self.assertEqual(output_file_contents, expected_file_contents)
 
+    def test__builtin_var__JOIN__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" regex="[a-zA-Z0-9_.-]+" />
+        <var name="first" value="123" />
+        <var name="second" value="456" />
+        <var name="third" value="789" />
+        <var name="empty" value="" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+'{$JOIN:"-", "{first}", "{second}", "{third}"}'
+'{$JOIN:"::", "{first}", "{empty}", "{third}"}'
+'{$JOIN_KEEP_EMPTY:"/", "{first}", "{empty}", "{third}"}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "builtin_var__JOIN"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__builtin_var__EVAL__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" regex="[a-zA-Z0-9_.-]+" />
+        <var name="do_strip" value="True" />
+        <var name="animal" value="  super panda  " />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+'{$EVAL:True if {do_strip} else 45}'
+'{$EVAL:True if not {do_strip} else 45}'
+'{$EVAL:"{animal}".strip()}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "builtin_var__EVAL"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__eval_TEMGEM_VERSION__comparaisons__ok(self):
         from temgen import Temgen
         template_string = f"""<?xml version="1.0"?>

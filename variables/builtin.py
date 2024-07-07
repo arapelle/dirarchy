@@ -46,3 +46,25 @@ class BuiltinEnv:
     def __format__(self, format_spec):
         assert isinstance(format_spec, str)
         return os.environ[format_spec]
+
+
+class BuiltinEval:
+    def __format__(self, format_spec):
+        assert isinstance(format_spec, str)
+        res = eval(format_spec)
+        return str(res)
+
+
+class BuiltinJoin:
+    def __init__(self, skip_empty: bool = True):
+        self.__skip_empty = skip_empty
+
+    def __format__(self, format_spec):
+        assert isinstance(format_spec, str)
+        args = eval(format_spec)
+        binder = args[0]
+        if self.__skip_empty:
+            res = binder.join(filter(None, args[1:]))
+        else:
+            res = binder.join(args[1:])
+        return res

@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Mapping
 
 from statement.abstract_statement import AbstractStatement
-from variables.builtin import BuiltinTemgenVersion, BuiltinDate, BuiltinTime, BuiltinStrftime, BuiltinEnv
+from variables.builtin import BuiltinTemgenVersion, BuiltinDate, BuiltinTime, BuiltinStrftime, BuiltinEnv, BuiltinEval, \
+    BuiltinJoin
 
 
 class VariablesMap(Mapping):
@@ -100,5 +101,11 @@ class VariablesMap(Mapping):
                 return BuiltinStrftime()
             case "$ENV":
                 return BuiltinEnv()
+            case "$EVAL":
+                return BuiltinEval()
+            case "$JOIN":
+                return BuiltinJoin()
+            case "$JOIN_KEEP_EMPTY":
+                return BuiltinJoin(skip_empty=False)
             case _:
                 raise KeyError(builtin_var_name)
