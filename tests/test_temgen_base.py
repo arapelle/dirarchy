@@ -48,11 +48,12 @@ class TestTemgenBase(DirCmpTestCase):
                                              template_string: str,
                                              project_root_dir: str,
                                              input_parameters: list,
+                                             ui: str | None = None,
                                              **kargs):
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
         template_generator = Temgen(TerminalBasicUi(), **kargs)
-        template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath))
+        template_generator.treat_template_xml_string(template_string, output_dir=Path(self._output_dirpath), ui=ui)
         self._compare_output_and_expected(project_root_dir)
 
     def _test__treat_template_xml_string__exception(self,

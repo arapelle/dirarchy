@@ -12,6 +12,8 @@ from xml.etree.ElementTree import Element as XMLElement
 from pathlib import Path
 
 from constants import regex, names
+from statement.abstract_statement import AbstractStatement
+from ui.abstract_ui_manager import AbstractUiManager
 from ui.basic.make_basic_ui_from_name import make_basic_ui_from_name
 from ui.basic.tkinter_basic_ui import TkinterBasicUi
 from util import random_string
@@ -25,8 +27,9 @@ class Temgen:
     VERSION = semver.Version.parse('0.8.0-dev')
     APPLICATION_DIRECTORIES = ApplicationDirectories(names.LOWER_PROGRAM_NAME)
 
-    def __init__(self, basic_ui: AbstractBasicUi | None, logger=None, **kargs):
+    def __init__(self, basic_ui: AbstractBasicUi | None, ui_manager: AbstractUiManager | None = None, **kargs):
         self.__load_config(kargs)
+        logger = kargs.get("logger")
         if logger is None:
             logger = make_logger_from_config(names.LOWER_PROGRAM_NAME, self.__config.get("logging"), True)[0]
         self.__logger = logger
@@ -34,6 +37,9 @@ class Temgen:
             basic_ui_name = self.__config.get("ui", dict()).get("basic", TkinterBasicUi.NAME)
             basic_ui = make_basic_ui_from_name(basic_ui_name)
         self.__basic_ui = basic_ui
+        self.__ui_manager = ui_manager
+        if self.__ui_manager is not None:
+            self.__ui_manager.set_temgen(self)
         self.__variables = VariablesDict(self.__logger)
         self.__init_variables(kargs)
         self.__templates_dirpaths = self.APPLICATION_DIRECTORIES.data_dirpaths("templates")
@@ -83,15 +89,27 @@ class Temgen:
     def check_template_activated(self):
         return self.__check_template_activated
 
-    def call_ui(self, ui: str, statement):
+    def call_ui(self, ui: str, statement: AbstractStatement):
+        if len(ui.strip()) == 0:
+            parent_statement = statement.parent_statement()
+            return VariablesDict(self.logger) if parent_statement is not None else statement.variables()
+        if self.__ui_manager:
+            parent_statement = statement.parent_statement()
+            if parent_statement is not None:
+                variables = VariablesDict(self.logger)
+            else:
+                variables = statement.variables()
+            from variables.variables_map import VariablesMap
+            ui_treated = self.__ui_manager.call_ui(ui, variables, VariablesMap(statement, False))
+            if ui_treated:
+                return variables
         with tempfile.NamedTemporaryFile("w", delete=False) as vars_file:
             input_var_filepath = Path(vars_file.name)
             app_dirpath = Temgen.APPLICATION_DIRECTORIES.tmp_dirpath()
             output_var_filepath = app_dirpath / f"{random_string.random_lower_sisy_string(8)}.json"
             cmd = self.ui_cmd(ui)
             formatted_cmd: str = cmd.format(input_var_filepath, output_var_filepath,
-                                            input_file=input_var_filepath,
-                                            output_file=output_var_filepath,
+                                            input_file=input_var_filepath, output_file=output_var_filepath,
                                             python=sys.executable)
             if formatted_cmd.find(str(input_var_filepath)) != -1:
                 parent_statement = statement.parent_statement()

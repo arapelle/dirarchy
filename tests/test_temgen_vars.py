@@ -726,6 +726,24 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["default_end_message"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    def test__vars_calls_ui__empty_ui__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <dir path="{project_root_dir}">
+        <vars ui="">
+            <var name="message" default="UNSET" if-unset="use-default" />
+        </vars>
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__empty_ui"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
     def test__vars_calls_ui__not_found_ui__exception(self):
         template_string = """<?xml version="1.0"?>
 <template>

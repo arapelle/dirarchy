@@ -40,7 +40,9 @@ class TemplateStatement(AbstractDirStatement):
         self.__expected_statement = None
         ui = kargs.get("ui")
         if ui is not None:
-            self.variables().update_vars_from_dict(self.temgen().call_ui(ui, self))
+            ui_variables = self.temgen().call_ui(ui, self)
+            if ui_variables != self.variables():
+                self.variables().update_vars_from_dict(ui_variables)
 
     def parent_template_statement(self):
         return self.__parent_template_statement
