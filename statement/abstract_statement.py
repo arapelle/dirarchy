@@ -71,8 +71,7 @@ class AbstractStatement(ABC):
 
     def vformat(self, value_str: str, is_eval_context: bool = False):
         from variables.variables_map import VariablesMap
-        from variables.variables_formatter import VariablesFormatter
-        return VariablesFormatter(self, is_eval_context).vformat(value_str, [], VariablesMap(self))
+        return value_str.format_map(VariablesMap(self, is_eval_context))
 
     def vformat_with_format_actions(self, value_str: str, format_actions: list):
         from statement.writer.format_action import FormatAction

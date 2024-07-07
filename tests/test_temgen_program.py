@@ -8,7 +8,6 @@ from pathlib import Path
 
 import temgen
 from tests.test_temgen_program_base import TestTemgenProgramBase
-from variables.variables_formatter import VariablesFormatter
 
 
 class TestTemgenProgram(TestTemgenProgramBase):
@@ -172,9 +171,9 @@ class TestTemgenProgram(TestTemgenProgramBase):
         except FileNotFoundError as err:
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
-    def test__trivial_fdirtree__builtin_CURRENT_TEMPLATE_DIR__ok(self):
-        project_root_dir = f"builtin_{VariablesFormatter.TEMPLATE_DIR_VARNAME[1:]}"
-        f_contents = f"{{{VariablesFormatter.TEMPLATE_DIR_VARNAME}}}"
+    def test__trivial_fdirtree__builtin_TEMPLATE_DIR__ok(self):
+        project_root_dir = f"builtin_TEMPLATE_DIR"
+        f_contents = f"{{$TEMPLATE_DIR}}"
         file_contents_dict = self._run_generated_trivial_template_file(project_root_dir, file_contents=f_contents)
         extracted_value = file_contents_dict["data.txt"]
         extracted_value = Path(extracted_value).resolve()
