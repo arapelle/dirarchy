@@ -53,13 +53,6 @@ class TestTemgenProgram(TestTemgenProgramBase):
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
-    def test__cli_args__valid_var_override__ok(self):
-        output_root_dir = "cli_args__valid_var_override"
-        args = ['--var', 'text=good_value', 'other_text=']
-        var_defs = '<var name="text" value="bad_value" />\n<var name="other_text" />'
-        self._test_generated_trivial_template_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
-
     def test__cli_args__invalid_v__exception(self):
         bad_var = 'bad-var=coucou'
         try:
@@ -105,7 +98,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
     def test__extra_ui__valid_cmd__ok(self):
         output_root_dir = "extra_ui__valid_cmd"
         args = ['-U', f'{sys.executable} input/extra_ui/myui.py {{output_file}} {{input_file}}', '-v', 'text=coucou']
-        var_defs = '<var name="message" value="" />'
+        var_defs = '<var name="message" if-unset="error" />'
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{message}:")
 

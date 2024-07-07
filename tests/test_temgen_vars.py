@@ -253,6 +253,47 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["\n", "bale_26", "BANA23", "AZER_58"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    @staticmethod
+    def var_try_override__str(var_attrs: str, var_text):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="message" {var_attrs}>{var_text}</var>
+    </vars>
+    <dir path="{{output_root_dir}}" >
+        <file path="data.txt" >
+message = '{{message}}'
+        </file>
+    </dir>
+</template>
+"""
+
+    def test__var_value__not_overrided__ok(self):
+        template_string = self.var_try_override__str('value="immutable"', "")
+        project_root_dir = "var_value__not_overrided"
+        input_parameters = []
+        variables = {"message": "overrided"}
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  var_dict=variables)
+
+    def test__var_text__not_overrided__ok(self):
+        template_string = self.var_try_override__str('',
+                                                     "immutable")
+        project_root_dir = "var_text__not_overrided"
+        input_parameters = []
+        variables = {"message": "overrided"}
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  var_dict=variables)
+
+    def test__var_default__overrided__ok(self):
+        template_string = self.var_try_override__str('default="default_value" if-unset="use-default"', "")
+        project_root_dir = "var_default__overrided"
+        input_parameters = []
+        variables = {"message": "overrided"}
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  var_dict=variables)
+
     def test__treat_template_xml_string__vars_if__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>

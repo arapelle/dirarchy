@@ -96,7 +96,7 @@ myui = "{python} ./input/extra_ui/myui.py {output_file} {input_file}"
 <template>
     <vars>
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
-        <var name="message" type="str" value="" />
+        <var name="message" type="str" if-unset="use-default" />
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt">
@@ -129,7 +129,7 @@ surprise = "chocolate"
 <template>
     <vars>
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
-        <var name="message" type="str" value="" />
+        <var name="message" type="str" if-unset="use-default" />
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt">
