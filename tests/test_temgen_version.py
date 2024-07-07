@@ -1,5 +1,3 @@
-import io
-import sys
 import unittest
 from pathlib import Path
 
@@ -7,13 +5,13 @@ import semver
 
 from temgen import Temgen
 from tests.dircmp_test_case import DirCmpTestCase
-from ui.terminal_ui import TerminalBasicUi
+from ui.basic.terminal_basic_ui import TerminalBasicUi
 
 
 class TestTemgenVersion(DirCmpTestCase):
     def test__temgen_version__ok(self):
         major = 0
-        minor = 7
+        minor = 8
         patch = 0
         expected_version = semver.Version(major, minor, patch)
         self.assertEqual(Temgen.VERSION.to_tuple()[0:3], expected_version.to_tuple()[0:3])

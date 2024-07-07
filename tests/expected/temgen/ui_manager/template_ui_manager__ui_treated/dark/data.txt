@@ -1,0 +1,2 @@
+fill_color = 'dark_orange'
+stroke_color = 'dark_red'

@@ -1,4 +1,4 @@
-from ui.abstract_ui import AbstractBasicUi
+from ui.basic.abstract_basic_ui import AbstractBasicUi
 
 
 class TkinterBasicUi(AbstractBasicUi):

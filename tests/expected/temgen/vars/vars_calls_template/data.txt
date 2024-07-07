@@ -1,0 +1,2 @@
+fruit='orange'
+color='red'

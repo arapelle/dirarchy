@@ -8,7 +8,6 @@ from pathlib import Path
 
 import temgen
 from tests.test_temgen_program_base import TestTemgenProgramBase
-from variables.variables_formatter import VariablesFormatter
 
 
 class TestTemgenProgram(TestTemgenProgramBase):
@@ -51,13 +50,6 @@ class TestTemgenProgram(TestTemgenProgramBase):
         output_root_dir = "cli_args__valid_var"
         args = ['--var', 'text=coucou', 'other_text=']
         var_defs = '<var name="text" />\n<var name="other_text" />'
-        self._test_generated_trivial_template_file(output_root_dir, argv=args,
-                                                   var_definitions=var_defs, file_contents=":{text}:{other_text}:")
-
-    def test__cli_args__valid_var_override__ok(self):
-        output_root_dir = "cli_args__valid_var_override"
-        args = ['--var', 'text=good_value', 'other_text=']
-        var_defs = '<var name="text" value="bad_value" />\n<var name="other_text" />'
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{other_text}:")
 
@@ -106,7 +98,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
     def test__extra_ui__valid_cmd__ok(self):
         output_root_dir = "extra_ui__valid_cmd"
         args = ['-U', f'{sys.executable} input/extra_ui/myui.py {{output_file}} {{input_file}}', '-v', 'text=coucou']
-        var_defs = '<var name="message" value="" />'
+        var_defs = '<var name="message" if-unset="error" />'
         self._test_generated_trivial_template_file(output_root_dir, argv=args,
                                                    var_definitions=var_defs, file_contents=":{text}:{message}:")
 
@@ -172,9 +164,9 @@ class TestTemgenProgram(TestTemgenProgramBase):
         except FileNotFoundError as err:
             self.assertTrue(str(err).find(f"{filename}") != -1)
 
-    def test__trivial_fdirtree__builtin_CURRENT_TEMPLATE_DIR__ok(self):
-        project_root_dir = f"builtin_{VariablesFormatter.TEMPLATE_DIR_VARNAME[1:]}"
-        f_contents = f"{{{VariablesFormatter.TEMPLATE_DIR_VARNAME}}}"
+    def test__trivial_fdirtree__builtin_TEMPLATE_DIR__ok(self):
+        project_root_dir = f"builtin_TEMPLATE_DIR"
+        f_contents = f"{{$TEMPLATE_DIR}}"
         file_contents_dict = self._run_generated_trivial_template_file(project_root_dir, file_contents=f_contents)
         extracted_value = file_contents_dict["data.txt"]
         extracted_value = Path(extracted_value).resolve()

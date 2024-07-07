@@ -1,0 +1,2 @@
+fill_color = 'blue'
+stroke_color = 'black'

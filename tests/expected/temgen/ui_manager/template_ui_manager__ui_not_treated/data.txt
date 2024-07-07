@@ -1,0 +1,2 @@
+fill_color = 'green'
+stroke_color = 'brown'

@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from ui.terminal_ui import TerminalBasicUi
-from ui.tkinter_ui import TkinterBasicUi
+from ui.basic.terminal_basic_ui import TerminalBasicUi
+from ui.basic.tkinter_basic_ui import TkinterBasicUi
 from util.random_string import random_lower_sisy_string
 from temgen import Temgen
 from tests.test_temgen_base import TestTemgenBase
@@ -96,7 +96,7 @@ myui = "{python} ./input/extra_ui/myui.py {output_file} {input_file}"
 <template>
     <vars>
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
-        <var name="message" type="str" value="" />
+        <var name="message" type="str" if-unset="use-default" />
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt">
@@ -129,7 +129,7 @@ surprise = "chocolate"
 <template>
     <vars>
         <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
-        <var name="message" type="str" value="" />
+        <var name="message" type="str" if-unset="use-default" />
     </vars>
     <dir path="{project_root_dir}">
         <file path="data.txt">

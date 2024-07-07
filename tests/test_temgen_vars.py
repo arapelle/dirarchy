@@ -253,6 +253,47 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["\n", "bale_26", "BANA23", "AZER_58"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
+    @staticmethod
+    def var_try_override__str(var_attrs: str, var_text):
+        return f"""<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="output_root_dir" type="gstr" />
+        <var name="message" {var_attrs}>{var_text}</var>
+    </vars>
+    <dir path="{{output_root_dir}}" >
+        <file path="data.txt" >
+message = '{{message}}'
+        </file>
+    </dir>
+</template>
+"""
+
+    def test__var_value__not_overrided__ok(self):
+        template_string = self.var_try_override__str('value="immutable"', "")
+        project_root_dir = "var_value__not_overrided"
+        input_parameters = []
+        variables = {"message": "overrided"}
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  var_dict=variables)
+
+    def test__var_text__not_overrided__ok(self):
+        template_string = self.var_try_override__str('',
+                                                     "immutable")
+        project_root_dir = "var_text__not_overrided"
+        input_parameters = []
+        variables = {"message": "overrided"}
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  var_dict=variables)
+
+    def test__var_default__overrided__ok(self):
+        template_string = self.var_try_override__str('default="default_value" if-unset="use-default"', "")
+        project_root_dir = "var_default__overrided"
+        input_parameters = []
+        variables = {"message": "overrided"}
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters,
+                                                  var_dict=variables)
+
     def test__treat_template_xml_string__vars_if__ok(self):
         template_string = """<?xml version="1.0"?>
 <template>
@@ -691,6 +732,7 @@ rand_alpha = '{rand_alpha}'
 <template>
     <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
     <var name="text" value="novel" />
+    <var name="message" type="str" value="bad_value" />
     <dir path="{project_root_dir}">
         <vars ui="{python} ./input/extra_ui/myui.py {output_file} {input_file}">
             <var name="message" type="str" />
@@ -723,6 +765,24 @@ rand_alpha = '{rand_alpha}'
         """
         project_root_dir = "vars_calls_ui__valid_ui_no_input"
         input_parameters = ["default_end_message"]
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__vars_calls_ui__empty_ui__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <dir path="{project_root_dir}">
+        <vars ui="">
+            <var name="message" default="UNSET" if-unset="use-default" />
+        </vars>
+        <file path="data.txt">
+'{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "vars_calls_ui__empty_ui"
+        input_parameters = []
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
     def test__vars_calls_ui__not_found_ui__exception(self):
@@ -823,6 +883,199 @@ str_val='{{str_val}}'
         except RuntimeError as error:
             self.assertEqual(f"Action 'use-default' is chosen for the unset variable 'str_val of type '{var_type}', "
                              "but the default value is missing (use attribute 'default').", str(error))
+
+    @staticmethod
+    def dir_template_twice_vars__str():
+        return """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <vars>
+        <var name="fruit" type="str" value="orange" />
+    </vars>
+    <var name="color" type="str" value="red" />
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+fruit='{fruit}'
+color='{color}'
+        </file>
+    </dir>
+</template>
+        """
+
+    def test__template_twice_vars__ok(self):
+        template_string = self.dir_template_twice_vars__str()
+        project_root_dir = "template_twice_vars"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__dir_calls_template_twice_vars__ok(self):
+        main_template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    <var name="template_path" type="str" />
+    <dir template="{template_path}" />
+</template>
+        """
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        sub_template_string = self.dir_template_twice_vars__str()
+        project_root_dir = "dir_calls_template_twice_vars"
+        input_parameters = [str(sub_template_filepath)]
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
+    def test__vars_calls_template__ok(self):
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        main_template_string = f"""<?xml version="1.0"?>
+<template>
+    <vars template="{str(sub_template_filepath)}">
+        <var name="color" type="str" value="red" />
+    </vars>
+    <dir path="{{project_root_dir}}">
+        <file path="data.txt">
+fruit='{{fruit}}'
+color='{{color}}'
+        </file>
+    </dir>
+</template>
+        """
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="fruit" type="str" value="orange" />
+    </vars>
+</template>
+        """
+        project_root_dir = "vars_calls_template"
+        input_parameters = []
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
+    def test__vars_calls_template_twice_vars__exception(self):
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        main_template_string = f"""<?xml version="1.0"?>
+<template>
+    <vars template="{str(sub_template_filepath)}" />
+    <dir path="{{project_root_dir}}" />
+</template>
+        """
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <vars>
+        <var name="fruit" type="str" value="orange" />
+    </vars>
+</template>
+        """
+        project_root_dir = "vars_calls_template_twice_vars"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("Too many nodes under <template>.", str(err))
+
+    def test__vars_calls_template_vars_var__exception(self):
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        main_template_string = f"""<?xml version="1.0"?>
+<template>
+    <vars template="{str(sub_template_filepath)}" />
+    <dir path="{{project_root_dir}}" />
+</template>
+        """
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+    </vars>
+    <var name="fruit" type="str" value="orange" />
+</template>
+        """
+        project_root_dir = "vars_calls_template_vars_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("Too many nodes under <template>.", str(err))
+
+    def test__vars_calls_template_var__exception(self):
+        sub_template_filepath = self._make_sub_template_filepath("sub_template")
+        main_template_string = f"""<?xml version="1.0"?>
+<template>
+    <vars template="{str(sub_template_filepath)}" />
+    <dir path="{{project_root_dir}}" />
+</template>
+        """
+        sub_template_string = """<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+</template>
+        """
+        project_root_dir = "vars_calls_template_var"
+        input_parameters = []
+        try:
+            self._test__treat_template_xml_string_calling_template__exception(main_template_string,
+                                                                              sub_template_filepath,
+                                                                              sub_template_string,
+                                                                              project_root_dir,
+                                                                              input_parameters)
+        except RuntimeError as err:
+            self.assertEqual("Unexpected node (var) under <template>. Expected: vars.", str(err))
+
+    def test__var__set_twice__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="color" value="green" />
+        <var name="color" value="orange" />
+        <var name="color" value="light_{color}" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+color = '{color}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "var__set_twice"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
+
+    def test__var__value_with_escape_chars__ok(self):
+        template_string = """<?xml version="1.0"?>
+<template>
+    <vars>
+        <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
+        <var name="message" value="begin\\nend" />
+    </vars>
+    <dir path="{project_root_dir}">
+        <file path="data.txt">
+message = '{message}'
+        </file>
+    </dir>
+</template>
+        """
+        project_root_dir = "var__value_with_escape_chars"
+        input_parameters = []
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
 
 if __name__ == '__main__':

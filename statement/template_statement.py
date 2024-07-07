@@ -4,7 +4,6 @@ from pathlib import Path
 from constants import names
 from statement.abstract_dir_statement import AbstractDirStatement
 from statement.abstract_statement import AbstractStatement
-from statement.vars_statement import VarsStatement
 
 
 class TemplateStatement(AbstractDirStatement):
@@ -41,7 +40,9 @@ class TemplateStatement(AbstractDirStatement):
         self.__expected_statement = None
         ui = kargs.get("ui")
         if ui is not None:
-            self.variables().update_vars_from_dict(self.temgen().call_ui(ui, self))
+            ui_variables = self.temgen().call_ui(ui, self)
+            if ui_variables != self.variables():
+                self.variables().update_vars_from_dict(ui_variables)
 
     def parent_template_statement(self):
         return self.__parent_template_statement
@@ -111,15 +112,18 @@ class TemplateStatement(AbstractDirStatement):
 
     def check_number_of_children_nodes_of(self, node: XMLTree.Element):
         if node == self.current_node():
-            limit = 2 if node.find("vars") is not None else 1
-            limit += len(node.findall("var"))
+            if self.__caller_statement is not None and self.__caller_statement.current_node().tag == "vars":
+                limit = 1
+            else:
+                limit = len(node.findall("vars")) + len(node.findall("var")) + 1
             if len(node) > limit:
                 raise RuntimeError("Too many nodes under <template>.")
 
     def treat_child_node(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
-        if node == self.current_node():
-            if self.__caller_statement is not None and child_node.tag != "vars" and child_node.tag != "var":
-                expected_tag = self.__caller_statement.current_node().tag
+        if node == self.current_node() and self.__caller_statement is not None:
+            expected_tag = self.__caller_statement.current_node().tag
+            if ((child_node.tag != "vars" or expected_tag == "vars")
+                    and (child_node.tag != "var" or expected_tag == "vars")):
                 if child_node.tag != expected_tag:
                     raise RuntimeError(f"Unexpected node ({child_node.tag}) under <template>. "
                                        f"Expected: {expected_tag}.")
@@ -134,8 +138,10 @@ class TemplateStatement(AbstractDirStatement):
     def __post_treat_child_node(self, node, child_node):
         if node == self.current_node():
             assert self.__current_child_statement is not None
-            if self.__caller_statement is not None and child_node.tag != "vars" and child_node.tag != "var":
-                self.__expected_statement = self.__current_child_statement
+            if self.__caller_statement is not None:
+                expected_tag = self.__caller_statement.current_node().tag
+                if (child_node.tag != "vars" or expected_tag == "vars") and child_node.tag != "var":
+                    self.__expected_statement = self.__current_child_statement
             self.__current_child_statement = None
 
     def _create_dir_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):

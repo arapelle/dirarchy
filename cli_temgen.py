@@ -4,15 +4,15 @@ import re
 
 import temgen
 from constants import regex, names
-from ui.make_ui_from_name import make_ui_from_name
-from ui.terminal_ui import TerminalBasicUi
-from ui.tkinter_ui import TkinterBasicUi
+from ui.basic.make_basic_ui_from_name import make_basic_ui_from_name
+from ui.basic.terminal_basic_ui import TerminalBasicUi
+from ui.basic.tkinter_basic_ui import TkinterBasicUi
 
 
 class CliTemgen(temgen.Temgen):
     def __init__(self, argv=None):
         self._args = self._parse_args(argv)
-        super().__init__(make_ui_from_name(self.args.basic_ui),
+        super().__init__(make_basic_ui_from_name(self.args.basic_ui),
                          var_files=self.args.var_file if self.args.var_file else [],
                          var_dict=self.args.var if self.args.var else [],
                          check_template=self._args.check_template)
