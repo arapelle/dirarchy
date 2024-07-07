@@ -691,6 +691,7 @@ rand_alpha = '{rand_alpha}'
 <template>
     <var name="project_root_dir" type="gstr" regex="[a-zA-Z0-9_]+" />
     <var name="text" value="novel" />
+    <var name="message" type="str" value="bad_value" />
     <dir path="{project_root_dir}">
         <vars ui="{python} ./input/extra_ui/myui.py {output_file} {input_file}">
             <var name="message" type="str" />

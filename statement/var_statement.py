@@ -63,13 +63,13 @@ class VarStatement(AbstractContentsStatement):
                 raise RuntimeError("No child statement is expected when using value attribute.")
             self.__var_value = self.vformat_with_format_attr(self.__var_value)
             return
-        self.__var_value = self.get_variable_value(self.__var_name)
-        if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
-            return
         if self.__ui_variables is not None:
             self.__var_value = self.__ui_variables.get(self.__var_name, None)
             if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
                 return
+        self.__var_value = self.get_variable_value(self.__var_name)
+        if self.__var_value is not None:  # or if value is not compatible with requirements (type, regex, ...).
+            return
         if len(var_node) == 0 and (var_node.text is None or len(var_node.text) == 0):
             self.__manage_unset_var_value(var_node)
         else:
