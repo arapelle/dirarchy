@@ -31,7 +31,8 @@ class Temgen:
         self.__load_config(kargs)
         logger = kargs.get("logger")
         if logger is None:
-            logger = make_logger_from_config(names.LOWER_PROGRAM_NAME, self.__config.get("logging"), True)[0]
+            logger = make_logger_from_config(self.__config.get("logging"), True,
+                                             app_dirs=self.APPLICATION_DIRECTORIES)[0]
         self.__logger = logger
         if basic_ui is None:
             basic_ui_name = self.__config.get("ui", dict()).get("basic", TkinterBasicUi.NAME)
