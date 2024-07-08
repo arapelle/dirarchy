@@ -241,7 +241,7 @@ class Temgen:
     @staticmethod
     def check_template(root_element: XMLElement):
         valid_statement_names = ["dir", "file", "contents",
-                                 "if", "then", "else", "match", "case",
+                                 "if", "then", "else", "match", "case", "block",
                                  "vars", "var",
                                  "exec", "random",
                                  "template"]

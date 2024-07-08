@@ -34,6 +34,9 @@ class AbstractDirStatement(AbstractMainStatement):
             case "match":
                 match_statement = self._create_match_statement(node, child_node, current_statement)
                 match_statement.run()
+            case "block":
+                block_statement = self._create_block_statement(node, child_node, current_statement)
+                block_statement.run()
             case "vars":
                 vars_statement = self._create_vars_statement(node, child_node, current_statement)
                 vars_statement.run()
@@ -62,6 +65,10 @@ class AbstractDirStatement(AbstractMainStatement):
     def _create_match_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         from statement.match_statement import MatchStatement
         return MatchStatement(child_node, current_statement)
+
+    def _create_block_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        from statement.block_statement import BlockStatement
+        return BlockStatement(child_node, current_statement)
 
     def _create_vars_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         from statement.vars_statement import VarsStatement

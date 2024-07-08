@@ -27,6 +27,9 @@ class AbstractStatement(ABC):
     def parent_statement(self):
         return self.__parent_statement
 
+    def _detach_parent(self):
+        self.__parent_statement = None
+
     def template_statement(self):
         return self.__template_statement
 
@@ -144,6 +147,7 @@ class AbstractStatement(ABC):
     def run(self):
         with MethodScopeLog(self, logger=self.logger):
             self._run()
+        self._detach_parent()
 
     def _run(self):
         template_attr = self.current_node().get("template", None)
