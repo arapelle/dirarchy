@@ -19,8 +19,12 @@ class TestTemgenConfig(TestTemgenBase):
         cls._local_sub_dirpath = "temgen/config"
         super().setUpClass()
 
+    @staticmethod
+    def make_temp_config_filepath():
+        return Path(f"{Temgen.APPLICATION_DIRECTORIES.tmp_dirpath()}/config_{random_lower_sisy_string(8)}.toml")
+
     def test__config__templates_dirs__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
 templates_dirs = [ "/path/to/templates", "/my/templates" ]
@@ -35,7 +39,7 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
         config_filepath.unlink(missing_ok=True)
 
     def test__config__missing_check_template__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_file.write("")
             config_file.flush()
@@ -45,7 +49,7 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
         config_filepath.unlink(missing_ok=True)
 
     def test__config__check_template__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
 check_template = true
@@ -58,7 +62,7 @@ check_template = true
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_basic_TERMINAL__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
 [ui]
@@ -71,7 +75,7 @@ basic = "TERMINAL"
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_basic_TKINTER__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
 [ui]
@@ -84,7 +88,7 @@ basic = "TKINTER"
         config_filepath.unlink(missing_ok=True)
 
     def test__config__ui_extra__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
 [ui.extra]
@@ -116,7 +120,7 @@ myui = "{python} ./input/extra_ui/myui.py {output_file} {input_file}"
         config_filepath.unlink(missing_ok=True)
 
     def test__config__variables__any_template__ok(self):
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
 [variables]
@@ -147,7 +151,7 @@ surprise = "chocolate"
 
     def test__config__logging__ok(self):
         log_dir = (Path(tempfile.gettempdir()) / "temgentests").as_posix()
-        config_filepath = Path(f"{tempfile.gettempdir()}/config_{random_lower_sisy_string(8)}.toml")
+        config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = f"""
 [logging.file]
