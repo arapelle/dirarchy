@@ -337,6 +337,64 @@ class TestTemgenDir(TestTemgenBase):
                                                                    project_root_dir,
                                                                    input_parameters)
 
+    @staticmethod
+    def dir_calls_template__template_updates_vars_activated__main_str(dir_attr: str):
+        return f"""<?xml version="1.0"?>
+<template>
+    <var name="project_root_dir" regex="[a-zA-Z0-9_]+" />
+    <var name="template_path" />
+    <dir path="{{project_root_dir}}">
+        <var name="message" value="pear" />
+        <dir template="{{template_path}}" {dir_attr}>
+            <file path="branch2.txt">{{message}}</file>
+            <var name="message" value="banana" />
+            <file path="branch3.txt">{{message}}</file>
+        </dir>
+        <file path="root.txt">{{message}}</file>
+    </dir>
+</template>
+        """
+
+    @staticmethod
+    def dir_calls_template__template_updates_vars_activated__sub_str():
+        return """<?xml version="1.0"?>
+<template>
+    <dir path="branch">
+        <var name="message" value="orange" />
+        <dir path="leaf">
+            <var name="message" value="apple" />
+            <file path="leaf.txt">{message}</file>
+        </dir>
+        <file path="branch.txt">{message}</file>
+    </dir>
+</template>
+        """
+
+    def test__dir_calls_template__template_updates_vars_activated__ok(self):
+        main_template_string = self.dir_calls_template__template_updates_vars_activated__main_str("")
+        sub_template_filepath = self._make_sub_template_filepath("subtemplate")
+        sub_template_string = self.dir_calls_template__template_updates_vars_activated__sub_str()
+        project_root_dir = "dir_calls_template__template_updates_vars_activated"
+        input_parameters = [str(sub_template_filepath)]
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
+    def test__dir_calls_template__template_updates_vars_deactivated__ok(self):
+        main_template_string = (
+            self.dir_calls_template__template_updates_vars_activated__main_str('template-updates-vars="False"'))
+        sub_template_filepath = self._make_sub_template_filepath("subtemplate")
+        sub_template_string = self.dir_calls_template__template_updates_vars_activated__sub_str()
+        project_root_dir = "dir_calls_template__template_updates_vars_deactivated"
+        input_parameters = [str(sub_template_filepath)]
+        self._test__treat_template_xml_string_calling_template__ok(main_template_string,
+                                                                   sub_template_filepath,
+                                                                   sub_template_string,
+                                                                   project_root_dir,
+                                                                   input_parameters)
+
 
 if __name__ == '__main__':
     unittest.main()
