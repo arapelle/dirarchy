@@ -56,10 +56,6 @@ class IfStatement(AbstractBranchStatement):
             return bool(eval(attr_value))
         attr_value = self.vformat(attr_value)
         match key_value:
-            case "expr":
-                error_msg = "DEPRECATED: In <if> statement, you should replace 'expr' attribute by 'eval'."
-                self.logger.error(error_msg)
-                raise RuntimeError(error_msg)
             case "exists":
                 return Path(attr_value).exists()
             case "not-exists":
@@ -76,8 +72,8 @@ class IfStatement(AbstractBranchStatement):
                 raise RuntimeError(f"Unexpected condition attribute: '{key_value}'.")
 
     def check_not_template_attributes(self, nb_template_attributes: int):
-        if "expr" in self.current_node().attrib:
-            raise RuntimeError(f"The attribute 'expr' is unexpected when calling a 'if' template.")
+        if "eval" in self.current_node().attrib:
+            raise RuntimeError(f"The attribute 'eval' is unexpected when calling a 'if' template.")
 
     def post_template_run(self, template_statement):
         if len(self.current_node()) > 0:

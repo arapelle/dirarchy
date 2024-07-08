@@ -17,10 +17,6 @@ class MatchStatement(AbstractBranchStatement):
         match_node = self.current_node()
         expr_key, expr_value = next(iter(match_node.attrib.items()))
         match expr_key:
-            case "expr":
-                error_msg = "DEPRECATED: In <match> statement, you should replace 'expr' attribute by 'value'."
-                self.logger.error(error_msg)
-                raise RuntimeError(error_msg)
             case "value":
                 expr_attr = self.vformat(expr_value)
             case "eval":
@@ -50,12 +46,6 @@ class MatchStatement(AbstractBranchStatement):
                     break
                 continue
             case_regex = case_node.attrib.get('regex')
-            if case_regex is None:
-                case_regex = case_node.attrib.get('expr', None)
-                if case_regex is not None:
-                    error_msg = "DEPRECATED: In <case> statement, you should replace 'expr' attribute by 'regex'."
-                    self.logger.error(error_msg)
-                    raise RuntimeError(error_msg)
             if case_regex is not None:
                 if re.fullmatch(self.vformat(case_regex), expr_attr):
                     found_case_node = case_node
@@ -72,8 +62,6 @@ class MatchStatement(AbstractBranchStatement):
     def check_not_template_attributes(self, nb_template_attributes: int):
         if "value" in self.current_node().attrib:
             raise RuntimeError(f"The attribute 'value' is unexpected when calling a 'match' template.")
-        if "expr" in self.current_node().attrib:
-            raise RuntimeError(f"The attribute 'expr' is unexpected when calling a 'match' template.")
         if "eval" in self.current_node().attrib:
             raise RuntimeError(f"The attribute 'eval' is unexpected when calling a 'match' template.")
 
