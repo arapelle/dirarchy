@@ -43,12 +43,13 @@ class Temgen:
             self.__ui_manager.set_temgen(self)
         self.__variables = VariablesDict(self.__logger)
         self.__init_variables(kargs)
+        settings = self.__config["settings"]
         self.__templates_dirpaths = self.APPLICATION_DIRECTORIES.data_dirpaths("templates")
-        template_dirpaths = self.__config.get("templates_dirs", [])
+        template_dirpaths = settings.get("templates_dirs", [])
         assert isinstance(template_dirpaths, list)
         self.__templates_dirpaths.extend([Path(template_dirpath) for template_dirpath in template_dirpaths])
         self.__templates_dirpaths.append(Path("."))
-        self.__check_template_activated = bool(kargs.get("check_template",  self.__config.get("check_template", False)))
+        self.__check_template_activated = bool(kargs.get("check_template", settings.get("check_template", False)))
 
     def __load_config(self, kargs):
         default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config/default.toml"
@@ -58,6 +59,7 @@ class Temgen:
                 self.__config = tomllib.load(config_file)
         else:
             self.__config = dict()
+        self.__config.setdefault("settings", dict())
 
     def __init_variables(self, kargs):
         config_variables = self.__config.setdefault("variables", dict())

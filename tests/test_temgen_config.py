@@ -27,6 +27,7 @@ class TestTemgenConfig(TestTemgenBase):
         config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
+[settings]
 templates_dirs = [ "/path/to/templates", "/my/templates" ]
 """
             config_file.write(config_contents)
@@ -52,6 +53,7 @@ templates_dirs = [ "/path/to/templates", "/my/templates" ]
         config_filepath = self.make_temp_config_filepath()
         with open(config_filepath, "w") as config_file:
             config_contents = """
+[settings]
 check_template = true
 """
             config_file.write(config_contents)
