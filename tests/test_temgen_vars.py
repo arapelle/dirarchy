@@ -535,65 +535,70 @@ message = '{{message}}'
         input_parameters = ["two"]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
-    def test__vars_vars__exception(self):
-        # vars, vars -> exception
+    def test__vars_vars__ok(self):
+        # vars, vars -> ok
         template_string = """<?xml version="1.0"?>
 <template>
-    <vars>
+    <vars ui="{python} input/extra_ui/color_ui.py {output_file}">
         <var name="output_root_dir" type="gstr" />
-        <vars />
+        <vars>
+            <var name="fill_color" if-unset="error" />
+            <var name="dark_fill_color" value="dark_{fill_color}" />
+        </vars>
     </vars>
-    <file path="{output_root_dir}/data.txt" />
+    <file path="{output_root_dir}/data.txt">
+'{dark_fill_color}'
+    </file>
 </template>
 """
         project_root_dir = "vars_vars"
         input_parameters = []
-        try:
-            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
-        except RuntimeError as err:
-            self.assertEqual("In 'vars', bad child node type: vars.", str(err))
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
     def test__vars_if_vars__exception(self):
-        # vars, if, vars -> exception
+        # vars, if, vars -> ok
         template_string = """<?xml version="1.0"?>
 <template>
-    <vars>
+    <vars ui="{python} input/extra_ui/tac_ui.py {} {}">
         <var name="output_root_dir" type="gstr" />
+        <var name="text" if-unset="error" />
         <if eval="True">
-            <vars />
+            <vars ui="{python} input/extra_ui/tac_ui.py {} {}">
+                <var name="text" if-unset="error" />
+            </vars>
         </if>
     </vars>
-    <file path="{output_root_dir}/data.txt" />
+    <file path="{output_root_dir}/data.txt">
+text = '{text}'
+    </file>
 </template>
 """
         project_root_dir = "vars_if_vars"
         input_parameters = []
-        try:
-            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
-        except RuntimeError as err:
-            self.assertEqual("In 'if', bad child node type: vars.", str(err))
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
-    def test__vars_match_case_vars__exception(self):
-        # vars, match, case, vars -> exception
+    def test__vars_match_case_vars__ok(self):
+        # vars, match, case, vars -> ok
         template_string = """<?xml version="1.0"?>
 <template>
     <vars>
         <var name="output_root_dir" type="gstr" />
         <match value="a">
             <case value="a">
-                <vars />
+                <vars ui="{python} input/extra_ui/tac_ui.py {} {}">
+                    <var name="text" if-unset="error" />
+                </vars>
             </case>
         </match>
     </vars>
-    <file path="{output_root_dir}/data.txt" />
+    <file path="{output_root_dir}/data.txt">
+text = '{text}'
+    </file>
 </template>
 """
         project_root_dir = "vars_match_case_vars"
         input_parameters = []
-        try:
-            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
-        except RuntimeError as err:
-            self.assertEqual("In 'case', bad child node type: vars.", str(err))
+        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
     def test__var_vars__exception(self):
         # var, vars -> exception
