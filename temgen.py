@@ -51,7 +51,7 @@ class Temgen:
         self.__check_template_activated = bool(kargs.get("check_template",  self.__config.get("check_template", False)))
 
     def __load_config(self, kargs):
-        default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config.toml"
+        default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config/default.toml"
         config_path = Path(kargs.get("config_path", default_config_path))
         if config_path.exists():
             with open(config_path, 'rb') as config_file:
