@@ -34,6 +34,7 @@ class Temgen:
             logger = make_logger_from_config(self.__config.get("logging"), True,
                                              app_dirs=self.APPLICATION_DIRECTORIES)[0]
         self.__logger = logger
+        self.__define_signal_handler()
         if basic_ui is None:
             basic_ui_name = self.__config.get("ui", dict()).get("basic", TkinterBasicUi.NAME)
             basic_ui = make_basic_ui_from_name(basic_ui_name)
@@ -60,6 +61,14 @@ class Temgen:
         else:
             self.__config = dict()
         self.__config.setdefault("settings", dict())
+
+    def __define_signal_handler(self):
+        def signal_handler(sig, frame):
+            self.logger.warning(f"Abort requested!")
+            sys.exit("Abort temgen.")
+
+        import signal
+        signal.signal(signal.SIGINT, signal_handler)
 
     def __init_variables(self, kargs):
         config_variables = self.__config.setdefault("variables", dict())
