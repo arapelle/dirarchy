@@ -128,7 +128,7 @@ class VarStatement(AbstractContentsStatement):
 
     def __make_output_stream(self):
         match self.__var_type:
-            case "str" | "pstr" | "gstr" | "int" | "float":
+            case "str" | "gstr" | "int" | "float":
                 self._output_stream = StringIO()
                 self._output_encoding = locale.getencoding()
             case _:

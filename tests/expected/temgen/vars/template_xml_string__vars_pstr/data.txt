@@ -1,1 +1,0 @@
-pstrs = '  ', 'info', '  info  '

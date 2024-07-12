@@ -195,22 +195,10 @@ rand_alpha = '{rand_alpha}'
         input_parameters = ["", "  ", "info", "  info  "]
         self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
 
-    def test__treat_template_xml_string__vars_pstr__ok(self):
-        vars_str = """
-        <var name="first" type="pstr" />
-        <var name="second" type="pstr" />
-        <var name="third" type="pstr" />
-        """
-        file_contents = "pstrs = '{first}', '{second}', '{third}'"
-        template_string = self.vars__template_string(vars_str, file_contents)
-        project_root_dir = "template_xml_string__vars_pstr"
-        input_parameters = ["", "  ", "info", "  info  "]
-        self._test__treat_template_xml_string__ok(template_string, project_root_dir, input_parameters)
-
     def test__treat_template_xml_string__vars_gstr__ok(self):
         vars_str = """
-        <var name="first" type="pstr" />
-        <var name="second" type="pstr" />
+        <var name="first" type="gstr" />
+        <var name="second" type="gstr" />
         """
         file_contents = "gstrs = '{first}', '{second}'"
         template_string = self.vars__template_string(vars_str, file_contents)
@@ -866,17 +854,6 @@ str_val='{{str_val}}'
     </dir>
 </template>
         """
-
-    def test__if_unset__use_default_missing_pstr__exception(self):
-        var_type = "pstr"
-        template_string = self.__if_unset_default_missing_template_str(var_type)
-        project_root_dir = "if_unset__use_default_missing"
-        input_parameters = []
-        try:
-            self._test__treat_template_xml_string__exception(template_string, project_root_dir, input_parameters)
-        except RuntimeError as error:
-            self.assertEqual(f"Action 'use-default' is chosen for the unset variable 'str_val of type '{var_type}', "
-                             "but the default value is missing (use attribute 'default').", str(error))
 
     def test__if_unset__use_default_missing_gstr__exception(self):
         var_type = "gstr"

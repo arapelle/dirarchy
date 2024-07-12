@@ -62,8 +62,6 @@ class AbstractBasicUi(ABC):
                 return self.ask_valid_float(label, default_value, check_fn)
             case 'str':
                 return self.ask_valid_string(label, default_value, check_fn)
-            case 'pstr':
-                return self.ask_valid_printable_string(label, default_value, check_fn)
             case 'gstr':
                 return self.ask_valid_graphic_string(label, default_value, check_fn)
             case _:
