@@ -7,17 +7,7 @@ from io import StringIO
 from constants import regex
 from statement.abstract_contents_statement import AbstractContentsStatement
 from statement.abstract_statement import AbstractStatement
-
-
-class RegexFullMatch:
-    def __init__(self, regex_pattern):
-        if isinstance(regex_pattern, re.Pattern):
-            self.__regex = regex_pattern
-        else:
-            self.__regex = re.compile(regex_pattern)
-
-    def __call__(self, value_to_check: str):
-        return re.fullmatch(self.__regex, value_to_check)
+from ui.basic.string_check import FullmatchStringCheck
 
 
 class VarStatement(AbstractContentsStatement):
@@ -37,7 +27,7 @@ class VarStatement(AbstractContentsStatement):
             raise Exception(f"Variable name is not a valid name: '{self.__var_name}'.")
         self.__var_type = var_node.attrib.get('type', 'str')
         var_restr = var_node.attrib.get('regex', None)
-        self.__var_regex = RegexFullMatch(var_restr) if var_restr is not None else None
+        self.__var_regex = FullmatchStringCheck(regex=var_restr) if var_restr is not None else None
         self.__resolve_var_value(var_node)
         self.__check_variable_value()
         self.variables().update_var_and_log(self.__var_name, self.__var_value)
