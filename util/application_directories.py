@@ -35,6 +35,9 @@ class ApplicationDirectories:
                 raise Exception(f"System not handled: '{platform_system}'")
         self.__data_dirpaths.append(self.__settings_dirpath)
 
+    def app_name(self):
+        return self.__app_name
+
     def settings_dirpath(self):
         return self.__settings_dirpath
 
@@ -51,7 +54,7 @@ class ApplicationDirectories:
         dirs = []
         for path in data_dirpaths.split(':'):
             if len(path) > 0:
-                dirs.append(path)
+                dirs.append(Path(path))
         return dirs
 
     def data_dirpaths(self, data_dirname: str):

@@ -3,6 +3,8 @@ import logging
 import tempfile
 from pathlib import Path
 
+from util.application_directories import ApplicationDirectories
+
 
 def make_console_handler_from_config(console_config=None):
     if console_config is None:
@@ -22,9 +24,18 @@ def make_console_handler_from_config(console_config=None):
     return None
 
 
-def make_file_handler_from_config(log_name="logfile", file_config=None):
+def make_file_handler_from_config(file_config=None, **kargs):
+    if file_config is None:
+        file_config = dict()
     file_enabled = bool(file_config.get("enabled", "True"))
     if file_enabled:
+        app_dirs: ApplicationDirectories = kargs.get("app_dirs")
+        if app_dirs:
+            log_name = app_dirs.app_name()
+            default_file_log_dir = app_dirs.log_dirpath()
+        else:
+            log_name = kargs.get("log_name", "logfile")
+            default_file_log_dir = f"{tempfile.gettempdir()}/{log_name}/log"
         file_level = file_config.get("level", "DEBUG")
         default_file_log_format = \
             "[%(levelname)-8s][%(asctime)s][%(pathname)s:%(lineno)d %(funcName)s]: %(message)s"
@@ -32,7 +43,9 @@ def make_file_handler_from_config(log_name="logfile", file_config=None):
         file_date_format = file_config.get("date_format", "%Y-%m-%d %H:%M:%S")
         filename_format = file_config.get("filename_format", f"{log_name}_%Y%m%d_%H%M%S_%f.log")
         filename_format = datetime.datetime.now().strftime(filename_format)
-        file_dir = Path(file_config.get("dir", f"{tempfile.gettempdir()}/{log_name}"))
+        if filename_format.find("logfile") == -1:
+            pass
+        file_dir = Path(file_config.get("dir", default_file_log_dir))
         file_dir.mkdir(parents=True, exist_ok=True)
         log_filepath = file_dir / filename_format
         file_handler = logging.FileHandler(filename=log_filepath, mode="w")
@@ -43,16 +56,21 @@ def make_file_handler_from_config(log_name="logfile", file_config=None):
     return None, None
 
 
-def make_logger_from_config(log_name="logfile", config=None, write_filepath: bool = False):
+def make_logger_from_config(config=None, write_filepath: bool = False, **kargs):
     if config is None:
         config = dict()
+    app_dirs: ApplicationDirectories = kargs.get("app_dirs")
+    if app_dirs:
+        log_name = app_dirs.app_name()
+    else:
+        log_name = kargs.get("log_name", "logfile")
     logger = logging.Logger(f"{log_name}")
     console_config = config.get("console", dict())
     console_handler = make_console_handler_from_config(console_config)
     if console_handler is not None:
         logger.addHandler(console_handler)
     file_config = config.get("file", dict())
-    file_handler, log_filepath = make_file_handler_from_config(log_name, file_config)
+    file_handler, log_filepath = make_file_handler_from_config(file_config, **kargs)
     if file_handler is not None:
         logger.addHandler(file_handler)
         if write_filepath:

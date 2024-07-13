@@ -168,6 +168,12 @@ class TemplateStatement(AbstractDirStatement):
             self.__current_child_statement = match_statement
         return match_statement
 
+    def _create_block_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
+        block_statement = super()._create_block_statement(node, child_node, current_statement)
+        if node == self.current_node():
+            self.__current_child_statement = block_statement
+        return block_statement
+
     def _create_contents_statement(self, node: XMLTree.Element, child_node: XMLTree.Element, current_statement):
         from statement.contents_statement import ContentsStatement
         contents_statement = ContentsStatement(child_node, current_statement)

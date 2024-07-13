@@ -367,7 +367,7 @@ class TestTemgenIf(TestTemgenBase):
                                                                    input_parameters)
 
     def test__if_calls_template__expr_attr__exception(self):
-        main_template_string = self.__if_calls_template__main_template_str('expr="True"')
+        main_template_string = self.__if_calls_template__main_template_str('eval="True"')
         sub_template_filepath = self._make_sub_template_filepath("if_file_template")
         sub_template_string = self.__if_calls_template__sub_template_str()
         project_root_dir = "if_calls_template"
@@ -379,7 +379,7 @@ class TestTemgenIf(TestTemgenBase):
                                                                               project_root_dir,
                                                                               input_parameters)
         except RuntimeError as err:
-            self.assertEqual("The attribute 'expr' is unexpected when calling a 'if' template.", str(err))
+            self.assertEqual("The attribute 'eval' is unexpected when calling a 'if' template.", str(err))
 
     def test__if_calls_template__child_statement__exception(self):
         main_template_string = self.__if_calls_template__main_template_str(if_children='<dir path="bad" />')

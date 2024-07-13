@@ -17,6 +17,7 @@ class AbstractMainStatement(AbstractStatement, ABC):
             super()._run()
             if not self.__children_treated:
                 self.treat_children_nodes()
+        self._detach_parent()
 
     def current_main_statement(self):
         return self

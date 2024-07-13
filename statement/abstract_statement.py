@@ -27,6 +27,9 @@ class AbstractStatement(ABC):
     def parent_statement(self):
         return self.__parent_statement
 
+    def _detach_parent(self):
+        self.__parent_statement = None
+
     def template_statement(self):
         return self.__template_statement
 
@@ -144,16 +147,20 @@ class AbstractStatement(ABC):
     def run(self):
         with MethodScopeLog(self, logger=self.logger):
             self._run()
+        self._detach_parent()
 
     def _run(self):
         template_attr = self.current_node().get("template", None)
         version_attr = self.current_node().get('template-version', None)
+        template_updates_vars_attr = self.current_node().get('template-updates-vars', None)
         if not self.allows_template():
             template_attr_labels = []
             if template_attr is not None:
                 template_attr_labels.append("'template'")
             if version_attr is not None:
                 template_attr_labels.append("'template-version'")
+            if template_updates_vars_attr is not None:
+                template_attr_labels.append("'template-updates-vars'")
             if len(template_attr_labels) > 0:
                 forbidden_attr_str = ", ".join(template_attr_labels)
                 raise RuntimeError(f"Attribute {forbidden_attr_str} found in {self.__class__.__name__}, "
@@ -164,6 +171,9 @@ class AbstractStatement(ABC):
                 if version_attr is not None:
                     raise RuntimeError(f"Attribute 'template-version' found in {self.__class__.__name__}, "
                                        "but attribute 'template' is missing.")
+                if template_updates_vars_attr is not None:
+                    raise RuntimeError(f"Attribute 'template-updates-vars' found in {self.__class__.__name__}, "
+                                       "but attribute 'template' is missing.")
                 self.execute()
             else:
                 nb_template_attributes = 1
@@ -171,9 +181,15 @@ class AbstractStatement(ABC):
                 if version_attr is not None:
                     nb_template_attributes += 1
                     version_attr = self.vformat(version_attr)
+                if template_updates_vars_attr is not None:
+                    nb_template_attributes += 1
+                    template_updates_vars_attr = self.vformat(template_updates_vars_attr)
+                    template_updates_vars = bool(eval(self.vformat(template_updates_vars_attr)))
+                else:
+                    template_updates_vars = True
                 self.check_not_template_attributes(nb_template_attributes)
                 template_path = self.temgen().find_template_file(Path(template_attr), version_attr)
-                self.__call_template(template_path)
+                self.__call_template(template_path, template_updates_vars)
 
     def allows_template(self):
         return False
@@ -182,7 +198,7 @@ class AbstractStatement(ABC):
         if len(self.__current_node.attrib) > nb_template_attributes:
             for key in self.__current_node.attrib:
                 match key:
-                    case "template" | "template-version":
+                    case "template" | "template-version" | "template-updates-vars":
                         pass
                     case _:
                         raise RuntimeError(f"Unexpected attribute when calling '{self.current_node().tag}' "
@@ -193,7 +209,7 @@ class AbstractStatement(ABC):
         pass
 
     @final
-    def __call_template(self, template_path: Path):
+    def __call_template(self, template_path: Path, template_updates_vars: bool):
         with open(template_path, 'r') as template_file:
             data_tree = XMLTree.parse(template_file)
         from statement.template_statement import TemplateStatement
@@ -204,6 +220,8 @@ class AbstractStatement(ABC):
         template_statement.run()
         self.__was_template_called = True
         assert isinstance(template_statement.expected_statement(), self.__class__)
+        if template_updates_vars:
+            self.__variables |= template_statement.expected_statement().variables()
         self.post_template_run(template_statement)
 
     def was_template_called(self):

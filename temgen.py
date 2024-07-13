@@ -24,15 +24,17 @@ from variables.variables_dict import VariablesDict
 
 
 class Temgen:
-    VERSION = semver.Version.parse('0.8.0')
+    VERSION = semver.Version.parse('0.9.0')
     APPLICATION_DIRECTORIES = ApplicationDirectories(names.LOWER_PROGRAM_NAME)
 
     def __init__(self, basic_ui: AbstractBasicUi | None, ui_manager: AbstractUiManager | None = None, **kargs):
         self.__load_config(kargs)
         logger = kargs.get("logger")
         if logger is None:
-            logger = make_logger_from_config(names.LOWER_PROGRAM_NAME, self.__config.get("logging"), True)[0]
+            logger = make_logger_from_config(self.__config.get("logging"), True,
+                                             app_dirs=self.APPLICATION_DIRECTORIES)[0]
         self.__logger = logger
+        self.__define_signal_handler()
         if basic_ui is None:
             basic_ui_name = self.__config.get("ui", dict()).get("basic", TkinterBasicUi.NAME)
             basic_ui = make_basic_ui_from_name(basic_ui_name)
@@ -42,21 +44,31 @@ class Temgen:
             self.__ui_manager.set_temgen(self)
         self.__variables = VariablesDict(self.__logger)
         self.__init_variables(kargs)
+        settings = self.__config["settings"]
         self.__templates_dirpaths = self.APPLICATION_DIRECTORIES.data_dirpaths("templates")
-        template_dirpaths = self.__config.get("templates_dirs", [])
+        template_dirpaths = settings.get("templates_dirs", [])
         assert isinstance(template_dirpaths, list)
         self.__templates_dirpaths.extend([Path(template_dirpath) for template_dirpath in template_dirpaths])
         self.__templates_dirpaths.append(Path("."))
-        self.__check_template_activated = bool(kargs.get("check_template",  self.__config.get("check_template", False)))
+        self.__check_template_activated = bool(kargs.get("check_template", settings.get("check_template", False)))
 
     def __load_config(self, kargs):
-        default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config.toml"
+        default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config/default.toml"
         config_path = Path(kargs.get("config_path", default_config_path))
         if config_path.exists():
             with open(config_path, 'rb') as config_file:
                 self.__config = tomllib.load(config_file)
         else:
             self.__config = dict()
+        self.__config.setdefault("settings", dict())
+
+    def __define_signal_handler(self):
+        def signal_handler(sig, frame):
+            self.logger.warning(f"Abort requested!")
+            sys.exit("Abort temgen.")
+
+        import signal
+        signal.signal(signal.SIGINT, signal_handler)
 
     def __init_variables(self, kargs):
         config_variables = self.__config.setdefault("variables", dict())
@@ -240,7 +252,7 @@ class Temgen:
     @staticmethod
     def check_template(root_element: XMLElement):
         valid_statement_names = ["dir", "file", "contents",
-                                 "if", "then", "else", "match", "case",
+                                 "if", "then", "else", "match", "case", "block",
                                  "vars", "var",
                                  "exec", "random",
                                  "template"]
