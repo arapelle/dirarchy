@@ -7,10 +7,13 @@ from cli_command import CliCommand
 class Temgen(CliCommand):
     def __init__(self):
         super().__init__(default="alpha-command")
-        subparsers = self.arg_parser().add_subparsers(dest=self.subcommand_label(), required=False,
-                                                      metavar="command",
-                                                      #title=None,
-                                                      help=self.subcommand_label() + " help")
+        subparsers = \
+            self.arg_parser().add_subparsers(dest=self.subcommand_label(), required=False,
+                                             metavar="command",
+                                             help=self.subcommand_label() + " help",
+                                             #title=None
+                                             )
+        print(type(subparsers))
         self.alpha_command = AlphaCommand(subparsers)
         self.beta_command = BetaCommand(subparsers)
 
