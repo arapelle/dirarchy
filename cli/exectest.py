@@ -1,11 +1,13 @@
+import sys
 from argparse import ArgumentParser
 import re
+
 
 # https://mike.depalatis.net/blog/simplifying-argparse
 
 
 class CliCommand:
-    def __init__(self, parent, command_name=None, **kwargs):
+    def __init__(self, parent=None, command_name=None, **kwargs):
         self.__parent = parent
         self.__command_name = command_name if command_name is not None else self.__default_command_name()
         self.__subcommand_name = f"{self.command_name().replace('-', '_')}_subcommand"
@@ -19,6 +21,14 @@ class CliCommand:
             self.__arg_parser: ArgumentParser = subparsers.add_parser(self.command_name(),
                                                                       help=help_message,
                                                                       **kwargs)
+
+    def parent(self):
+        return self.__parent
+
+    def root(self):
+        if self.__parent is None:
+            return self
+        return self.__parent.root()
 
     def arg_parser(self):
         return self.__arg_parser
@@ -128,14 +138,13 @@ class Temgencmd(CliCommand):
 
 if __name__ == '__main__':
     temgencmd = Temgencmd()
-    arg_parser: ArgumentParser = ArgumentParser(add_help=False)
-    arg_parser.add_argument("args", nargs="...", metavar="command ...", help="Arguments for command")
-    args, argv = arg_parser.parse_known_args()
-    if len(args.args) > 0:
-        command = args.args[0]
-        if hasattr(temgencmd, command):
-            temgencmd.parse_and_invoke([command] + argv + args.args[1:])
-        else:
-            temgencmd.parse_and_invoke(["generate"] + argv + args.args)
+    program_args = sys.argv
+    print(program_args)
+    if len(program_args) <= 1:
+        temgencmd.parse_and_invoke(program_args[1:])
     else:
-        temgencmd.parse_and_invoke(argv + args.args)
+        command = program_args[1]
+        if command == '-h' or command == '--help' or hasattr(temgencmd, command):
+            temgencmd.parse_and_invoke(program_args[1:])
+        else:
+            temgencmd.parse_and_invoke(["generate"] + program_args[1:])
