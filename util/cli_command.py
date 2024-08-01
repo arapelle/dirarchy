@@ -52,11 +52,11 @@ class CliCommand:
         subcommand_label = getattr(args, self.subcommand_name())
         if subcommand_label is None:
             self.__arg_parser.print_help()
-            exit(0)
+            return
         if hasattr(self, subcommand_label):
             field = getattr(self, subcommand_label)
             delattr(args, self.subcommand_name())
             field.invoke(args)
         else:
-            print(f"error: Missing field or method '{subcommand_label}' in class {self.__class__.__name__}.")
-            exit(-1)
+            raise RuntimeError(f"error: Missing field or method '{subcommand_label}' "
+                               f"in class {self.__class__.__name__}.")
