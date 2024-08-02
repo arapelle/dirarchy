@@ -11,10 +11,10 @@ from util.cli_command import CliCommand
 
 class Generate(CliCommand):
     def __init__(self, parent: CliCommand, subparsers):
-        prog_desc = "Generates a directory architecture based on a template."
+        description = "Generate a directory architecture based on a template."
         super().__init__(parent, subparsers=subparsers,
-                         description=prog_desc,
-                         help="generate help message")
+                         description=description,
+                         help=description)
         argparser = self.arg_parser()
         argparser.add_argument('-K', f'--{TkinterBasicUi.NAME}'.lower(), action='store_const',
                                dest='basic_ui', const=TkinterBasicUi.NAME, help='Use tkinter I/O.')

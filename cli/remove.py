@@ -3,7 +3,8 @@ from util.cli_command import CliCommand
 
 class Remove(CliCommand):
     def __init__(self, parent: CliCommand, subparsers):
-        super().__init__(parent, subparsers=subparsers)
+        super().__init__(parent, subparsers=subparsers,
+                         help="TODO")
         self.arg_parser().add_argument("template_id", metavar="template_name[/version]")
 
     def invoke(self, args=None):
