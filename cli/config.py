@@ -1,3 +1,7 @@
+from pathlib import Path
+
+import os
+import temgen
 from util.cli_command import CliCommand
 
 
@@ -15,7 +19,15 @@ class Config(CliCommand):
                              help="TODO")
 
         def invoke(self, args=None):
-            print(f"List.invoke: {args}")
+            # import glob
+            config_dirpath = temgen.Temgen.APPLICATION_DIRECTORIES.settings_dirpath() / "config"
+            # for item in glob.glob(str(config_dirpath) + "*.toml")
+            #     print(item)
+            for _, _, files in os.walk(config_dirpath):
+                for file in files:
+                    file_path = Path(file)
+                    if file_path.suffix == ".toml":
+                        print(file_path.stem)
 
     class Create(CliCommand):
         def __init__(self, parent: CliCommand, subparsers):
