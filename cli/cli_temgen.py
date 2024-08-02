@@ -21,20 +21,24 @@ class CliTemgen(CliCommand):
         self.search = Search(self, subparsers)
         self.remove = Remove(self, subparsers)
 
+    def run(self, argv=None):
+        if argv is None:
+            argv = sys.argv
+        print(argv)
+        if len(argv) <= 1:
+            self.parse_and_invoke(argv[1:])
+            return
+        command = argv[1]
+        if hasattr(self, command):
+            self.parse_and_invoke(argv[1:])
+            return
+        match command:
+            case '-h' | '--help' | '-v' | '--version':
+                self.parse_and_invoke(argv[1:])
+            case _:
+                self.parse_and_invoke(["generate"] + argv[1:])
+
 
 if __name__ == '__main__':
     cli_temgen = CliTemgen()
-    program_args = sys.argv
-    print(program_args)
-    if len(program_args) <= 1:
-        cli_temgen.parse_and_invoke(program_args[1:])
-    else:
-        command = program_args[1]
-        if hasattr(cli_temgen, command):
-            cli_temgen.parse_and_invoke(program_args[1:])
-        else:
-            match command:
-                case '-h' | '--help' | '-v' | '--version':
-                    cli_temgen.parse_and_invoke(program_args[1:])
-                case _:
-                    cli_temgen.parse_and_invoke(["generate"] + program_args[1:])
+    cli_temgen.run()

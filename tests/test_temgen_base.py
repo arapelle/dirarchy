@@ -2,7 +2,7 @@ import io
 import sys
 from pathlib import Path
 
-from cli_temgen import CliTemgen
+from cli.cli_temgen import CliTemgen
 from util import random_string
 from ui.basic.terminal_basic_ui import TerminalBasicUi
 from temgen import Temgen
@@ -212,10 +212,10 @@ class TestTemgenBase(DirCmpTestCase):
                                                   project_root_dir: str,
                                                   input_parameters: list):
         argv.extend(["--", template_filepath])
-        cli_temgen = CliTemgen(argv)
+        cli_temgen = CliTemgen()
         input_parameters_str = "\n".join(input_parameters)
         sys.stdin = io.StringIO(f"{project_root_dir}\n{input_parameters_str}")
-        cli_temgen.run()
+        cli_temgen.run(argv)
 
     def _run__cli_temgen__treat_template_string__ok(self,
                                                     template_string: str,

@@ -40,7 +40,7 @@ class CliCommand:
         return self.__subcommand_name
 
     def add_subcommand_subparsers(self):
-        return self.__arg_parser.add_subparsers(dest=self.subcommand_name(), required=False, metavar="command:")
+        return self.__arg_parser.add_subparsers(dest=self.subcommand_name(), required=False, metavar="command")
 
     def parse_and_invoke(self, args):
         args = self.__arg_parser.parse_args(args)

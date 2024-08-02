@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from tests.dircmp_test_case import DirCmpTestCase
-from cli_temgen import CliTemgen
+from cli.cli_temgen import CliTemgen
 
 
 class TestTemgenProgramBase(DirCmpTestCase):
@@ -44,12 +44,12 @@ class TestTemgenProgramBase(DirCmpTestCase):
         if argv is None:
             argv = []
         generated_template_file_path = self._generate_trivial_template_file(project_root_dir, **kargs)
-        temgen = CliTemgen(self._ut_context_argv + argv + ['--', generated_template_file_path])
+        temgen = CliTemgen()
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
             sys.stdin = TestTemgenProgramBase.__STDIN
-        temgen.run()
+        temgen.run(['temgen'] + self._ut_context_argv + argv + ['--', generated_template_file_path])
         return self._extract_files_contents(project_root_dir)
 
     def _extract_files_contents(self, project_root_dir):
@@ -72,12 +72,12 @@ class TestTemgenProgramBase(DirCmpTestCase):
             argv = []
         generated_input_dir_path = Path(f"{self._generated_input_dirname}")
         generated_template_file_path = f'{generated_input_dir_path}/{project_root_dir}.xml'
-        temgen = CliTemgen(self._ut_context_argv + argv + ['--', generated_template_file_path])
+        temgen = CliTemgen()
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
             sys.stdin = TestTemgenProgramBase.__STDIN
-        temgen.run()
+        temgen.run(['temgen'] + self._ut_context_argv + argv + ['--', generated_template_file_path])
         self._compare_output_and_expected(project_root_dir)
 
     def _generate_trivial_template_file(self, project_root_dir, **kargs):
@@ -97,12 +97,12 @@ class TestTemgenProgramBase(DirCmpTestCase):
             argv = ['--', f'input/{template_filestem}.xml']
         if context_argv is None:
             context_argv = self._ut_context_argv
-        temgen = CliTemgen(context_argv + argv)
+        temgen = CliTemgen()
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
             sys.stdin = TestTemgenProgramBase.__STDIN
-        temgen.run()
+        temgen.run(['temgen'] + context_argv + argv)
 
     def _test_template_file(self, template_filestem, project_root_dir=None, argv=None, stdin_str=None,
                             context_argv=None):
@@ -117,12 +117,12 @@ class TestTemgenProgramBase(DirCmpTestCase):
             argv = ['--', template_path, template_version]
         if context_argv is None:
             context_argv = self._ut_context_argv
-        temgen = CliTemgen(context_argv + argv)
+        temgen = CliTemgen()
         if stdin_str:
             sys.stdin = io.StringIO(stdin_str)
         else:
             sys.stdin = TestTemgenProgramBase.__STDIN
-        temgen.run()
+        temgen.run(['temgen'] + context_argv + argv)
 
     def _test_template_path_template_version(self, template_path, template_version, project_root_dir,
                                              argv=None, stdin_str=None, context_argv=None):

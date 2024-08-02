@@ -492,7 +492,7 @@ $OUTPUT_FILE_EXTS = '{output_file_exts}'
 
     def test__cli_temgen__check_template__bad_attribute_name__exception(self):
         template_string = self.check_template__bad_attribute_name__str()
-        argv = ["--check-template"]
+        argv = ["temgen", "--check-template"]
         project_root_dir = "cli_temgen__check_template__bad_attribute_name"
         input_parameters = []
         try:

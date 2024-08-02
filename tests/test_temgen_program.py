@@ -103,7 +103,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
                                                    var_definitions=var_defs, file_contents=":{text}:{message}:")
 
     def test__extra_ui__valid_cmd_cli__ok(self):
-        import cli_temgen
+        import cli.cli_temgen
         output_root_dir = "extra_ui__valid_cmd_cli"
         with tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False) as template_file:
             template_str = """<?xml version="1.0"?>
@@ -124,7 +124,7 @@ class TestTemgenProgram(TestTemgenProgramBase):
         args = ['-U', f'"{sys.executable} input/extra_ui/myui.py {{output_file}} {{input_file}}"',
                 '-v', 'text=coucou', f'project_root_dir={output_root_dir}']
         args.extend(self._ut_context_argv)
-        cmd = f"""{sys.executable} {cli_temgen.__file__} {" ".join(args)} -- {template_filepath}"""
+        cmd = f"""{sys.executable} {cli.cli_temgen.__file__} {" ".join(args)} -- {template_filepath}"""
         os.system(cmd)
         self._compare_output_and_expected(output_root_dir)
         template_filepath.unlink(missing_ok=True)
