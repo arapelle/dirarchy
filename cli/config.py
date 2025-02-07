@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import os
 import temgen
 from util.cli_command import CliCommand
 
@@ -16,18 +15,22 @@ class Config(CliCommand):
     class List(CliCommand):
         def __init__(self, parent: CliCommand, subparsers):
             super().__init__(parent, subparsers=subparsers,
-                             help="TODO")
+                             help="List the available configurations.")
+            argparser = self.arg_parser()
+            argparser.add_argument('-f', '--full-path', action='store_true',
+                                   dest='full_path', help='Print full paths (absolute).')
 
         def invoke(self, args=None):
-            # import glob
+            import glob
             config_dirpath = temgen.Temgen.APPLICATION_DIRECTORIES.settings_dirpath() / "config"
-            # for item in glob.glob(str(config_dirpath) + "*.toml")
-            #     print(item)
-            for _, _, files in os.walk(config_dirpath):
-                for file in files:
-                    file_path = Path(file)
-                    if file_path.suffix == ".toml":
-                        print(file_path.stem)
+            config_files = glob.glob(f"{config_dirpath}/*.toml")
+            for config_file in config_files:
+                config_file = Path(config_file)
+                if args.full_path:
+                    absolute_file_path = config_file.absolute()
+                    print(absolute_file_path)
+                else:
+                    print(config_file.stem)
 
     class Create(CliCommand):
         def __init__(self, parent: CliCommand, subparsers):
@@ -36,4 +39,4 @@ class Config(CliCommand):
             self.arg_parser().add_argument("config_file_name")
 
         def invoke(self, args=None):
-            print(f"List.invoke: {args}")
+            print(f"Create.invoke: {args}")
