@@ -39,8 +39,3 @@ class CliTemgen(CliCommand):
                 self.parse_and_invoke(argv[1:])
             case _:
                 self.parse_and_invoke(["generate"] + argv[1:])
-
-
-if __name__ == '__main__':
-    cli_temgen = CliTemgen()
-    cli_temgen.run()

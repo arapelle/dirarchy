@@ -4,3 +4,4 @@ output/
 __pycache__
 tests/generated_input
 tests/tmp
+sandbox
