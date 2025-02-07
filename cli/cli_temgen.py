@@ -26,7 +26,7 @@ class CliTemgen(CliCommand):
     def run(self, argv=None):
         if argv is None:
             argv = sys.argv
-        print(argv)
+        # print(argv)
         if len(argv) <= 1:
             self.parse_and_invoke(argv[1:])
             return
