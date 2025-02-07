@@ -16,6 +16,8 @@ class Generate(CliCommand):
                          description=description,
                          help=description)
         argparser = self.arg_parser()
+        argparser.add_argument('-c', '--config', metavar='config_name',
+                               help='Define which configuration to use.')
         argparser.add_argument('-K', f'--{TkinterBasicUi.NAME}'.lower(), action='store_const',
                                dest='basic_ui', const=TkinterBasicUi.NAME, help='Use tkinter I/O.')
         argparser.add_argument('-T', f'--{TerminalBasicUi.NAME}'.lower(), action='store_const',
@@ -48,7 +50,12 @@ class Generate(CliCommand):
 
     def invoke(self, args=None):
         print(f"Generate.invoke: {args}")
+        if args.config:
+            config_path = temgen.Temgen.make_config_filepath(args.config)
+        else:
+            config_path = temgen.Temgen.default_config_path()
         temgen_instance = temgen.Temgen(make_basic_ui_from_name(args.basic_ui),
+                                        config_path=config_path,
                                         var_files=args.var_file if args.var_file else [],
                                         var_dict=args.var if args.var else [],
                                         check_template=args.check_template)

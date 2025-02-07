@@ -53,14 +53,30 @@ class Temgen:
         self.__check_template_activated = bool(kargs.get("check_template", settings.get("check_template", False)))
 
     def __load_config(self, kargs):
-        default_config_path = self.APPLICATION_DIRECTORIES.settings_dirpath() / "config/default.toml"
-        config_path = Path(kargs.get("config_path", default_config_path))
+        config_path = Path(kargs.get("config_path", self.default_config_path()))
         if config_path.exists():
             with open(config_path, 'rb') as config_file:
                 self.__config = tomllib.load(config_file)
         else:
+            print(f"Config path does not exist: {config_path}.")
             self.__config = dict()
         self.__config.setdefault("settings", dict())
+
+    @staticmethod
+    def config_dirpath():
+        return Temgen.APPLICATION_DIRECTORIES.settings_dirpath() / "config"
+
+    @staticmethod
+    def make_config_filepath(config_name: str):
+        return Temgen.config_dirpath() / f"{config_name}.toml"
+
+    @staticmethod
+    def default_config_name():
+        return "default"
+
+    @staticmethod
+    def default_config_path():
+        return Temgen.make_config_filepath(Temgen.default_config_name())
 
     def __define_signal_handler(self):
         def signal_handler(sig, frame):
